@@ -13,8 +13,8 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	isInit = false;
 
 	// Equip
-	float ItemDamage = 0;
-	float ItemHealth = 0;
+	ItemDamage = 0;
+	ItemHealth = 0;
 
 	// Inventory
 	InventorySlots = 10;
@@ -39,7 +39,9 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	// Player Stats
 	HealthPoints = 100;
 	OutOfCombatTime = 5;
-	RegenerationRate = 25;
+	RegenerationRate = 1;
+	RegenerationAmount = 5;
+	RegenerationTime = 0;
 
 	MaxHP = 100;
 	AllowedToRegenerate = true;
@@ -187,6 +189,7 @@ void AGACharacter::AttackSimple(){
 			ActorItr->TakeDamageByEnemy(SimpleAttackDamage + ItemDamage);
 		}
 	}
+	CharacterAttackedSimple();
 
 	UE_LOG(LogClass, Log, TEXT("*** PLAYER:: ATTACKED SIMPLE ***"));
 	UE_LOG(LogClass, Log, TEXT("*** ATTACK:: %f DAMAGE ***"), SimpleAttackDamage + ItemDamage);
@@ -207,6 +210,7 @@ void AGACharacter::ChargeSpecial(){
 	if (SpecialAttackOnCoolDown) return;
 
 	SpecialAttackIsCharging = true;
+	CharacterStartedCharging();
 
 	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: START CHARGING SPECIAL ***"));
 }
@@ -231,6 +235,7 @@ void AGACharacter::AttackSpecial(){
 
 	SpecialAttackTimesCharged = 0;
 	SpecialAttackChargeTimer = 0;
+	CharacterAttackedSpecial();
 
 	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: ATTACKED SPECIAL***"));
 }
@@ -244,7 +249,7 @@ void AGACharacter::IncreaseChargeTime(float DeltaTime){
 	if (SpecialAttackChargeTimer >= SpecialAttackChargeInterval){
 		SpecialAttackTimesCharged++;
 		SpecialAttackChargeTimer = 0;
-
+		CharacterIsCharging();
 		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: CHARGED ***"));
 	}
 }
@@ -296,9 +301,14 @@ void AGACharacter::RegenerateHP(float DeltaTime){
 	if (RegenerationTimer < OutOfCombatTime){
 		RegenerationTimer += DeltaTime;
 		if (RegenerationTimer >= OutOfCombatTime) AllowedToRegenerate = true;
+		else return;
 	}
-	if (AllowedToRegenerate){
-		HealthPoints = (HealthPoints + RegenerationRate > MaxHP ? MaxHP : HealthPoints + RegenerationRate);
+	RegenerationTime += DeltaTime;
+
+	if (AllowedToRegenerate && RegenerationTime >= RegenerationRate){
+		HealthPoints = (HealthPoints + RegenerationAmount > MaxHP ? MaxHP : HealthPoints + RegenerationAmount);
+		RegenerationTime = 0;
+		CharacterRegenerated();
 	}
 }
 
