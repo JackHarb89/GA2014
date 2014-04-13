@@ -31,9 +31,11 @@ class AGACharacter : public ACharacter
 
 	// Player Stats
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float HealthPoints;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Regeneration)	float Armor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Regeneration)	float OutOfCombatTime;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Regeneration)	float RegenerationRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float Armor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float OutOfCombatTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float RegenerationAmount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float RegenerationRate;
+
 
 	
 	/** Camera boom positioning the camera behind the character */
@@ -53,7 +55,16 @@ class AGACharacter : public ACharacter
 	float BaseLookUpRate;
 	
 	void TakeDamageByEnemy(float Damage);
+
+	// EVENTS
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterAttackedSimple();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterAttackedSpecial();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterStartedCharging();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterIsCharging();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterTookDamage();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterRegenerated();
 
 
 protected:
@@ -101,6 +112,7 @@ protected:
 	bool AllowedToRegenerate;
 	float RegenerationTimer;
 	float MaxHP;
+	float RegenerationTime;
 	
 	void AttackSimple();
 	void ReduceSimpleAttackCoolDown(float DeltaTime);
