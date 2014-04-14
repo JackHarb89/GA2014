@@ -340,6 +340,7 @@ void AGACharacter::EquipItem(AGAItem* item){
 void AGACharacter::PickUpItem(AGAItem* item){
 	if (InventoryItems.Num() < InventorySlots){
 		InventoryItems.Add(item);
+		EquipItem(item);
 		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: PICKED UP ITEM ***"));
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** PLAYER :: INVENTORY IS FULL ***"));
