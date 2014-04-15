@@ -58,7 +58,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterStartedCharging();
 	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterIsCharging();
 	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterTookDamage();
-	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterRegenerated();
+	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterStartedRegeneration();
+	UFUNCTION(BlueprintImplementableEvent, Category = "CombatEvent")			void CharacterFinishedRegeneration();
 	
 	// Cmaera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")			TSubobjectPtr<class USpringArmComponent> CameraBoom;
