@@ -24,7 +24,7 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 	SpecialAttackOnCoolDown = false;
 
 	// Player Stats
-	MaxHP = 100;
+	MaxHealth = 100;
 	RegenerationTime = 0;
 	RegenerationTimer = 0;
 	AllowedToRegenerate = true;
@@ -38,7 +38,7 @@ void AGAPlayerController::InitPlayer(){
 
 	SimpleAttackCoolDownRestValue = gaCharacter->SimpleAttackCoolDown;
 	SpecialAttackCoolDownRestValue = gaCharacter->SpecialAttackCoolDown;
-	MaxHP = gaCharacter->HealthPoints + ItemHealth;
+	MaxHealth = gaCharacter->HealthPoints + ItemHealth;
 	isInit = true;
 }
 
@@ -60,6 +60,33 @@ void AGAPlayerController::Tick(float DeltaTime){
 	CheckDeath();
 }
 
+bool AGAPlayerController::IsInRange(AActor* target, float attackRange){
+	FVector playerLocation = gaCharacter->GetActorLocation();
+	FVector targetLocation = target->GetActorLocation();
+
+	// Calculate Distance		*** WIP ***
+	if (abs(playerLocation.X - targetLocation.X) < attackRange && abs(playerLocation.Y - targetLocation.Y) < attackRange){ return true; }
+	return false;
+}
+
+void AGAPlayerController::TakeDamageByEnemy(float Damage){
+	gaCharacter->HealthPoints -= Damage;
+	gaCharacter->CharacterTookDamage();
+	if (gaCharacter->HealthPoints <= 0){
+		this->Destroy();
+	}
+	AllowedToRegenerate = false;
+	RegenerationTimer = 0;
+}
+
+void AGAPlayerController::CheckDeath(){
+	if (gaCharacter->HealthPoints <= 0){
+		UE_LOG(LogClass, Warning, TEXT("*** PLAYER :: DIED ***"));
+	}
+}
+
+#pragma region Simple Attack
+
 void AGAPlayerController::AttackSimple(){
 	// Check If Attack Is On Cool Down
 	if (SimpleAttackOnCoolDown) return;
@@ -70,7 +97,7 @@ void AGAPlayerController::AttackSimple(){
 	// Find Actor To Deal Damage
 	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
-		if (IsInRange(*ActorItr)){
+		if (IsInRange(*ActorItr,gaCharacter->SimpleAttackRange)){
 			ActorItr->TakeDamageByEnemy(gaCharacter->SimpleAttackDamage + ItemDamage);
 		}
 	}
@@ -90,15 +117,9 @@ void AGAPlayerController::ReduceSimpleAttackCoolDown(float DeltaTime){
 	}
 }
 
-void AGAPlayerController::ChargeSpecial(){
-	// Check If Attack Is On Cool Down
-	if (SpecialAttackOnCoolDown) return;
+#pragma endregion
 
-	SpecialAttackIsCharging = true;
-	gaCharacter->CharacterStartedCharging();
-
-	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: START CHARGING SPECIAL ***"));
-}
+#pragma region Special Attack
 
 void AGAPlayerController::AttackSpecial(){
 	// Check If Attack Is On Cool Down
@@ -113,7 +134,7 @@ void AGAPlayerController::AttackSpecial(){
 	// Find Actor To Deal Damage
 	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
-		if (IsInRange(*ActorItr)){
+		if (IsInRange(*ActorItr,gaCharacter->SpecialAttackRange)){
 			ActorItr->TakeDamageByEnemy(Damage);
 		}
 	}
@@ -123,6 +144,16 @@ void AGAPlayerController::AttackSpecial(){
 	gaCharacter->CharacterAttackedSpecial();
 
 	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: ATTACKED SPECIAL***"));
+}
+
+void AGAPlayerController::ChargeSpecial(){
+	// Check If Attack Is On Cool Down
+	if (SpecialAttackOnCoolDown) return;
+
+	SpecialAttackIsCharging = true;
+	gaCharacter->CharacterStartedCharging();
+
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: START CHARGING SPECIAL ***"));
 }
 
 void AGAPlayerController::IncreaseChargeTime(float DeltaTime){
@@ -157,30 +188,13 @@ void AGAPlayerController::ReduceSpecialAttackCoolDown(float DeltaTime){
 	}
 }
 
-bool AGAPlayerController::IsInRange(AActor* target){
-	FVector playerLocation = gaCharacter->GetActorLocation();
-	FVector targetLocation = target->GetActorLocation();
-
-	// Calculate Distance		*** WIP ***
-	if (abs(playerLocation.X - targetLocation.X) < 250 && abs(playerLocation.Y - targetLocation.Y) < 250){ return true; }
-	return false;
+bool AGAPlayerController::isAllowedToMove(){
+	return !SpecialAttackIsCharging;
 }
 
-void AGAPlayerController::TakeDamageByEnemy(float Damage){
-	gaCharacter->HealthPoints -= Damage;
-	gaCharacter->CharacterTookDamage();
-	if (gaCharacter->HealthPoints <= 0){
-		this->Destroy();
-	}
-	AllowedToRegenerate = false;
-	RegenerationTimer = 0;
-}
+#pragma endregion
 
-void AGAPlayerController::CheckDeath(){
-	if (gaCharacter->HealthPoints <= 0){
-		UE_LOG(LogClass, Warning, TEXT("*** PLAYER :: DIED ***"));
-	}
-}
+#pragma region Regeneration
 
 void AGAPlayerController::RegenerateHP(float DeltaTime){
 	if (RegenerationTimer < gaCharacter->OutOfCombatTime){
@@ -190,12 +204,16 @@ void AGAPlayerController::RegenerateHP(float DeltaTime){
 	}
 	RegenerationTime += DeltaTime;
 
-	if (AllowedToRegenerate && RegenerationTime >= gaCharacter->RegenerationRate){
-		gaCharacter->HealthPoints = (gaCharacter->HealthPoints + gaCharacter->RegenerationAmount > MaxHP ? MaxHP : gaCharacter->HealthPoints + gaCharacter->RegenerationAmount);
+	if (AllowedToRegenerate && RegenerationTime >= gaCharacter->RegenerationRate && gaCharacter->HealthPoints < MaxHealth){
+		gaCharacter->HealthPoints = (gaCharacter->HealthPoints + gaCharacter->RegenerationAmount > MaxHealth ? MaxHealth : gaCharacter->HealthPoints + gaCharacter->RegenerationAmount);
 		RegenerationTime = 0;
 		gaCharacter->CharacterRegenerated();
 	}
 }
+
+#pragma endregion
+
+#pragma region Items
 
 void AGAPlayerController::CalculateItem(AGAItem* item){
 	// Attack Damage
@@ -207,7 +225,7 @@ void AGAPlayerController::CalculateItem(AGAItem* item){
 	// Health
 	float percentLife = item->AuraPlayer.PercentHealth;
 	ItemHealth += gaCharacter->HealthPoints*percentLife / 100;
-	MaxHP = gaCharacter->HealthPoints + ItemHealth;
+	MaxHealth = gaCharacter->HealthPoints + ItemHealth;
 }
 
 void AGAPlayerController::EquipItem(AGAItem* item){
@@ -225,6 +243,4 @@ void AGAPlayerController::PickUpItem(AGAItem* item){
 	else UE_LOG(LogClass, Log, TEXT("*** PLAYER :: INVENTORY IS FULL ***"));
 }
 
-bool AGAPlayerController::isAllowedToMove(){
-	return !SpecialAttackIsCharging;
-}
+#pragma endregion

@@ -21,12 +21,14 @@ class AGACharacter : public ACharacter
 	// Simple Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)	float SimpleAttackDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)	float SimpleAttackCoolDown;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SimpleAttackRange;
 
 	// Special Attack
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SpecialAttackBaseDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SpecialAttackMaxDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SpecialAttackChargeInterval;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SpecialAttackCoolDown;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SpecialAttack)	float SpecialAttackRange;
 
 	// Player Stats
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float HealthPoints;
@@ -37,25 +39,21 @@ class AGACharacter : public ACharacter
 
 	// EVENTS
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterAttackedSimple();
-
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterAttackedSpecial();
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterStartedCharging();
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterIsCharging();
-
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterRegenerated();
 	
-	/** Camera boom positioning the camera behind the character */
+	// Cmaera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		TSubobjectPtr<class USpringArmComponent> CameraBoom;
-
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		TSubobjectPtr<class UCameraComponent> FollowCamera;
 
-	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
+	// Movement
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		float BaseTurnRate;
-
-	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		float BaseLookUpRate;
+
+protected:
 
 	// Input Settings
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
@@ -73,6 +71,5 @@ class AGACharacter : public ACharacter
 
 	// General
 	virtual void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
-
 };
 
