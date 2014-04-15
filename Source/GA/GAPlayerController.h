@@ -55,12 +55,12 @@ protected:
 	float CalculateSpecialAttackDamage();
 
 	// Attack Range
-	bool IsInRange(AActor* target);
+	bool IsInRange(AActor* target, float attackRange);
 
 	// Playerstats
 	bool AllowedToRegenerate;
 	float RegenerationTimer;
-	float MaxHP;
+	float MaxHealth;
 	float RegenerationTime;
 
 	void RegenerateHP(float DeltaTime);
