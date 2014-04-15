@@ -1,0 +1,230 @@
+// Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
+
+#include "GA.h"
+#include "GAPlayerController.h"
+
+
+AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
+	: Super(PCIP)
+{
+	// Own Initiation
+	isInit = false;
+
+	// Equip
+	ItemDamage = 0;
+	ItemHealth = 0;
+
+	// Simple Attack
+	SimpleAttackOnCoolDown = false;
+
+	// Special Attack
+	SpecialAttackChargeTimer = 0;
+	SpecialAttackTimesCharged = 0;
+	SpecialAttackIsCharging = false;
+	SpecialAttackOnCoolDown = false;
+
+	// Player Stats
+	MaxHP = 100;
+	RegenerationTime = 0;
+	RegenerationTimer = 0;
+	AllowedToRegenerate = true;
+
+	// General
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AGAPlayerController::InitPlayer(){
+	gaCharacter = (AGACharacter*) this->GetPawn();
+
+	SimpleAttackCoolDownRestValue = gaCharacter->SimpleAttackCoolDown;
+	SpecialAttackCoolDownRestValue = gaCharacter->SpecialAttackCoolDown;
+	MaxHP = gaCharacter->HealthPoints + ItemHealth;
+	isInit = true;
+}
+
+void AGAPlayerController::Tick(float DeltaTime){
+	Super::Tick(DeltaTime);
+	if (!isInit) InitPlayer();
+	
+	// Cooldown Control
+	ReduceSimpleAttackCoolDown(DeltaTime);
+	ReduceSpecialAttackCoolDown(DeltaTime);
+
+	// Increase Charge
+	IncreaseChargeTime(DeltaTime);
+
+	// Regenration
+	RegenerateHP(DeltaTime);
+
+	// Check if Health is below zero
+	CheckDeath();
+}
+
+void AGAPlayerController::AttackSimple(){
+	// Check If Attack Is On Cool Down
+	if (SimpleAttackOnCoolDown) return;
+
+	// Set Cool Down
+	SimpleAttackOnCoolDown = true;
+
+	// Find Actor To Deal Damage
+	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		if (IsInRange(*ActorItr)){
+			ActorItr->TakeDamageByEnemy(gaCharacter->SimpleAttackDamage + ItemDamage);
+		}
+	}
+	gaCharacter->CharacterAttackedSimple();
+
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER:: ATTACKED SIMPLE ***"));
+	UE_LOG(LogClass, Log, TEXT("*** ATTACK:: %f DAMAGE ***"), gaCharacter->SimpleAttackDamage + ItemDamage);
+}
+
+void AGAPlayerController::ReduceSimpleAttackCoolDown(float DeltaTime){
+	// Reduce Cool Down
+	if (SimpleAttackOnCoolDown) gaCharacter->SimpleAttackCoolDown -= DeltaTime;
+	// Check If Cool Down Finished
+	if (gaCharacter->SimpleAttackCoolDown <= 0){
+		SimpleAttackOnCoolDown = false;
+		gaCharacter->SimpleAttackCoolDown = SimpleAttackCoolDownRestValue;
+	}
+}
+
+void AGAPlayerController::ChargeSpecial(){
+	// Check If Attack Is On Cool Down
+	if (SpecialAttackOnCoolDown) return;
+
+	SpecialAttackIsCharging = true;
+	gaCharacter->CharacterStartedCharging();
+
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: START CHARGING SPECIAL ***"));
+}
+
+void AGAPlayerController::AttackSpecial(){
+	// Check If Attack Is On Cool Down
+	if (SpecialAttackOnCoolDown) return;
+
+	// Set Cool Down
+	SpecialAttackOnCoolDown = true;
+	SpecialAttackIsCharging = false;
+
+	float Damage = CalculateSpecialAttackDamage();
+
+	// Find Actor To Deal Damage
+	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+	{
+		if (IsInRange(*ActorItr)){
+			ActorItr->TakeDamageByEnemy(Damage);
+		}
+	}
+
+	SpecialAttackTimesCharged = 0;
+	SpecialAttackChargeTimer = 0;
+	gaCharacter->CharacterAttackedSpecial();
+
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: ATTACKED SPECIAL***"));
+}
+
+void AGAPlayerController::IncreaseChargeTime(float DeltaTime){
+	// Check If Character Is Charging
+	if (!SpecialAttackIsCharging) return;
+
+	SpecialAttackChargeTimer += DeltaTime;
+	// Check If We Reached Charge Interval
+	if (SpecialAttackChargeTimer >= gaCharacter->SpecialAttackChargeInterval){
+		SpecialAttackTimesCharged++;
+		SpecialAttackChargeTimer = 0;
+		gaCharacter->CharacterIsCharging();
+		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: CHARGED ***"));
+	}
+}
+
+float AGAPlayerController::CalculateSpecialAttackDamage(){
+	float Damage;
+	Damage = gaCharacter->SpecialAttackBaseDamage * SpecialAttackTimesCharged;
+	Damage = (Damage > gaCharacter->SpecialAttackMaxDamage ? gaCharacter->SpecialAttackMaxDamage : Damage);
+
+	return Damage;
+}
+
+void AGAPlayerController::ReduceSpecialAttackCoolDown(float DeltaTime){
+	// Reduce Cool Down
+	if (SpecialAttackOnCoolDown) gaCharacter->SpecialAttackCoolDown -= DeltaTime;
+	// Check If Cool Down Finished
+	if (gaCharacter->SpecialAttackCoolDown <= 0){
+		SpecialAttackOnCoolDown = false;
+		gaCharacter->SpecialAttackCoolDown = SpecialAttackCoolDownRestValue;
+	}
+}
+
+bool AGAPlayerController::IsInRange(AActor* target){
+	FVector playerLocation = gaCharacter->GetActorLocation();
+	FVector targetLocation = target->GetActorLocation();
+
+	// Calculate Distance		*** WIP ***
+	if (abs(playerLocation.X - targetLocation.X) < 250 && abs(playerLocation.Y - targetLocation.Y) < 250){ return true; }
+	return false;
+}
+
+void AGAPlayerController::TakeDamageByEnemy(float Damage){
+	gaCharacter->HealthPoints -= Damage;
+	gaCharacter->CharacterTookDamage();
+	if (gaCharacter->HealthPoints <= 0){
+		this->Destroy();
+	}
+	AllowedToRegenerate = false;
+	RegenerationTimer = 0;
+}
+
+void AGAPlayerController::CheckDeath(){
+	if (gaCharacter->HealthPoints <= 0){
+		UE_LOG(LogClass, Warning, TEXT("*** PLAYER :: DIED ***"));
+	}
+}
+
+void AGAPlayerController::RegenerateHP(float DeltaTime){
+	if (RegenerationTimer < gaCharacter->OutOfCombatTime){
+		RegenerationTimer += DeltaTime;
+		if (RegenerationTimer >= gaCharacter->OutOfCombatTime) AllowedToRegenerate = true;
+		else return;
+	}
+	RegenerationTime += DeltaTime;
+
+	if (AllowedToRegenerate && RegenerationTime >= gaCharacter->RegenerationRate){
+		gaCharacter->HealthPoints = (gaCharacter->HealthPoints + gaCharacter->RegenerationAmount > MaxHP ? MaxHP : gaCharacter->HealthPoints + gaCharacter->RegenerationAmount);
+		RegenerationTime = 0;
+		gaCharacter->CharacterRegenerated();
+	}
+}
+
+void AGAPlayerController::CalculateItem(AGAItem* item){
+	// Attack Damage
+	float percentDamage = item->AuraPlayer.PercentDamage;
+	ItemDamage += gaCharacter->SimpleAttackDamage*percentDamage / 100;
+
+	// Armor
+
+	// Health
+	float percentLife = item->AuraPlayer.PercentHealth;
+	ItemHealth += gaCharacter->HealthPoints*percentLife / 100;
+	MaxHP = gaCharacter->HealthPoints + ItemHealth;
+}
+
+void AGAPlayerController::EquipItem(AGAItem* item){
+	gaCharacter->EquipItems.Add(item);
+	gaCharacter->InventoryItems.Remove(item);
+	CalculateItem(item);
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: EQUIPED ITEM ***"));
+}
+
+void AGAPlayerController::PickUpItem(AGAItem* item){
+	if (gaCharacter->InventoryItems.Num() < gaCharacter->InventorySlots){
+		gaCharacter->InventoryItems.Add(item);
+		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: PICKED UP ITEM ***"));
+	}
+	else UE_LOG(LogClass, Log, TEXT("*** PLAYER :: INVENTORY IS FULL ***"));
+}
+
+bool AGAPlayerController::isAllowedToMove(){
+	return !SpecialAttackIsCharging;
+}

@@ -9,10 +9,9 @@ UCLASS(config=Game)
 class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
-	// Items
+
+	// Equip
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TArray<AGAItem*> EquipItems;
-	float ItemDamage;
-	float ItemHealth;
 
 	// Inventory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TArray<AGAItem*> InventoryItems;
@@ -36,104 +35,44 @@ class AGACharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float RegenerationAmount;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PlayerStats)		float RegenerationRate;
 
+	// EVENTS
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterAttackedSimple();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterAttackedSpecial();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterStartedCharging();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterIsCharging();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterTookDamage();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)			void CharacterRegenerated();
 	
 	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	TSubobjectPtr<class USpringArmComponent> CameraBoom;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		TSubobjectPtr<class USpringArmComponent> CameraBoom;
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	TSubobjectPtr<class UCameraComponent> FollowCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		TSubobjectPtr<class UCameraComponent> FollowCamera;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	float BaseTurnRate;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		float BaseTurnRate;
 
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
-	float BaseLookUpRate;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)		float BaseLookUpRate;
+
+	// Input Settings
+	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
 	
-	void TakeDamageByEnemy(float Damage);
-
-	// EVENTS
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterAttackedSimple();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterAttackedSpecial();
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterStartedCharging();
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterIsCharging();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterTookDamage();
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterRegenerated();
-
-
-protected:
-
-	/** Called for forwards/backward input */
+	// Movement
 	void MoveForward(float Value);
-
-	/** Called for side to side input */
 	void MoveRight(float Value);
-
-	/** 
-	 * Called via input to turn at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	void TurnAtRate(float Rate);
-
-	/**
-	 * Called via input to turn look up/down at a given rate. 
-	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
-	 */
 	void LookUpAtRate(float Rate);
 
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-
-protected:
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
-	// End of APawn interface
-
-	bool isInit;
-
-	// Simple Attack
-	float SimpleAttackCoolDownRestValue;
-	bool SimpleAttackOnCoolDown;
-
-	// Special Attack
-	float SpecialAttackCoolDownRestValue;
-	float SpecialAttackChargeTimer;
-	int32 SpecialAttackTimesCharged;
-	bool SpecialAttackOnCoolDown;
-	bool SpecialAttackIsCharging;
-
-	// Playerstats
-	bool AllowedToRegenerate;
-	float RegenerationTimer;
-	float MaxHP;
-	float RegenerationTime;
-	
+	// Combat
 	void AttackSimple();
-	void ReduceSimpleAttackCoolDown(float DeltaTime);
-
-	void ChargeSpecial();
-	void IncreaseChargeTime(float DeltaTime);
 	void AttackSpecial();
-	float CalculateSpecialAttackDamage();
-	void ReduceSpecialAttackCoolDown(float DeltaTime);
+	void ChargeSpecial();
 
-	bool IsInRange(AActor* target);
-	void RegenerateHP(float DeltaTime);
-	void CheckDeath();
-
-	void CalculateItem(AGAItem* item);
-	void EquipItem(AGAItem* item);
-	void PickUpItem(AGAItem* item);
-
-	void InitPlayer();
-
-	virtual void Tick(float DeltaTime) OVERRIDE;
+	// General
 	virtual void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
+
 };
 
