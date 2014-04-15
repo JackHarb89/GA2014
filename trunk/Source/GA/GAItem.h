@@ -10,6 +10,17 @@
  * 
  */
 UENUM(BlueprintType)
+namespace EGARarity
+{
+	enum Type
+	{
+		GACommon		UMETA(DisplayName = "Common"),
+		GARare	 		UMETA(DisplayName = "Rare"),
+		GAEpic			UMETA(DisplayName = "Epic"),
+	};
+}
+
+UENUM(BlueprintType)
 namespace EGASlot
 {
 	enum Type
@@ -75,8 +86,10 @@ class AGAItem : public AActor
 
 	FName ItemName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 Value;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGARarity::Type> Rarity;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;
