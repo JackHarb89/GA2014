@@ -3,6 +3,7 @@
 #include "GA.h"
 #include "GAEnemy.h"
 #include "GAAIController.h"
+#include "GAPlayerController.h"
 #include "GACharacter.h"
 
 
@@ -53,7 +54,7 @@ void AGAEnemy::AttackSimple(){
 	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
 		if (IsInRange(*ActorItr)){
-			ActorItr->TakeDamageByEnemy(Damage);
+			((AGAPlayerController*)ActorItr->GetController())->TakeDamageByEnemy(Damage);
 		}
 	}
 
