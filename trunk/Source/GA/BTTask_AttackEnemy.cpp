@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponen
 
 		// Check If In Range			*** WIP ***
 		if (abs(PlayerLocation.X - EnemyLocation.X) < MAX_ATTACK_RANGE && abs(PlayerLocation.Y - EnemyLocation.Y) < MAX_ATTACK_RANGE){
-			if (enemy->DealDamage()) EBTNodeResult::Succeeded;
+			if (enemy->DealDamage()) return EBTNodeResult::Succeeded;
 		}
 	}
 

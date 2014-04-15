@@ -82,19 +82,16 @@ bool AGAEnemy::IsInRange(AActor* target){
 
 void AGAEnemy::CheckItemDrop(){
 	TSubclassOf<class AActor> item;
-	float maxValue = 0;
+	TArray <FGameItem> DropItems;
 	int random;
 	for (int i = 0; i < LootTable.Num(); i++){
-		if (maxValue < LootTable[i].DropChance){
-			maxValue = LootTable[i].DropChance;
-			item = LootTable[i].getItemClass();
-		}
+		random = FMath::FRandRange(0, 100);
+		if (random <= LootTable[i].DropChance) DropItems.Add(LootTable[i]);
 	}
 
-	if (maxValue == 0) return;
-	random = FMath::RandRange(0, 100 / maxValue - 1); // 0 == Drop!
-
-	if (random == 0 && item != NULL) DropItem(item);
+	if (DropItems.Num() == 0) return;
+	item =  DropItems[FMath::RandRange(0, DropItems.Num() - 1)].getItemClass();
+	if (item != NULL) DropItem(item);
 }
 
 void AGAEnemy::DropItem(TSubclassOf<class AActor> item){

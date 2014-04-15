@@ -9,6 +9,17 @@
 /**
  * 
  */
+UENUM(BlueprintType)
+namespace ESlot
+{
+	enum Type
+	{
+		GAHelm 			UMETA(DisplayName = "Helm"),
+		GAChest 		UMETA(DisplayName = "Chest"),
+		GAWeapon		UMETA(DisplayName = "Weapon"),
+		GATrinket		UMETA(DisplayName = "Trinket"),
+	};
+}
 
 // Aura For Group
 USTRUCT(BlueprintType)
@@ -47,6 +58,8 @@ class AGAItem : public AActor
 
 	FName ItemName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<ESlot::Type> Slot;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;

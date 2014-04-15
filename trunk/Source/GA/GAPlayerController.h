@@ -35,7 +35,7 @@ protected:
 	float ItemDamage;
 	float ItemHealth;
 
-	void CalculateItem(AGAItem* item);
+	void CalculateItems();
 
 	// Simple Attack
 	float SimpleAttackCoolDownRestValue;
