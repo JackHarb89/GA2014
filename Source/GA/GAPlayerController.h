@@ -31,11 +31,18 @@ public:
 
 protected:
 
+	// Shop
+	void SellItem(AGAItem* item);
+	void BuyItem(AGAItem* item);
+
 	// Items
 	float ItemDamage;
 	float ItemHealth;
 
 	void CalculateItems();
+
+	// Attack Speed
+	float AttackSpeed;
 
 	// Simple Attack
 	float SimpleAttackCoolDownRestValue;
@@ -63,14 +70,16 @@ protected:
 	float MaxHealth;
 	float RegenerationTime;
 
+	// Regeneration
 	void RegenerateHP(float DeltaTime);
-	void CheckDeath();
+	void UseHealPotion();
 
 	// Init Controller
 	bool isInit;
 	void InitPlayer();
 
 	// General
+	void CheckDeath();
 	virtual void Tick(float DeltaTime) OVERRIDE;
 
 	// Character Reference
