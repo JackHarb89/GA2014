@@ -64,13 +64,11 @@ protected:
 	// Attack Range
 	bool IsInRange(AActor* target, float attackRange);
 
-	// Playerstats
+	// Regeneration
 	bool AllowedToRegenerate;
 	float RegenerationTimer;
 	float MaxHealth;
 	float RegenerationTime;
-
-	// Regeneration
 	void RegenerateHP(float DeltaTime);
 	void UseHealPotion();
 

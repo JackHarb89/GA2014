@@ -26,7 +26,7 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 	SpecialAttackIsCharging = false;
 	SpecialAttackOnCoolDown = false;
 
-	// Player Stats
+	// Regeneration
 	MaxHealth = 100;
 	RegenerationTime = 0;
 	RegenerationTimer = 0;
@@ -80,6 +80,7 @@ void AGAPlayerController::TakeDamageByEnemy(float Damage){
 	}
 	AllowedToRegenerate = false;
 	RegenerationTimer = 0;
+	gaCharacter->CharacterFinishedRegeneration();
 }
 
 void AGAPlayerController::CheckDeath(){
@@ -202,7 +203,10 @@ bool AGAPlayerController::isAllowedToMove(){
 void AGAPlayerController::RegenerateHP(float DeltaTime){
 	if (RegenerationTimer < gaCharacter->OutOfCombatTime){
 		RegenerationTimer += DeltaTime;
-		if (RegenerationTimer >= gaCharacter->OutOfCombatTime) AllowedToRegenerate = true;
+		if (RegenerationTimer >= gaCharacter->OutOfCombatTime && !AllowedToRegenerate) {
+			AllowedToRegenerate = true;
+			gaCharacter->CharacterStartedRegeneration();
+		}
 		else return;
 	}
 	RegenerationTime += DeltaTime;
@@ -210,8 +214,8 @@ void AGAPlayerController::RegenerateHP(float DeltaTime){
 	if (AllowedToRegenerate && RegenerationTime >= gaCharacter->RegenerationRate && gaCharacter->HealthPoints < MaxHealth){
 		gaCharacter->HealthPoints = (gaCharacter->HealthPoints + gaCharacter->RegenerationAmount > MaxHealth ? MaxHealth : gaCharacter->HealthPoints + gaCharacter->RegenerationAmount);
 		RegenerationTime = 0;
-		gaCharacter->CharacterRegenerated();
 	}
+	if (AllowedToRegenerate && gaCharacter->HealthPoints == MaxHealth)  gaCharacter->CharacterFinishedRegeneration();
 }
 
 #pragma endregion
