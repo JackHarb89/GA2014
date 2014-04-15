@@ -10,7 +10,7 @@ struct FEquipment
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")			AGAItem* Helm;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")			AGAItem* Head;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")			AGAItem* Chest;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")			AGAItem* Weapon;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")			AGAItem* Trinket00;
@@ -21,6 +21,9 @@ UCLASS(config=Game)
 class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
+
+	// Ressource
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ressource")			int32 Ressource;
 
 	// Equip
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")				FEquipment EquipItems;

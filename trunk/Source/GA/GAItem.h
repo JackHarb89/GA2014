@@ -10,11 +10,11 @@
  * 
  */
 UENUM(BlueprintType)
-namespace ESlot
+namespace EGASlot
 {
 	enum Type
 	{
-		GAHelm 			UMETA(DisplayName = "Helm"),
+		GAHead 			UMETA(DisplayName = "Head"),
 		GAChest 		UMETA(DisplayName = "Chest"),
 		GAWeapon		UMETA(DisplayName = "Weapon"),
 		GATrinket		UMETA(DisplayName = "Trinket"),
@@ -36,6 +36,15 @@ struct FGroupAura
 
 	// Radius
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		float EffectRadius;
+
+	FGroupAura(){
+		PercentDamage = 0;
+		PercentArmor = 0;
+		PercentHealth = 0;
+		PercentAttackSpeed = 0;
+		PercentMovementSpeed = 0;
+		EffectRadius = 0;
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -49,6 +58,14 @@ struct FPlayerAura
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		float PercentHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		float PercentAttackSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		float PercentMovementSpeed;
+
+	FPlayerAura(){
+		PercentDamage = 0;
+		PercentArmor = 0;
+		PercentHealth = 0;
+		PercentAttackSpeed = 0;
+		PercentMovementSpeed = 0;
+	}
 };
 
 UCLASS()
@@ -58,9 +75,12 @@ class AGAItem : public AActor
 
 	FName ItemName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<ESlot::Type> Slot;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 Value;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;
+
+	UFUNCTION(BlueprintCallable, Category = "Drop Animation")				void SetDropAnimationFinished();
+	bool finishedDropAnimation;
 };

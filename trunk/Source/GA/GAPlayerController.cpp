@@ -14,6 +14,9 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 	ItemDamage = 0;
 	ItemHealth = 0;
 
+	// Attack Speed
+	AttackSpeed = 1;
+
 	// Simple Attack
 	SimpleAttackOnCoolDown = false;
 
@@ -113,7 +116,7 @@ void AGAPlayerController::ReduceSimpleAttackCoolDown(float DeltaTime){
 	// Check If Cool Down Finished
 	if (gaCharacter->SimpleAttackCoolDown <= 0){
 		SimpleAttackOnCoolDown = false;
-		gaCharacter->SimpleAttackCoolDown = SimpleAttackCoolDownRestValue;
+		gaCharacter->SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
 	}
 }
 
@@ -216,37 +219,56 @@ void AGAPlayerController::RegenerateHP(float DeltaTime){
 #pragma region Items
 
 void AGAPlayerController::CalculateItems(){
-/*	// Attack Damage
-	float percentDamage = item->AuraPlayer.PercentDamage;
-	ItemDamage += gaCharacter->SimpleAttackDamage*percentDamage / 100;
+	FPlayerAura PercentBonus;
+	TArray <AGAItem*> EquipedItems;
+	if (gaCharacter->EquipItems.Head) EquipedItems.Add(gaCharacter->EquipItems.Head);
+	if (gaCharacter->EquipItems.Chest) EquipedItems.Add(gaCharacter->EquipItems.Chest);
+	if (gaCharacter->EquipItems.Weapon) EquipedItems.Add(gaCharacter->EquipItems.Weapon);
+	if (gaCharacter->EquipItems.Trinket00) EquipedItems.Add(gaCharacter->EquipItems.Trinket00);
+	if (gaCharacter->EquipItems.Trinket01) EquipedItems.Add(gaCharacter->EquipItems.Trinket01);
+
+	// Gather All Bonus
+	for (int i = 0; i < EquipedItems.Num(); i++){
+		PercentBonus.PercentDamage += EquipedItems[i]->AuraPlayer.PercentDamage;
+		PercentBonus.PercentAttackSpeed += EquipedItems[i]->AuraPlayer.PercentAttackSpeed;
+		PercentBonus.PercentHealth += EquipedItems[i]->AuraPlayer.PercentHealth;
+	}
+
+	// Damage Bonus
+	ItemDamage += gaCharacter->SimpleAttackDamage * PercentBonus.PercentDamage / 100;
+
+	// Attack Speed
+	AttackSpeed = 1 + 1 * PercentBonus.PercentAttackSpeed / 100;
+	gaCharacter->SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
+
+
+	// Movement Speed
 
 	// Armor
 
 	// Health
-	float percentLife = item->AuraPlayer.PercentHealth;
-	ItemHealth += gaCharacter->HealthPoints*percentLife / 100;
-	MaxHealth = gaCharacter->HealthPoints + ItemHealth;*/
+	ItemHealth += gaCharacter->HealthPoints * PercentBonus.PercentHealth / 100;
+	MaxHealth = gaCharacter->HealthPoints + ItemHealth;
 }
 
 void AGAPlayerController::EquipItem(AGAItem* item){
-	FEquipment equip = gaCharacter->EquipItems;
 	switch (item->Slot){
-		case(0):
-			if (gaCharacter->EquipItems.Helm != NULL) gaCharacter->InventoryItems.Add(gaCharacter->EquipItems.Helm);
+		case(EGASlot::GAHead):
+			if (gaCharacter->EquipItems.Head != NULL) gaCharacter->InventoryItems.Add(gaCharacter->EquipItems.Head);
 			gaCharacter->InventoryItems.Remove(item);
-			gaCharacter->EquipItems.Helm = item;
+			gaCharacter->EquipItems.Head = item;
 			break;
-		case(1) :
+		case(EGASlot::GAChest) :
 			if (gaCharacter->EquipItems.Chest != NULL) gaCharacter->InventoryItems.Add(gaCharacter->EquipItems.Chest);
 			gaCharacter->InventoryItems.Remove(item);
 			gaCharacter->EquipItems.Chest = item;
 			break;
-		case(2) :
+		case(EGASlot::GAWeapon) :
 			if (gaCharacter->EquipItems.Weapon != NULL) gaCharacter->InventoryItems.Add(gaCharacter->EquipItems.Weapon);
 			gaCharacter->InventoryItems.Remove(item);
 			gaCharacter->EquipItems.Weapon = item;
 			break;
-		case(3) :
+		case(EGASlot::GATrinket) :
 			if (gaCharacter->EquipItems.Trinket00 != NULL && gaCharacter->EquipItems.Trinket01 != NULL) {
 				gaCharacter->InventoryItems.Add(gaCharacter->EquipItems.Trinket00);
 				gaCharacter->InventoryItems.Remove(item);
@@ -270,14 +292,32 @@ void AGAPlayerController::EquipItem(AGAItem* item){
 
 
 void AGAPlayerController::PickUpItem(AGAItem* item){
-	if (gaCharacter->InventoryItems.Num() < gaCharacter->InventorySlots){
+	if (gaCharacter->InventoryItems.Num() < gaCharacter->InventorySlots && item->finishedDropAnimation){
 		AGAItem* inventoryItem = item;
-		item->Destroy();
+		item->DestroyConstructedComponents();
 		gaCharacter->InventoryItems.Add(inventoryItem);
 		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: PICKED UP ITEM ***"));
 		EquipItem(item);
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** PLAYER :: INVENTORY IS FULL ***"));
+}
+
+#pragma endregion
+
+#pragma region Shop
+// *** SYSTEM IS EXPERIMENTAL AND WIP ***
+
+void AGAPlayerController::SellItem(AGAItem* item){
+	gaCharacter->Ressource += item->Value;
+	gaCharacter->InventoryItems.Remove(item);
+	UE_LOG(LogClass, Log, TEXT("*** PLAYER :: SOLD ITEM ***"));
+	item->Destroy();
+}
+void AGAPlayerController::BuyItem(AGAItem* item){
+	if (gaCharacter->Ressource - item->Value >= 0){
+		gaCharacter->Ressource -= item->Value;
+		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: BAUGHT ITEM ***"));
+	}
 }
 
 #pragma endregion

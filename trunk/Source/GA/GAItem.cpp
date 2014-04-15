@@ -7,5 +7,9 @@
 AGAItem::AGAItem(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	finishedDropAnimation = false;
+}
 
+void AGAItem::SetDropAnimationFinished(){
+	finishedDropAnimation = true;
 }
