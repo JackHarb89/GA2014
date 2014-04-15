@@ -12,7 +12,10 @@ UBTTask_FindEnemy::UBTTask_FindEnemy(const class FPostConstructInitializePropert
 
 EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
 {
-	APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+	APawn* PlayerPawn;
+	if (GetWorld()->GetFirstPlayerController() == NULL) return EBTNodeResult::Failed;
+
+	PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
 	if (PlayerPawn && MyAI && MyAI->GetPawn())
 	{
