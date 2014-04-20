@@ -11,6 +11,7 @@ AGAItem::AGAItem(const class FPostConstructInitializeProperties& PCIP)
 	finishedDropAnimation = false;
 	bReplicates = true;
 	bAlwaysRelevant = true;
+	bReplicateMovement = true;
 }
 
 void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
