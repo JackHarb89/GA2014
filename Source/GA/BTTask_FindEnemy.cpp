@@ -1,6 +1,7 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 
 #include "GA.h"
+#include "GACharacter.h"
 #include "BTTask_FindEnemy.h"
 
 
@@ -12,26 +13,21 @@ UBTTask_FindEnemy::UBTTask_FindEnemy(const class FPostConstructInitializePropert
 
 EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
 {
-	APawn* PlayerPawn;
+	
 	if (GetWorld()->GetFirstPlayerController() == NULL) return EBTNodeResult::Failed;
 
-	PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
-	if (PlayerPawn && MyAI && MyAI->GetPawn())
-	{
-		static int32 MAX_DISTANCE = 200;
-		FVector destination;
-		FVector distance = PlayerPawn->GetActorLocation() - MyAI->GetPawn()->GetActorLocation();
-		//MAX MOVEMENT IN THIS TASK
-		if (distance.X > MAX_DISTANCE){ distance.X = MAX_DISTANCE; }
-		if (distance.X < -MAX_DISTANCE){ distance.X = -MAX_DISTANCE; }
-		if (distance.Y > MAX_DISTANCE){ distance.Y = MAX_DISTANCE; }
-		if (distance.Y < -MAX_DISTANCE){ distance.Y = -MAX_DISTANCE; }
-
-		destination = distance + MyAI->GetPawn()->GetActorLocation();
-		OwnerComp->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), destination);
+	APawn* EnemyPawn = MyAI->GetPawn();
+	if (MyAI && EnemyPawn){
+		APawn* ClosestPlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
+		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) >
+				FVector::Dist(EnemyPawn->GetActorLocation(), ActorItr->GetActorLocation())){
+				ClosestPlayerPawn = *ActorItr;
+			}
+		}
+		OwnerComp->GetBlackboardComponent()->SetValueAsObject(GetSelectedBlackboardKey(), ClosestPlayerPawn);
 		return EBTNodeResult::Succeeded;
 	}
-
 	return EBTNodeResult::Failed;
 }

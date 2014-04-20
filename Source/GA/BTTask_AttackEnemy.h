@@ -14,4 +14,5 @@ class UBTTask_AttackEnemy : public UBTTask_BlackboardBase
 	GENERATED_UCLASS_BODY()
 
 	virtual EBTNodeResult::Type ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const OVERRIDE;
+
 };
