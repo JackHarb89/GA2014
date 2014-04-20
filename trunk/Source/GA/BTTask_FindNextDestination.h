@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include "BTTask_FindEnemy.generated.h"
+#include "AI/BehaviorTree/Tasks/BTTask_BlackboardBase.h"
+#include "BTTask_FindNextDestination.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UBTTask_FindEnemy : public UBTTask_BlackboardBase
+class UBTTask_FindNextDestination : public UBTTask_BlackboardBase
 {
 	GENERATED_UCLASS_BODY()
 

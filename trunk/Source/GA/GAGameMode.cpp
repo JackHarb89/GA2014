@@ -2,14 +2,26 @@
 
 #include "GA.h"
 #include "GAGameMode.h"
+#include "GAPlayerController.h"
+#include "GAGameState.h"
 
 AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
-{
-	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FObjectFinder<UClass> PlayerPawnBPClass(TEXT("Class'/Game/Blueprints/PlayerCharacter.PlayerCharacter_C'"));
-	if (PlayerPawnBPClass.Object != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Object;
-	}
+{	
+	playerCount = 0;
+
+	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Peddy/Characters/PlayerCharacter_peddy"));
+	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
+	PlayerControllerClass = AGAPlayerController::StaticClass();	
+	GameStateClass = AGAGameState::StaticClass();
 }
+
+#pragma region Player Spawn
+
+AActor* AGAGameMode::ChoosePlayerStart(AController* Player)
+{
+	APlayerStart* BestStart = PlayerStarts[playerCount];
+	playerCount++;
+	return BestStart;
+}
+#pragma endregion

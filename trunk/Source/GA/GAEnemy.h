@@ -28,21 +28,40 @@ class AGAEnemy : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Behavior)		class UBehaviorTree* EnemyBehavior;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Behavior)				class UBehaviorTree* EnemyBehavior;
 
 	// Loottable
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items)			TArray<FGameItem> LootTable;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Items)					TArray<FGameItem> LootTable;
 
 	// Enemy Stats
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)			int32 HealthPoints;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)			int32 Armor;
+	UPROPERTY(Replicated, EditAnywhere, Replicated, BlueprintReadWrite, Category = General)		int32 HealthPoints;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = General)					int32 Armor;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasTookDamage)								bool HasTookDamage;
 
 	// Simple Attack
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)	float SimpleAttackDamageMin;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)	float SimpleAttackDamageMax;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)	float SimpleAttackCoolDown;
-	float SimpleAttackCoolDownRestValue;
-	bool SimpleAttackOnCoolDown;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackDamageMin;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackDamageMax;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackCoolDown;
+
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SimpleAttackOnCoolDown)						bool SimpleAttackOnCoolDown;
+	UPROPERTY(Replicated)																		float SimpleAttackCoolDownRestValue;
+
+	// Events
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)								void CharacterAttackedSimple();
+	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)								void CharacterTookDamage();
+
+	UFUNCTION(reliable, server, WithValidation)													void ServerAttackSimple();
+	UFUNCTION(reliable, server, WithValidation)													void ServerReduceSimpleAttackCoolDown(float Delta);
+
+	UFUNCTION(reliable, server, WithValidation)													void ServerTakeDamageByEnemy(float Damage);
+	UFUNCTION(unreliable, server, WithValidation)												void ServerResetHasTookDamage();
+
+	UFUNCTION(reliable, server, WithValidation)													void ServerCheckItemDrop();
+
+	UFUNCTION()																					void OnRep_HasTookDamage();
+	UFUNCTION()																					void OnRep_SimpleAttackOnCoolDown();
+
+
 
 	void TakeDamageByEnemy(float Damage);
 	bool DealDamage();
@@ -55,6 +74,4 @@ class AGAEnemy : public ACharacter
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 	void SpawnAIController();
-	
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent) void CharacterTookDamage();
 };

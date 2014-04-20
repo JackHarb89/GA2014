@@ -3,6 +3,7 @@
 #include "GA.h"
 #include "BTTask_AttackEnemy.h"
 #include "GAEnemy.h"
+#include "GACharacter.h"
 
 
 UBTTask_AttackEnemy::UBTTask_AttackEnemy(const class FPostConstructInitializeProperties& PCIP)
@@ -14,12 +15,16 @@ UBTTask_AttackEnemy::UBTTask_AttackEnemy(const class FPostConstructInitializePro
 
 EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
 {
-	APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
-	if (PlayerPawn && MyAI && MyAI->GetPawn())
+	if (MyAI && MyAI->GetPawn())
 	{
-		static int32 MAX_ATTACK_RANGE = 100;
-		FVector PlayerLocation = PlayerPawn->GetActorLocation();
+		static int32 MAX_ATTACK_RANGE = 150;
+
+		FName PlayerKeyID = "Player";
+		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
+		AGACharacter* ClosestPlayerPawn = Cast<AGACharacter>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID));
+
+		FVector PlayerLocation = ClosestPlayerPawn->GetActorLocation();
 		FVector EnemyLocation = MyAI->GetPawn()->GetActorLocation();
 		AGAEnemy* enemy = (AGAEnemy*) MyAI->GetCharacter();
 
@@ -31,3 +36,4 @@ EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponen
 
 	return EBTNodeResult::Failed;
 }
+

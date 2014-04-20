@@ -54,21 +54,34 @@ class AGAEnemySpawn : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)		bool beTriggered;
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = General)		AGASpawnTrigger* Trigger;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "General")	bool beTriggered;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "General")	AGASpawnTrigger* Trigger;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Waves)		TArray<FWave> waves;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<FWave> waves;
 
-	float Time;
-	float WaveNumber;
-	float SpawnInterval;
-	bool AllowedToSpawn;
-	bool isInit;
+	UPROPERTY(Replicated)															float Time;
+	UPROPERTY(Replicated)															float WaveNumber;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasSpawnedEnemy)					bool HasSpawnedEnemy;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasFinishedWave)					bool HasFinishedWave;
+		
+	UPROPERTY(Replicated)															float SpawnInterval;
+	UPROPERTY(Replicated)															bool AllowedToSpawn;
+	UPROPERTY(Replicated)															bool isInit;
+
+	// Network
+	UFUNCTION(reliable, server, WithValidation)										void ServerSpawnEnemy(TSubclassOf<class AActor> enemyClass);
+	UFUNCTION(reliable, server, WithValidation)										void ServerSpawnWave();
+	UFUNCTION(reliable, server, WithValidation)										void ServerSetNextWaveStruct();
+	UFUNCTION(reliable, server, WithValidation)										void ServerResetHasFinishedWave();
+	UFUNCTION(reliable, server, WithValidation)										void ServerInitWave();
+	UFUNCTION(reliable, server, WithValidation)										void ServerCheckTrigger();
+
+	UFUNCTION()																		void OnRep_HasSpawnedEnemy();
+	UFUNCTION()																		void OnRep_HasFinishedWave();
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 
-	void InitFirstWave();
-	void SetSpawnInterval();
+	void InitWave();
 	void CheckTrigger();
 	void SetNextWaveStruct();
 	void SpawnWave();

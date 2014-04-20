@@ -79,21 +79,33 @@ struct FPlayerAura
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FStats
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float Armor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float AttackSpeed;
+};
+
 UCLASS()
 class AGAItem : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
 	FName ItemName;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			int32 Value;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			int32 Value;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGARarity::Type> Rarity;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGARarity::Type> Rarity;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;
 
-	UFUNCTION(BlueprintCallable, Category = "Drop Animation")				void SetDropAnimationFinished();
-	bool finishedDropAnimation;
+	UPROPERTY(Replicated)																bool finishedDropAnimation;
+
+	UFUNCTION(BlueprintCallable, Category = "Drop Animation")							void SetDropAnimationFinished();
+	UFUNCTION(reliable, server, WithValidation)											void ServerSetDropAnimationFinished();
 };

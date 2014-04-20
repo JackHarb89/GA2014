@@ -16,71 +16,10 @@ class AGAPlayerController : public APlayerController
 {
 	GENERATED_UCLASS_BODY()
 
-public:
-
-	// Items
-	void EquipItem(AGAItem* item);
-	void PickUpItem(AGAItem* item);
-
-	// Combat
-	void AttackSimple();
-	void AttackSpecial();
-	void ChargeSpecial();
-	void TakeDamageByEnemy(float Damage);
-	bool isAllowedToMove();
+public:	
 
 protected:
-
 	// Shop
 	void SellItem(AGAItem* item);
 	void BuyItem(AGAItem* item);
-
-	// Items
-	float ItemDamage;
-	float ItemHealth;
-
-	void CalculateItems();
-
-	// Attack Speed
-	float AttackSpeed;
-
-	// Simple Attack
-	float SimpleAttackCoolDownRestValue;
-	bool SimpleAttackOnCoolDown;
-
-	void ReduceSimpleAttackCoolDown(float DeltaTime);
-
-	// Special Attack
-	float SpecialAttackCoolDownRestValue;
-	float SpecialAttackChargeTimer;
-	int32 SpecialAttackTimesCharged;
-	bool SpecialAttackOnCoolDown;
-	bool SpecialAttackIsCharging;
-
-	void IncreaseChargeTime(float DeltaTime);
-	void ReduceSpecialAttackCoolDown(float DeltaTime);
-	float CalculateSpecialAttackDamage();
-
-	// Attack Range
-	bool IsInRange(AActor* target, float attackRange);
-
-	// Regeneration
-	bool AllowedToRegenerate;
-	float RegenerationTimer;
-	float MaxHealth;
-	float RegenerationTime;
-	void RegenerateHP(float DeltaTime);
-	void UseHealPotion();
-
-	// Init Controller
-	bool isInit;
-	void InitPlayer();
-
-	// General
-	void CheckDeath();
-	virtual void Tick(float DeltaTime) OVERRIDE;
-
-	// Character Reference
-	AGACharacter* gaCharacter;
-
 };
