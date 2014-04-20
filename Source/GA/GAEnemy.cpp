@@ -171,7 +171,6 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 
 		AGAItem* DropedItem = World->SpawnActor<AGAItem>(item, SpawnLocation, SpawnRotation, SpawnParams);
 		if (DropedItem != NULL) {
-			DropedItem->BeginPlay();
 			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED ITEM ***"));
 		}
 		else {
