@@ -4,6 +4,7 @@
 
 #include "GameFramework/Actor.h"
 #include "GASpawnTrigger.h"
+#include "GASpawnDestructible.h"
 #include "GAEnemySpawn.generated.h"
 
 
@@ -58,6 +59,7 @@ class AGAEnemySpawn : public AActor
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "General")	AGASpawnTrigger* Trigger;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<FWave> waves;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		AGASpawnDestructible* Destructible;
 
 	UPROPERTY(Replicated)															float Time;
 	UPROPERTY(Replicated)															float WaveNumber;
@@ -75,6 +77,7 @@ class AGAEnemySpawn : public AActor
 	UFUNCTION(reliable, server, WithValidation)										void ServerResetHasFinishedWave();
 	UFUNCTION(reliable, server, WithValidation)										void ServerInitWave();
 	UFUNCTION(reliable, server, WithValidation)										void ServerCheckTrigger();
+	UFUNCTION(reliable, server, WithValidation)										void ServerDestroySpawn();
 
 	UFUNCTION()																		void OnRep_HasSpawnedEnemy();
 	UFUNCTION()																		void OnRep_HasFinishedWave();
@@ -83,6 +86,7 @@ class AGAEnemySpawn : public AActor
 
 	void InitWave();
 	void CheckTrigger();
+	void DestroySpawn();
 	void SetNextWaveStruct();
 	void SpawnWave();
 	void SpawnEnemy(TSubclassOf<class AActor> enemyClass);

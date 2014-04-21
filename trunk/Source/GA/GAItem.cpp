@@ -8,6 +8,8 @@
 AGAItem::AGAItem(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	IsMoney = false;
+
 	finishedDropAnimation = false;
 	bReplicates = true;
 	bAlwaysRelevant = true;
