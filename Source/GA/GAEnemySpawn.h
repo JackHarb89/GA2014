@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "GASpawnTrigger.h"
 #include "GASpawnDestructible.h"
+#include "GAEnemySpawnLocation.h"
 #include "GAEnemySpawn.generated.h"
 
 
@@ -17,6 +18,7 @@ struct FWave
 	GENERATED_USTRUCT_BODY();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Waves)		int32 NumberEnemy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Waves)		int32 NumberEnemySameTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Waves)		UBlueprint* SmallEnemy;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Waves)		UBlueprint* NormalEnemy;
@@ -58,8 +60,10 @@ class AGAEnemySpawn : public AActor
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "General")	bool beTriggered;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "General")	AGASpawnTrigger* Trigger;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<FWave> waves;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<AGAEnemySpawnLocation*> SpawnLocations;
+	UPROPERTY(Replicated, Transient)												TArray<AGAEnemySpawnLocation*> SpawnLocationsRemaining;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		AGASpawnDestructible* Destructible;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<FWave> Waves;
 
 	UPROPERTY(Replicated)															float Time;
 	UPROPERTY(Replicated)															float WaveNumber;
