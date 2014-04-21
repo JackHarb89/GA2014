@@ -482,6 +482,8 @@ void AGACharacter::SellItem(AGAItem* item){
 		else if (item == EquipItems.Trinket01) EquipItems.Trinket01 = nullptr;
 		else if (item == EquipItems.Weapon) EquipItems.Weapon = nullptr;
 		if (InventoryItems.Contains(item)) InventoryItems.Remove(item);
+
+		item->Destroy();
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: SOLD ITEM ***"));
 	}
 }
