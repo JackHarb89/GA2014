@@ -26,6 +26,11 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated)																	float ItemDamage;
 	UPROPERTY(Replicated)																	float ItemHealth;
 
+	// Potion
+	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "Potion")	int32 Potions;
+	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "Potion")	float PotionCoolDown;
+	UPROPERTY(Replicated)																	float PotionCoolDownRestValue;
+
 	// Attack Speed
 	UPROPERTY(Replicated)																	float AttackSpeed;
 
@@ -76,6 +81,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasDied)									bool HasDied;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasPickedUpItem)							bool HasPickedUpItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasEquipedItem)							bool HasEquipedItem;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasUsedPotion)							bool HasUsedPotion;
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
 	
 	// EVENTS
@@ -88,6 +94,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterFinishedRegeneration();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterPickedUpItem();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterEquipedItem();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterUsedPotion();
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -115,6 +122,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateItems();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasPickedUpItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasEquipedItem();
+	UFUNCTION(reliable, server, WithValidation)												void ServerUsePotion();
+	UFUNCTION(reliable, server, WithValidation)												void ServerReducePotionCoolDown(float Delta);
 
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackOnCoolDown();
@@ -124,16 +133,22 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasTookDamage();
 	UFUNCTION()																				void OnRep_HasDied();
 	UFUNCTION()																				void OnRep_HasPickedUpItem();
-	UFUNCTION()																				void OnRep_HasEquipedItem();
+	UFUNCTION()																				void OnRep_HasEquipedItem(); 
+	UFUNCTION()																				void OnRep_HasUsedPotion();
 
 	void TakeDamageByEnemy(float Damage);
 
 
 protected:
+
 	// Items
 	void EquipItem(AGAItem* item);
 	void PickUpItem(AGAItem* item);
 	void CalculateItems();
+
+	// Potion
+	void UsePotion();
+	void ReducePotionCoolDown(float Delta);
 
 	// Input Settings
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
