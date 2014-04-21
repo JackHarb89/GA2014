@@ -3,6 +3,7 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "GAItem.h"
+#include "GAShop.h"
 #include "GACharacter.generated.h"
 
 USTRUCT(BlueprintType)
@@ -21,7 +22,12 @@ UCLASS()
 class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
-	
+
+	// Shop
+	UClass* ShopClass;
+	UPROPERTY(Replicated)																	AGAShop* Shop;
+	UPROPERTY(Replicated)																	AGAItem* ShopItem;
+
 	// Items
 	UPROPERTY(Replicated)																	float ItemDamage;
 	UPROPERTY(Replicated)																	float ItemHealth;
@@ -124,6 +130,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasEquipedItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerUsePotion();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReducePotionCoolDown(float Delta);
+	UFUNCTION(reliable, server, WithValidation)												void ServerBuyItem();
+	UFUNCTION(reliable, server, WithValidation)												void ServerSellItem(AGAItem* item);
 
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackOnCoolDown();
@@ -145,6 +153,11 @@ protected:
 	void EquipItem(AGAItem* item);
 	void PickUpItem(AGAItem* item);
 	void CalculateItems();
+	void BuyItem();
+	void SellItem(AGAItem* item);
+
+	// *** TEMPORARY DUE TO NO UI ***
+	void SellLastItem();
 
 	// Potion
 	void UsePotion();

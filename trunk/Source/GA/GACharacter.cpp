@@ -99,6 +99,11 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Shop
+	static ConstructorHelpers::FObjectFinder<UBlueprint> ShopBP(TEXT("/Game/Blueprints/Shop.Shop"));
+	ShopClass = (UClass*)ShopBP.Object->GeneratedClass;
+
 }
 
 void AGACharacter::InitPlayer(){
@@ -106,6 +111,19 @@ void AGACharacter::InitPlayer(){
 	SpecialAttackCoolDownRestValue = SpecialAttackCoolDown;
 	PotionCoolDownRestValue = PotionCoolDown;
 	MaxHealth = HealthPoints + ItemHealth;
+
+
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = Instigator;
+	SpawnParams.bNoCollisionFail = true;
+
+	FVector SpawnLocation = this->GetActorLocation();
+	FRotator SpawnRotation = this->GetActorRotation();
+	
+	// Shop
+	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass,SpawnLocation,SpawnRotation,SpawnParams);
 	
 	isInit = true;
 }
@@ -131,6 +149,10 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
 	InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
 	InputComponent->BindAction("UsePotion", IE_Pressed, this, &AGACharacter::UsePotion);
+
+	// Shop
+	InputComponent->BindAction("BuyItem", IE_Pressed, this, &AGACharacter::BuyItem);
+	InputComponent->BindAction("SellItem", IE_Pressed, this, &AGACharacter::SellLastItem);
 
 	// Movement & Camera
 	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
@@ -426,6 +448,43 @@ void AGACharacter::CheckDeath(){
 #pragma endregion
 
 #pragma region Items
+
+void AGACharacter::BuyItem(){
+	if (Role < ROLE_Authority){
+		ServerBuyItem();
+	}
+	else{
+		if(Ressource >= Shop->ItemCost){
+			AGAItem* ShopItem = Shop->BuyItem();
+			Ressource -= Shop->ItemCost;
+			PickUpItem(ShopItem);
+		}
+	}
+}
+
+// *** TEMPORARY DUE TO NO UI ***
+void AGACharacter::SellLastItem(){
+	if (InventoryItems.Num()>0){
+		SellItem(InventoryItems.Last());
+	}
+}
+
+void AGACharacter::SellItem(AGAItem* item){
+	if (Role < ROLE_Authority){
+		ServerSellItem(item);
+	}
+	else{
+		Ressource += item->Value;
+
+		// Safe Remove
+		if (item == EquipItems.Chest) EquipItems.Chest = nullptr;
+		else if (item == EquipItems.Trinket00) EquipItems.Trinket00 = nullptr;
+		else if (item == EquipItems.Trinket01) EquipItems.Trinket01 = nullptr;
+		else if (item == EquipItems.Weapon) EquipItems.Weapon = nullptr;
+		if (InventoryItems.Contains(item)) InventoryItems.Remove(item);
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: SOLD ITEM ***"));
+	}
+}
 
 void AGACharacter::CalculateItems(){
 	if (Role < ROLE_Authority){
@@ -739,6 +798,12 @@ void AGACharacter::OnRep_HasEquipedItem(){
 	}
 }
 
+bool AGACharacter::ServerBuyItem_Validate(){return true;}
+void AGACharacter::ServerBuyItem_Implementation(){BuyItem();}
+
+bool AGACharacter::ServerSellItem_Validate(AGAItem* item){return true;}
+void AGACharacter::ServerSellItem_Implementation(AGAItem* item){SellItem(item);}
+
 bool AGACharacter::ServerPickUpItem_Validate(AGAItem* item){return true;}
 void AGACharacter::ServerPickUpItem_Implementation(AGAItem* item){PickUpItem(item);}
 
@@ -785,6 +850,9 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, RegenerationTime);
 	DOREPLIFETIME(AGACharacter, HasTookDamage);
 	DOREPLIFETIME(AGACharacter, HasDied);
+
+	// Shop
+	DOREPLIFETIME(AGACharacter, Shop);
 
 	// Items	
 	DOREPLIFETIME(AGACharacter, Potions);
