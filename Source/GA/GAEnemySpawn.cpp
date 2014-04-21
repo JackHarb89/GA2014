@@ -135,7 +135,7 @@ void AGAEnemySpawn::SpawnWave(){
 		for (int32 i = 0; i < SpawnLocations.Num(); i++){
 			SpawnLocationsRemaining.Add(SpawnLocations[i]);
 		}
-		while (SpawnedEnemies < waveStruct->NumberEnemySameTime){
+		while (SpawnedEnemies < waveStruct->NumberEnemySameTime && SpawnLocationsRemaining.Num()>0){
 			const float randomSmallEnemy = FMath::FRandRange(0, waveStruct->SmallEnemyChance);
 			const float randomNormalEnemy = FMath::FRandRange(0, waveStruct->NormalEnemyChance);
 			const float randomBigEnemy = FMath::FRandRange(0, waveStruct->BigEnemyChance);
