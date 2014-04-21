@@ -151,11 +151,10 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 
 		AGAItem* DropedItem = World->SpawnActor<AGAItem>(item, SpawnLocation, SpawnRotation, SpawnParams);
 		if (DropedItem != NULL) {
-			if (DropedItem->IsMoney){
-				UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED MONEY (%f.2) ***"), DropedItem->Value);
-			}
-			else{
-				switch (DropedItem->Slot){
+			switch (DropedItem->Slot){
+				case(EGASlot::GAMoney) :
+					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED MONEY (%f) ***"), DropedItem->Value);
+					break;
 				case(EGASlot::GAHead) :
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED HEAD ***"));
 					break;
@@ -168,7 +167,6 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 				case(EGASlot::GAWeapon) :
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED WEAPON ***"));
 					break;
-				}
 			}
 		}
 		else {

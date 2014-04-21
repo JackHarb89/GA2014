@@ -511,10 +511,10 @@ void AGACharacter::PickUpItem(AGAItem* item){
 	if(InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
 		TouchedItem = item;
 		HasPickedUpItem = true;
-		if (item->IsMoney){
+		if (item->Slot == EGASlot::GAMoney){
 			Ressource += item->Value;
 			item->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP %f.2 Money (%f.2) ***"), item->Value, Ressource);
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP %f Money (%f) ***"), item->Value, Ressource);
 		}
 		else{
 			InventoryItems.Add(item);
@@ -652,10 +652,10 @@ void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
 void AGACharacter::OnRep_HasPickedUpItem(){
 	if (HasPickedUpItem){
-		if (TouchedItem->IsMoney){
+		if (TouchedItem->Slot = EGASlot::GAMoney){
 			Ressource += TouchedItem->Value;
 			TouchedItem->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP %f.2 Money (%f.2) ***"), TouchedItem->Value, Ressource);
+			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP %f Money (%f) ***"), TouchedItem->Value, Ressource);
 		}
 		else{
 			TouchedItem->DestroyConstructedComponents();

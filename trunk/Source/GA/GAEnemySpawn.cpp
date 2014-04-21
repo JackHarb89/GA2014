@@ -27,7 +27,7 @@ void AGAEnemySpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Out
 	// General
 	DOREPLIFETIME(AGAEnemySpawn, Time);
 	DOREPLIFETIME(AGAEnemySpawn, isInit);
-	DOREPLIFETIME(AGAEnemySpawn, waves);
+	DOREPLIFETIME(AGAEnemySpawn, Waves);
 
 	// Single Spawn
 	DOREPLIFETIME(AGAEnemySpawn, HasSpawnedEnemy); 
@@ -96,7 +96,7 @@ void AGAEnemySpawn::InitWave(){
 	}
 	else{
 		Destructible->SetOwner(this);
-		FWave* waveStruct = &waves[WaveNumber];
+		FWave* waveStruct = &Waves[WaveNumber];
 		SpawnInterval = waveStruct->SpawnInterval;
 		isInit = true;
 	}
@@ -107,9 +107,9 @@ void AGAEnemySpawn::SetNextWaveStruct(){
 		ServerSetNextWaveStruct();
 	}
 	else{
-		FWave* waveStruct = &waves[WaveNumber];
+		FWave* waveStruct = &Waves[WaveNumber];
 		if (waveStruct->isWaveFinished()){
-			if (WaveNumber < waves.Num() - 1){
+			if (WaveNumber < Waves.Num() - 1){
 				UE_LOG(LogClass, Log, TEXT("*** SERVER :: FINISHED WAVE %d ***"), WaveNumber);
 				WaveNumber++;
 				HasFinishedWave = true;
@@ -125,31 +125,38 @@ void AGAEnemySpawn::SpawnWave(){
 	}
 	else{
 		// Stop If No Wave Data
-		if (waves.GetData() == NULL) return;
+		if (Waves.GetData() == NULL) return;
 
-		FWave* waveStruct = &waves[WaveNumber];
-
+		FWave* waveStruct = &Waves[WaveNumber];
 
 		if (waveStruct->isWaveFinished()) return;
-		HasSpawnedEnemy = false;
-
-		const float randomSmallEnemy = FMath::FRandRange(0, waveStruct->SmallEnemyChance);
-		const float randomNormalEnemy = FMath::FRandRange(0, waveStruct->NormalEnemyChance);
-		const float randomBigEnemy = FMath::FRandRange(0, waveStruct->BigEnemyChance);
-
-		float MaxValue = FMath::Max3(randomSmallEnemy, randomNormalEnemy, randomBigEnemy);
-
-		if (MaxValue == randomSmallEnemy) {
-			SpawnEnemy(waveStruct->getSmallEnemy());
-			waveStruct->NumberEnemy--;
+		int32 SpawnedEnemies = 0;
+		SpawnLocationsRemaining.Empty();
+		for (int32 i = 0; i < SpawnLocations.Num(); i++){
+			SpawnLocationsRemaining.Add(SpawnLocations[i]);
 		}
-		else if (MaxValue == randomNormalEnemy){
-			SpawnEnemy(waveStruct->getNormalEnemy());
-			waveStruct->NumberEnemy--;
-		}
-		else if (MaxValue == randomBigEnemy){
-			SpawnEnemy(waveStruct->getBigEnemy());
-			waveStruct->NumberEnemy--;
+		while (SpawnedEnemies < waveStruct->NumberEnemySameTime){
+			const float randomSmallEnemy = FMath::FRandRange(0, waveStruct->SmallEnemyChance);
+			const float randomNormalEnemy = FMath::FRandRange(0, waveStruct->NormalEnemyChance);
+			const float randomBigEnemy = FMath::FRandRange(0, waveStruct->BigEnemyChance);
+
+			float MaxValue = FMath::Max3(randomSmallEnemy, randomNormalEnemy, randomBigEnemy);
+			if (MaxValue == randomSmallEnemy && waveStruct->NumberEnemy > 0){
+				HasSpawnedEnemy = false;
+				SpawnEnemy(waveStruct->getSmallEnemy());
+				waveStruct->NumberEnemy--;
+			}
+			else if (MaxValue == randomNormalEnemy && waveStruct->NumberEnemy > 0){
+				HasSpawnedEnemy = false;
+				SpawnEnemy(waveStruct->getNormalEnemy());
+				waveStruct->NumberEnemy--;
+			}
+			else if (MaxValue == randomBigEnemy && waveStruct->NumberEnemy > 0){
+				HasSpawnedEnemy = false;
+				SpawnEnemy(waveStruct->getBigEnemy());
+				waveStruct->NumberEnemy--;
+			}
+			SpawnedEnemies++;
 		}
 	}
 }
@@ -173,8 +180,12 @@ void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> enemyClass){
 			FVector SpawnLocation;
 			FRotator SpawnRotation;
 
-			SpawnLocation = this->GetActorLocation();
-			SpawnRotation = this->GetActorRotation();
+			int32 randomIndex = FMath::RandRange(0, SpawnLocationsRemaining.Num() - 1);
+			
+			SpawnLocation = SpawnLocationsRemaining[randomIndex]->GetActorLocation();
+			SpawnRotation = SpawnLocationsRemaining[randomIndex]->GetActorRotation();
+
+			SpawnLocationsRemaining.RemoveAt(randomIndex);
 
 			AGAEnemy* enemy = World->SpawnActor<AGAEnemy>(enemyClass, SpawnLocation, SpawnRotation, SpawnParams);
 			if (enemy != NULL) {

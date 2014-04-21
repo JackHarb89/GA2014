@@ -18,7 +18,7 @@ EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponen
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
 	if (MyAI && MyAI->GetPawn())
 	{
-		static int32 MAX_ATTACK_RANGE = 150;
+		static int32 MAX_ATTACK_RANGE = 200;
 
 		FName PlayerKeyID = "Player";
 		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);

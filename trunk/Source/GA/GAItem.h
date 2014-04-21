@@ -25,6 +25,7 @@ namespace EGASlot
 {
 	enum Type
 	{
+		GAMoney			UMETA(DisplayName = "Money"),
 		GAHead 			UMETA(DisplayName = "Head"),
 		GAChest 		UMETA(DisplayName = "Chest"),
 		GAWeapon		UMETA(DisplayName = "Weapon"),
@@ -96,11 +97,10 @@ class AGAItem : public AActor
 
 	FName ItemName;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			int32 ItemID;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGASlot::Type> Slot; 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			bool IsMoney;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGASlot::Type> Slot;
 	
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGARarity::Type> Rarity;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			int32 Value;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			float Value;
 	
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Player")	FPlayerAura AuraPlayer;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Group")	FGroupAura AuraGroup;

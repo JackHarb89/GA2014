@@ -30,7 +30,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated)																	float AttackSpeed;
 
 	// Ressource
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Ressource")			int32 Ressource;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Ressource")			float Ressource;
 
 	// Equip
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")				FEquipment EquipItems;
