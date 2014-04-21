@@ -114,26 +114,6 @@ bool AGAEnemy::IsInRange(AActor* target){
 
 #pragma endregion
 
-#pragma region Network - Attack Simple
-
-void AGAEnemy::OnRep_SimpleAttackOnCoolDown(){
-	if (SimpleAttackOnCoolDown){
-		CharacterAttackedSimple();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SIMPLE ***"));
-	}
-	else{
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACK OFF COOL DOWN ***"));
-	}
-}
-
-bool AGAEnemy::ServerReduceSimpleAttackCoolDown_Validate(float Delta){return true;}
-void AGAEnemy::ServerReduceSimpleAttackCoolDown_Implementation(float Delta){ReduceSimpleAttackCoolDown(Delta);}
-
-bool AGAEnemy::ServerAttackSimple_Validate(){return true;}
-void AGAEnemy::ServerAttackSimple_Implementation(){AttackSimple();}
-
-#pragma endregion
-
 #pragma region Item
 
 void AGAEnemy::CheckItemDrop(){
@@ -171,7 +151,25 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 
 		AGAItem* DropedItem = World->SpawnActor<AGAItem>(item, SpawnLocation, SpawnRotation, SpawnParams);
 		if (DropedItem != NULL) {
-			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED ITEM ***"));
+			if (DropedItem->IsMoney){
+				UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED MONEY (%f.2) ***"), DropedItem->Value);
+			}
+			else{
+				switch (DropedItem->Slot){
+				case(EGASlot::GAHead) :
+					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED HEAD ***"));
+					break;
+				case(EGASlot::GAChest) :
+					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED CHEST ***"));
+					break;
+				case(EGASlot::GATrinket) :
+					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED TRINKET ***"));
+					break;
+				case(EGASlot::GAWeapon) :
+					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED WEAPON ***"));
+					break;
+				}
+			}
 		}
 		else {
 			UE_LOG(LogClass, Warning, TEXT("*** CLIENT :: FAILED TO  DROP ITEM ***"));
@@ -199,6 +197,27 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 }
 
 #pragma endregion
+
+#pragma region Network - Attack Simple
+
+void AGAEnemy::OnRep_SimpleAttackOnCoolDown(){
+	if (SimpleAttackOnCoolDown){
+		CharacterAttackedSimple();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SIMPLE ***"));
+	}
+	else{
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACK OFF COOL DOWN ***"));
+	}
+}
+
+bool AGAEnemy::ServerReduceSimpleAttackCoolDown_Validate(float Delta){ return true; }
+void AGAEnemy::ServerReduceSimpleAttackCoolDown_Implementation(float Delta){ ReduceSimpleAttackCoolDown(Delta); }
+
+bool AGAEnemy::ServerAttackSimple_Validate(){ return true; }
+void AGAEnemy::ServerAttackSimple_Implementation(){ AttackSimple(); }
+
+#pragma endregion
+
 
 #pragma region Network - Item
 

@@ -5,6 +5,7 @@
 #include "GAEnemy.h"
 #include "GAPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "GASpawnDestructible.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGACharacter
@@ -191,8 +192,15 @@ void AGACharacter::AttackSimple(){
 		// Set Cool Down
 		SimpleAttackOnCoolDown = true;
 
-		// Find Actor To Deal Damage
+		// Find Enemy To Deal Damage
 		for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			if (IsInRange(*ActorItr, SimpleAttackRange)){
+				ActorItr->TakeDamageByEnemy(SimpleAttackDamage + ItemDamage);
+			}
+		}
+
+		// Find Destructible To Deal Damage
+		for (TActorIterator<AGASpawnDestructible> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			if (IsInRange(*ActorItr, SimpleAttackRange)){
 				ActorItr->TakeDamageByEnemy(SimpleAttackDamage + ItemDamage);
 			}
@@ -503,10 +511,17 @@ void AGACharacter::PickUpItem(AGAItem* item){
 	if(InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
 		TouchedItem = item;
 		HasPickedUpItem = true;
-		InventoryItems.Add(item);
-		item->DestroyConstructedComponents();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-		EquipItem(item);
+		if (item->IsMoney){
+			Ressource += item->Value;
+			item->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP %f.2 Money (%f.2) ***"), item->Value, Ressource);
+		}
+		else{
+			InventoryItems.Add(item);
+			item->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
+			EquipItem(item);
+		}
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
 }
@@ -637,10 +652,17 @@ void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
 void AGACharacter::OnRep_HasPickedUpItem(){
 	if (HasPickedUpItem){
-		TouchedItem->DestroyConstructedComponents();
-		CharacterPickedUpItem();
-		ServerResetHasPickedUpItem();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP ITEM ***"));
+		if (TouchedItem->IsMoney){
+			Ressource += TouchedItem->Value;
+			TouchedItem->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP %f.2 Money (%f.2) ***"), TouchedItem->Value, Ressource);
+		}
+		else{
+			TouchedItem->DestroyConstructedComponents();
+			CharacterPickedUpItem();
+			ServerResetHasPickedUpItem();
+			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP ITEM ***"));
+		}
 	}
 }
 void AGACharacter::OnRep_HasEquipedItem(){

@@ -95,14 +95,15 @@ class AGAItem : public AActor
 	GENERATED_UCLASS_BODY()
 
 	FName ItemName;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			int32 ItemID;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			int32 Value;
-
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGARarity::Type> Rarity;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Item)			TEnumAsByte<EGASlot::Type> Slot;
-
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		FPlayerAura AuraPlayer;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		FGroupAura AuraGroup;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			int32 ItemID;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGASlot::Type> Slot; 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			bool IsMoney;
+	
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGARarity::Type> Rarity;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			int32 Value;
+	
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Player")	FPlayerAura AuraPlayer;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Group")	FGroupAura AuraGroup;
 
 	UPROPERTY(Replicated)																bool finishedDropAnimation;
 

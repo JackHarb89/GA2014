@@ -37,6 +37,7 @@ void AGAEnemySpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Out
 	DOREPLIFETIME(AGAEnemySpawn, HasFinishedWave); 
 	DOREPLIFETIME(AGAEnemySpawn, WaveNumber);
 	DOREPLIFETIME(AGAEnemySpawn, SpawnInterval);
+	DOREPLIFETIME(AGAEnemySpawn, Destructible);
 
 	// Trigger
 	DOREPLIFETIME(AGAEnemySpawn, beTriggered);
@@ -47,9 +48,7 @@ void AGAEnemySpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Out
 void AGAEnemySpawn::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
 	Time += DeltaTime;
-
 	if (!isInit) InitWave();
-
 	CheckTrigger();
 	SetNextWaveStruct();							// Check Wave Clear
 	
@@ -59,7 +58,18 @@ void AGAEnemySpawn::Tick(float DeltaTime){
 	}
 
 }
+#pragma region Check Destructible
 
+void AGAEnemySpawn::DestroySpawn(){
+	if (Role < ROLE_Authority){
+		ServerDestroySpawn();
+	}
+	else {
+		this->Destroy();
+	}
+}
+
+#pragma endregion
 
 #pragma region Check Trigger
 
@@ -85,6 +95,7 @@ void AGAEnemySpawn::InitWave(){
 		ServerInitWave();
 	}
 	else{
+		Destructible->SetOwner(this);
 		FWave* waveStruct = &waves[WaveNumber];
 		SpawnInterval = waveStruct->SpawnInterval;
 		isInit = true;
@@ -218,5 +229,12 @@ void AGAEnemySpawn::ServerResetHasFinishedWave_Implementation(){ HasFinishedWave
 
 bool AGAEnemySpawn::ServerCheckTrigger_Validate(){return true;}
 void AGAEnemySpawn::ServerCheckTrigger_Implementation(){CheckTrigger();}
+
+#pragma endregion
+
+#pragma region Network - Check Destructible
+
+bool AGAEnemySpawn::ServerDestroySpawn_Validate(){ return true; }
+void AGAEnemySpawn::ServerDestroySpawn_Implementation(){ DestroySpawn(); }
 
 #pragma endregion
