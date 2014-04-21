@@ -15,9 +15,14 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 {
 
 	isInit = false;
+
 	// Equip
 	ItemDamage = 0;
 	ItemHealth = 0;
+
+	// Potion
+	Potions = 0;
+	PotionCoolDown = 10;
 
 	HasEquipedItem = false; 
 	HasPickedUpItem = false;
@@ -99,6 +104,7 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 void AGACharacter::InitPlayer(){
 	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
 	SpecialAttackCoolDownRestValue = SpecialAttackCoolDown;
+	PotionCoolDownRestValue = PotionCoolDown;
 	MaxHealth = HealthPoints + ItemHealth;
 	
 	isInit = true;
@@ -112,6 +118,7 @@ void AGACharacter::Tick(float Delta){
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
 	RegenerateHealth(Delta);
+	ReducePotionCoolDown(Delta);
 	CheckDeath();
 }
 
@@ -123,6 +130,7 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
 	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
 	InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
+	InputComponent->BindAction("UsePotion", IE_Pressed, this, &AGACharacter::UsePotion);
 
 	// Movement & Camera
 	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
@@ -648,6 +656,64 @@ void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
 #pragma endregion
 
+#pragma region Potion
+
+void AGACharacter::UsePotion(){
+	if (Role < ROLE_Authority){
+		ServerUsePotion();
+	}
+	else{
+		if (Potions > 0 && HealthPoints < MaxHealth && !HasUsedPotion){
+			HealthPoints += 50;
+			Potions--; 
+			HasUsedPotion = true;
+			if (HealthPoints > MaxHealth){HealthPoints = MaxHealth;}
+			CharacterUsedPotion();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: USED POTION ***"));
+		}
+	}
+}
+
+void AGACharacter::ReducePotionCoolDown(float Delta){
+	if (Role < ROLE_Authority){
+		ServerReducePotionCoolDown(Delta);
+	}
+	else{
+		if (HasUsedPotion){
+			PotionCoolDown -= Delta;
+			if (PotionCoolDown <= 0){
+				PotionCoolDown = PotionCoolDownRestValue;
+				HasUsedPotion = false;
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: POTION OFF COOLDOWN ***"));
+			}
+		}
+	}
+
+}
+
+#pragma endregion
+
+#pragma region Network - Potion
+
+void AGACharacter::OnRep_HasUsedPotion(){
+	if (HasUsedPotion){
+		CharacterUsedPotion();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: USED POTION ***"));
+	}
+	else
+	{
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: POTION OFF COOLDOWN ***"));
+	}
+}
+
+bool AGACharacter::ServerUsePotion_Validate(){return true;}
+void AGACharacter::ServerUsePotion_Implementation(){UsePotion();}
+
+bool AGACharacter::ServerReducePotionCoolDown_Validate(float Delta){return true;}
+void AGACharacter::ServerReducePotionCoolDown_Implementation(float Delta){ReducePotionCoolDown(Delta);}
+
+#pragma endregion
+
 #pragma region Network - Items
 
 void AGACharacter::OnRep_HasPickedUpItem(){
@@ -720,7 +786,9 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, HasTookDamage);
 	DOREPLIFETIME(AGACharacter, HasDied);
 
-	// Items
+	// Items	
+	DOREPLIFETIME(AGACharacter, Potions);
+	DOREPLIFETIME(AGACharacter, HasUsedPotion);
 	DOREPLIFETIME(AGACharacter, HasPickedUpItem);
 	DOREPLIFETIME(AGACharacter, HasEquipedItem);
 	DOREPLIFETIME(AGACharacter, EquipItems);
