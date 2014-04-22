@@ -62,6 +62,8 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	RegenerationRate = 1;
 	RegenerationAmount = 5;	
 
+	ArmorReductionPercent = 0.25;
+	
 	HasTookDamage = false;
 	HasDied = false;
 	
@@ -427,7 +429,8 @@ void AGACharacter::TakeDamageByEnemy(float Damage){
 		RegenerationTimer = 0;
 		RegenerationTime = 0;
 		CharacterFinishedRegeneration();
-		HealthPoints -= Damage;
+		HealthPoints -= (Damage - (Armor * ArmorReductionPercent * Damage) / 100);
+
 		HasTookDamage = true;
 		CharacterTookDamage();
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
@@ -538,6 +541,7 @@ void AGACharacter::CalculateItems(){
 
 		// Armor
 		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) * PercentBonus.PercentArmor / 100;
+		ArmorReduction = Armor * ArmorReductionPercent;
 
 		// Movement Speed
 		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed * (PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent) / 100;

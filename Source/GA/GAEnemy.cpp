@@ -11,6 +11,7 @@
 AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	Armor = 0;
 	HealthPoints = 100;
 
 	HasTookDamage = false;
@@ -184,7 +185,7 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else{
-		HealthPoints -= Damage;
+		HealthPoints -= (Damage - (Armor*0.25*Damage)/100);
 		HasTookDamage = true;
 		CharacterTookDamage();
 		if (HealthPoints <= 0){
@@ -215,7 +216,6 @@ bool AGAEnemy::ServerAttackSimple_Validate(){ return true; }
 void AGAEnemy::ServerAttackSimple_Implementation(){ AttackSimple(); }
 
 #pragma endregion
-
 
 #pragma region Network - Item
 
