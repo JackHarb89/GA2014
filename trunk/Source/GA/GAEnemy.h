@@ -39,16 +39,17 @@ class AGAEnemy : public ACharacter
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasTookDamage)								bool HasTookDamage;
 
 	// Simple Attack
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackDamageMin;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackDamageMax;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = SimpleAttack)			float SimpleAttackCoolDown;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackDamageMin;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackDamageMax;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackCoolDown;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackRange;
 
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SimpleAttackOnCoolDown)						bool SimpleAttackOnCoolDown;
 	UPROPERTY(Replicated)																		float SimpleAttackCoolDownRestValue;
 
 	// Events
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)								void CharacterAttackedSimple();
-	UFUNCTION(BlueprintImplementableEvent, Category = CombatEvent)								void CharacterTookDamage();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterAttackedSimple();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterTookDamage();
 
 	UFUNCTION(reliable, server, WithValidation)													void ServerAttackSimple();
 	UFUNCTION(reliable, server, WithValidation)													void ServerReduceSimpleAttackCoolDown(float Delta);
@@ -71,6 +72,10 @@ class AGAEnemy : public ACharacter
 	bool IsInRange(AActor* target);
 	void CheckItemDrop();
 	void DropItem(TSubclassOf<class AActor> item);
+
+	// Init
+	void InitPlayer();
+	bool isInit;
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 	void SpawnAIController();
