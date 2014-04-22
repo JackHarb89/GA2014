@@ -11,6 +11,9 @@
 AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+
+	isInit = false;
+
 	Armor = 0;
 	HealthPoints = 100;
 
@@ -23,8 +26,8 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	SimpleAttackDamageMin = 25;
 	SimpleAttackDamageMax = 25;
 	SimpleAttackCoolDown = 0.75;
-	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
 	SimpleAttackOnCoolDown = false;
+	SimpleAttackRange = 200;
 
 	// Replicate to Server / Clients
 	bReplicates = true;
@@ -32,7 +35,13 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 
 void AGAEnemy::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
+	if (!isInit) InitPlayer();
 	ReduceSimpleAttackCoolDown(DeltaTime);
+}
+
+void AGAEnemy::InitPlayer(){
+	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
+	isInit = true;
 }
 
 void AGAEnemy::SpawnAIController(){
@@ -108,7 +117,7 @@ bool AGAEnemy::IsInRange(AActor* target){
 	FVector targetLocation = target->GetActorLocation();
 
 	// Calculate Distance		*** WIP ***
-	if (abs(playerLocation.X - targetLocation.X) < 100 && abs(playerLocation.Y - targetLocation.Y) < 100){ return true; }
+	if (abs(playerLocation.X - targetLocation.X) < SimpleAttackRange && abs(playerLocation.Y - targetLocation.Y) < SimpleAttackRange){ return true; }
 	return false;
 }
 
@@ -256,6 +265,7 @@ void AGAEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 	DOREPLIFETIME(AGAEnemy, SimpleAttackDamageMin);
 	DOREPLIFETIME(AGAEnemy, SimpleAttackDamageMax);
 	DOREPLIFETIME(AGAEnemy, SimpleAttackCoolDown);
+	DOREPLIFETIME(AGAEnemy, SimpleAttackRange);
 
 	DOREPLIFETIME(AGAEnemy, EnemyBehavior);
 }
