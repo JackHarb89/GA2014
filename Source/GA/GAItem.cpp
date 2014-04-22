@@ -23,8 +23,9 @@ void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 	DOREPLIFETIME(AGAItem, Value);
 	DOREPLIFETIME(AGAItem, Rarity);
 	DOREPLIFETIME(AGAItem, Slot);
+	DOREPLIFETIME(AGAItem, ItemStats);
 	DOREPLIFETIME(AGAItem, AuraPlayer);
-	DOREPLIFETIME(AGAItem, AuraGroup);
+	DOREPLIFETIME(AGAItem, AuraGroup); 
 }
 
 #pragma region Animation
@@ -32,6 +33,10 @@ void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 void AGAItem::SetDropAnimationFinished(){
 	if(Role < ROLE_Authority){
 		ServerSetDropAnimationFinished();
+	}
+	else{
+		ItemStats.CalculateAttack();
+		ItemStats.CalculateArmor();
 	}
 	
 	finishedDropAnimation = true;

@@ -111,8 +111,7 @@ void AGACharacter::InitPlayer(){
 	SpecialAttackCoolDownRestValue = SpecialAttackCoolDown;
 	PotionCoolDownRestValue = PotionCoolDown;
 	MaxHealth = HealthPoints + ItemHealth;
-
-
+	BaseMovementSpeed = CharacterMovement->MaxWalkSpeed;
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
@@ -222,22 +221,29 @@ void AGACharacter::AttackSimple(){
 		// Set Cool Down
 		SimpleAttackOnCoolDown = true;
 
+		// Damage Calculation
+		float Damage = SimpleAttackDamage + ItemDamage;
+
+		// Critical Hit
+		float random = FMath::RandRange(0, 100);
+		if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
+
 		// Find Enemy To Deal Damage
 		for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			if (IsInRange(*ActorItr, SimpleAttackRange)){
-				ActorItr->TakeDamageByEnemy(SimpleAttackDamage + ItemDamage);
+				ActorItr->TakeDamageByEnemy(Damage);
 			}
 		}
 
 		// Find Destructible To Deal Damage
 		for (TActorIterator<AGASpawnDestructible> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			if (IsInRange(*ActorItr, SimpleAttackRange)){
-				ActorItr->TakeDamageByEnemy(SimpleAttackDamage + ItemDamage);
+				ActorItr->TakeDamageByEnemy(Damage);
 			}
 		}
 
 		CharacterAttackedSimple();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE (%f) ***"), SimpleAttackDamage + ItemDamage);
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE (%f) ***"), Damage);
 	}
 }
 
@@ -494,6 +500,7 @@ void AGACharacter::CalculateItems(){
 	}
 	else {
 		FPlayerAura PercentBonus;
+		FStats		ItemStatsBonus;
 		TArray <AGAItem*> EquipedItems;
 		if (EquipItems.Head) EquipedItems.Add(EquipItems.Head);
 		if (EquipItems.Chest) EquipedItems.Add(EquipItems.Chest);
@@ -503,25 +510,40 @@ void AGACharacter::CalculateItems(){
 
 		// Gather All Bonus
 		for (int i = 0; i < EquipedItems.Num(); i++){
+			// Gather Player Percentages
 			PercentBonus.PercentDamage += EquipedItems[i]->AuraPlayer.PercentDamage;
+			PercentBonus.PercentArmor += EquipedItems[i]->AuraPlayer.PercentArmor;
 			PercentBonus.PercentAttackSpeed += EquipedItems[i]->AuraPlayer.PercentAttackSpeed;
+			PercentBonus.PercentMovementSpeed += EquipedItems[i]->AuraPlayer.PercentMovementSpeed;
 			PercentBonus.PercentHealth += EquipedItems[i]->AuraPlayer.PercentHealth;
+
+			// Gather Stats
+			ItemStatsBonus.Attack += EquipedItems[i]->ItemStats.Attack;
+			ItemStatsBonus.Armor += EquipedItems[i]->ItemStats.Armor;
+			ItemStatsBonus.Health += EquipedItems[i]->ItemStats.Health;
+			ItemStatsBonus.CriticalInPercent += EquipedItems[i]->ItemStats.CriticalInPercent;
+			ItemStatsBonus.AttackSpeedInPercent += EquipedItems[i]->ItemStats.AttackSpeedInPercent;
+			ItemStatsBonus.MovementInPercent += EquipedItems[i]->ItemStats.MovementInPercent;
 		}
 
 		// Damage Bonus
-		ItemDamage += SimpleAttackDamage * PercentBonus.PercentDamage / 100;
+		ItemDamage = (SimpleAttackDamage + ItemStatsBonus.Attack) * PercentBonus.PercentDamage / 100;
 
 		// Attack Speed
-		AttackSpeed = 1 + 1 * PercentBonus.PercentAttackSpeed / 100;
+		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent) / 100;
 		SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
 
-
-		// Movement Speed
+		// Critical Chance
+		Critical = ItemStatsBonus.CriticalInPercent;
 
 		// Armor
+		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) * PercentBonus.PercentArmor / 100;
 
+		// Movement Speed
+		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed * (PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent) / 100;
+		
 		// Health
-		ItemHealth += HealthPoints * PercentBonus.PercentHealth / 100;
+		ItemHealth += ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) * PercentBonus.PercentHealth / 100;
 		MaxHealth = HealthPoints + ItemHealth;
 
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CALCULATED EQUIPED ITEMS ***"));
@@ -826,6 +848,10 @@ void AGACharacter::ServerResetHasEquipedItem_Implementation(){HasEquipedItem = f
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	// Armor
+	DOREPLIFETIME(AGACharacter, Armor); 
+	DOREPLIFETIME(AGACharacter, ArmorResetValue);
+
 	// Simple Attack
 	DOREPLIFETIME(AGACharacter, SimpleAttackDamage);
 	DOREPLIFETIME(AGACharacter, SimpleAttackCoolDown);
@@ -842,7 +868,6 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Player Stats
 	DOREPLIFETIME(AGACharacter, HealthPoints);
-	DOREPLIFETIME(AGACharacter, Armor);
 	DOREPLIFETIME(AGACharacter, OutOfCombatTime);
 	DOREPLIFETIME(AGACharacter, RegenerationAmount);
 	DOREPLIFETIME(AGACharacter, RegenerationRate);
