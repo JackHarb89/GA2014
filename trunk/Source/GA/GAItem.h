@@ -85,9 +85,52 @@ struct FStats
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float Armor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float Attack;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float AttackSpeed;
+	// Attack
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")					float Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float AttackLowRoll;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float AttackLowHigh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float AttackSpeedInPercent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float CriticalInPercent;
+
+	// Armor
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")					float Armor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float ArmorLowRoll;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float ArmorLowHigh;
+
+	// Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float Health;
+	
+	// Movement
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float MovementInPercent;
+
+	void CalculateAttack(){
+		Attack = FMath::RandRange(AttackLowRoll, AttackLowHigh);
+	}
+
+	void CalculateArmor(){
+		Armor = FMath::RandRange(ArmorLowRoll, ArmorLowHigh);
+	}
+
+	FStats(){
+		// Attack
+		Attack = 0;
+		AttackLowRoll = 0;
+		AttackLowHigh = 0;
+		AttackSpeedInPercent = 0;
+		CriticalInPercent = 0;
+
+		// Armor
+		Armor = 0;
+		ArmorLowRoll = 0;
+		ArmorLowHigh = 0;
+
+		// Health
+		Health = 0;
+
+		// Movement
+		MovementInPercent = 0;
+	}
+
 };
 
 UCLASS()
@@ -101,7 +144,8 @@ class AGAItem : public AActor
 	
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGARarity::Type> Rarity;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			float Value;
-	
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Stats")			FStats ItemStats;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Player")	FPlayerAura AuraPlayer;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Group")	FGroupAura AuraGroup;
 

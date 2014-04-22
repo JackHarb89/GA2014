@@ -23,6 +23,9 @@ class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Movement
+	UPROPERTY(Replicated)																	float BaseMovementSpeed;
+
 	// Shop
 	UClass* ShopClass;
 	UPROPERTY(Replicated)																	AGAShop* Shop;
@@ -39,6 +42,13 @@ class AGACharacter : public ACharacter
 
 	// Attack Speed
 	UPROPERTY(Replicated)																	float AttackSpeed;
+
+	// Crit Chance
+	UPROPERTY(Replicated, Transient, VisibleAnywhere, Category = "Simple Attack")			float Critical;
+
+	// Armor
+	UPROPERTY(Replicated, Transient, VisibleAnywhere, Category = "Player Stats")			float Armor;
+	UPROPERTY(Replicated, Transient)														float ArmorResetValue;
 
 	// Ressource
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Ressource")			float Ressource;
@@ -73,7 +83,6 @@ class AGACharacter : public ACharacter
 
 	// Player Stats
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float HealthPoints;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float Armor;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float OutOfCombatTime;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float RegenerationAmount;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float RegenerationRate;
