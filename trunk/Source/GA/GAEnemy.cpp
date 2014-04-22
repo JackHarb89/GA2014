@@ -91,6 +91,8 @@ void AGAEnemy::AttackSimple(){
 				(ActorItr)->TakeDamageByEnemy(Damage);
 			}
 		}
+
+		CharacterAttackedSimple();
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE ***"));
 	}
 }
