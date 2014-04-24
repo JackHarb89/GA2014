@@ -6,7 +6,7 @@
 AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AGA_UI_Area::init(FVector2D* _mouseLocation, GA_UI_Area_mouseState* _mouseState) {

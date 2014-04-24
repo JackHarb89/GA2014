@@ -65,6 +65,7 @@ void AGA_HUD::Draw() {
 }
 
 void AGA_HUD::Draw_Cursor() {
+	if (Cursor_Normal){
 	Canvas->DrawTile(
 		Cursor_Normal, mouseLocation.X, mouseLocation.Y, 0,
 		Cursor_Normal->GetSurfaceWidth(),
@@ -75,6 +76,7 @@ void AGA_HUD::Draw_Cursor() {
 		Cursor_Normal->GetSurfaceHeight(),
 		BLEND_Translucent
 		);
+	}
 }
 
 void AGA_HUD::Spawn_CanvasItems() {
