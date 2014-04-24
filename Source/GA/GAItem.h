@@ -49,6 +49,13 @@ struct FGroupAura
 	// Radius
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		float EffectRadius;
 
+	bool FGroupAura::hasAura(){
+		if (PercentDamage > 0 || PercentArmor > 0 || PercentHealth > 0 || PercentAttackSpeed > 0 || PercentMovementSpeed > 0){
+			return true;
+		}
+		return false;
+	}
+
 	FGroupAura(){
 		PercentDamage = 0;
 		PercentArmor = 0;

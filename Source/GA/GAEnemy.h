@@ -16,7 +16,7 @@ struct FGameItem
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			float DropChance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)			UBlueprint* Item;
 	
-	TSubclassOf<class AActor> getItemClass(){
+	TSubclassOf<class AActor> FGameItem::getItemClass(){
 		return (UClass*)Item->GeneratedClass;
 	}
 };

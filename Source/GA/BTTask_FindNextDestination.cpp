@@ -22,25 +22,14 @@ EBTNodeResult::Type UBTTask_FindNextDestination::ExecuteTask(class UBehaviorTree
 		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
 		AGACharacter* ClosestPlayerPawn = Cast<AGACharacter>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID));
 		
-		/* SLOW MOVEMENT / TURNRATE
-		float originalDistance = FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation());
-		float distance = originalDistance;
-		FVector destination;
-		int32 Searchradius = 400;
-		
-		while (originalDistance <= distance){
-			destination = UNavigationSystem::GetRandomPointInRadius(MyAI, MyAI->GetPawn()->GetActorLocation(), Searchradius);
-			distance = FVector::Dist(destination, ClosestPlayerPawn->GetActorLocation());
-		}*/
 
-		
 		FVector direction = ClosestPlayerPawn->GetActorLocation() - EnemyPawn->GetActorLocation();
 		direction.Normalize();
 		float originalDistance = FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation());
 
 		FVector tempDestination = EnemyPawn->GetActorLocation() + direction * originalDistance / 2;
 
-		int32 Searchradius = originalDistance / 2;
+		int32 Searchradius = 50;
 		FVector destination = UNavigationSystem::GetRandomPointInRadius(MyAI, tempDestination, Searchradius);
 		
 		OwnerComp->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), destination);
