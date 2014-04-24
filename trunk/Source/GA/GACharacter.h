@@ -32,7 +32,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated)																	AGAItem* ShopItem;
 
 	// Aura
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasActivatedAura)							bool HasActivatedAura;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasActivatedAura, BlueprintReadWrite, Category = "Aura")							bool HasActivatedAura;
 	UPROPERTY(Replicated)																	FGroupAura AuraBonus;
 	UPROPERTY(Replicated, Transient)														TArray<AGACharacter*> AuraPlayer;
 	UPROPERTY(Replicated)																	FGroupAura OtherPlayerAura;
