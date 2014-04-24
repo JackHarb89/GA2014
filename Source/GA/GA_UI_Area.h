@@ -18,6 +18,10 @@ public:
 	bool					mouseInButton;
 	bool					hasBeenClicked;
 
+	// prevent certain changes
+	bool					preventHover = false;
+	bool					preventActive = false;
+
 	GA_UI_Area_type	type;
 
 	// TODO 10: Rewrite this, so it not only supports IDs, but different Events (and is Blueprint compatible)
