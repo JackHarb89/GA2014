@@ -83,7 +83,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackCoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackRange;
 
-	UPROPERTY(Replicated, BlueprintReadWrite,  ReplicatedUsing = OnRep_SpecialAttackTimesCharged)	int32 SpecialAttackTimesCharged;
+	UPROPERTY(Replicated, BlueprintReadWrite, ReplicatedUsing = OnRep_SpecialAttackTimesCharged, Category = "Special Attack")	int32 SpecialAttackTimesCharged;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackOnCoolDown)					bool SpecialAttackOnCoolDown;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackIsCharging)					bool SpecialAttackIsCharging;
 	UPROPERTY(Replicated)																	float SpecialAttackCoolDownRestValue;
