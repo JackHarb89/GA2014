@@ -19,8 +19,10 @@ public:
 	bool					hasBeenClicked;
 
 	// prevent certain changes
-	bool					preventHover = false;
-	bool					preventActive = false;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+	bool					preventHover;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+	bool					preventActive;
 
 	GA_UI_Area_type	type;
 
