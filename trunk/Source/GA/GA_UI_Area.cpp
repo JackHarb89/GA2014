@@ -75,7 +75,7 @@ void AGA_UI_Area::update() {
 	switch (*mouseState) {
 		case MOUSE_REGULAR:
 			if (mouseInButton) {
-				setButtonState(BUTTON_HOVER);
+				setButtonState(preventHover ? BUTTON_REGULAR : BUTTON_HOVER);
 			}
 			else {
 				setButtonState(BUTTON_REGULAR);
@@ -91,7 +91,7 @@ void AGA_UI_Area::update() {
 		case MOUSE_CLICKED:
 		case MOUSE_HELD:
 			if (mouseInButton) {
-				setButtonState(BUTTON_ACTIVE);
+				setButtonState(preventActive? BUTTON_REGULAR : BUTTON_ACTIVE);
 			}
 			else {
 				setButtonState(BUTTON_REGULAR);
