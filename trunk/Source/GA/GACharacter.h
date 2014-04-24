@@ -74,7 +74,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")		float SimpleAttackCoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")		float SimpleAttackRange;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SimpleAttackOnCoolDown)					bool SimpleAttackOnCoolDown;
-	UPROPERTY(Replicated)																	float SimpleAttackCoolDownRestValue;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Simple Attack")					float SimpleAttackCoolDownRestValue;
 
 	// Special Attack
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackBaseDamage;
@@ -86,7 +86,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, BlueprintReadWrite, ReplicatedUsing = OnRep_SpecialAttackTimesCharged, Category = "Special Attack")	int32 SpecialAttackTimesCharged;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackOnCoolDown)					bool SpecialAttackOnCoolDown;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackIsCharging)					bool SpecialAttackIsCharging;
-	UPROPERTY(Replicated)																	float SpecialAttackCoolDownRestValue;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Special Attack")					float SpecialAttackCoolDownRestValue;
 	UPROPERTY(Replicated)																	float SpecialAttackChargeTimer;
 
 	// Player Stats
