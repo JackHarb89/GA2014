@@ -112,7 +112,8 @@ void AGACharacter::InitPlayer(){
 	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
 	SpecialAttackCoolDownRestValue = SpecialAttackCoolDown;
 	PotionCoolDownRestValue = PotionCoolDown;
-	MaxHealth = HealthPoints + ItemHealth;
+	HealthResetValue = HealthPoints;
+	MaxHealth = HealthResetValue + ItemHealth;
 	BaseMovementSpeed = CharacterMovement->MaxWalkSpeed;
 
 	FActorSpawnParameters SpawnParams;
@@ -132,7 +133,7 @@ void AGACharacter::InitPlayer(){
 void AGACharacter::Tick(float Delta){
 	Super::Tick(Delta);
 	if (!isInit){ InitPlayer();}
-
+	CheckPlayerInAuraRange();
 	ReduceSimpleAttackCoolDown(Delta);
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
@@ -530,25 +531,29 @@ void AGACharacter::CalculateItems(){
 		}
 
 		// Damage Bonus
-		ItemDamage = (SimpleAttackDamage + ItemStatsBonus.Attack) * PercentBonus.PercentDamage / 100;
+		ItemDamage = (SimpleAttackDamage + ItemStatsBonus.Attack) * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage)/ 100;
 
 		// Attack Speed
-		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent) / 100;
+		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
 		SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
 
 		// Critical Chance
 		Critical = ItemStatsBonus.CriticalInPercent;
 
 		// Armor
-		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) * PercentBonus.PercentArmor / 100;
+		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) * 
+			(PercentBonus.PercentArmor +  AuraBonus.PercentArmor + OtherPlayerAura.PercentArmor)/ 100;
 		ArmorReduction = Armor * ArmorReductionPercent;
 
 		// Movement Speed
-		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed * (PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent) / 100;
+		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed * 
+			(PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent + AuraBonus.PercentMovementSpeed + OtherPlayerAura.PercentMovementSpeed) / 100;
 		
 		// Health
-		ItemHealth += ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) * PercentBonus.PercentHealth / 100;
-		MaxHealth = HealthPoints + ItemHealth;
+		ItemHealth = ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) * 
+			(PercentBonus.PercentHealth + AuraBonus.PercentHealth + OtherPlayerAura.PercentHealth)/ 100;
+		MaxHealth = HealthResetValue + ItemHealth;
+		if (MaxHealth < HealthPoints) HealthPoints = MaxHealth;
 
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CALCULATED EQUIPED ITEMS ***"));
 	}
@@ -591,6 +596,7 @@ void AGACharacter::EquipItem(AGAItem* item){
 			}
 			break;
 		}
+		CalculateAura();
 		CalculateItems();
 		HasEquipedItem = true;
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: EQUIPED ITEM ***"));
@@ -849,8 +855,124 @@ void AGACharacter::ServerResetHasEquipedItem_Implementation(){HasEquipedItem = f
 
 #pragma endregion
 
+
+#pragma region Aura
+
+void AGACharacter::ActivateAura(){
+	if (Role < ROLE_Authority){
+		ServerActivateAura();
+	}
+	else{
+		HasActivatedAura = true;
+		CharacterActivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ACTIVATED AURA ***"));
+	}
+}
+
+void AGACharacter::DeactivateAura(){
+	if (Role < ROLE_Authority){
+		ServerDeactivateAura();
+	}
+	else{
+		HasActivatedAura = false;
+		CharacterDeactivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: DECTIVATED AURA ***"));
+	}
+}
+
+void AGACharacter::CalculateAura(){
+	if (Role < ROLE_Authority){
+		ServerCalculateAura();
+	}
+	else {
+		if (EquipItems.Head){
+			AuraBonus.PercentDamage = EquipItems.Head->AuraGroup.PercentDamage;
+			AuraBonus.PercentArmor = EquipItems.Head->AuraGroup.PercentArmor;
+			AuraBonus.PercentAttackSpeed = EquipItems.Head->AuraGroup.PercentAttackSpeed;
+			AuraBonus.PercentMovementSpeed = EquipItems.Head->AuraGroup.PercentMovementSpeed;
+			AuraBonus.PercentHealth = EquipItems.Head->AuraGroup.PercentHealth;
+			AuraBonus.EffectRadius = EquipItems.Head->AuraGroup.EffectRadius;
+		}
+
+		if (AuraBonus.hasAura() && !HasActivatedAura){
+			ActivateAura();
+		}
+		else{
+			DeactivateAura();
+		}
+	}
+}
+
+void AGACharacter::CheckPlayerInAuraRange(){
+	if (Role < ROLE_Authority){
+		ServerCheckPlayerInAuraRange();
+	}
+	else {
+		// Find Player Near By
+		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			if (IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && *ActorItr != this && !AuraPlayer.Contains(*ActorItr)){
+				OtherPlayerAura.PercentDamage += ActorItr->AuraBonus.PercentDamage;
+				OtherPlayerAura.PercentArmor += ActorItr->AuraBonus.PercentArmor;
+				OtherPlayerAura.PercentHealth += ActorItr->AuraBonus.PercentHealth;
+				OtherPlayerAura.PercentMovementSpeed += ActorItr->AuraBonus.PercentMovementSpeed;
+				OtherPlayerAura.PercentAttackSpeed += ActorItr->AuraBonus.PercentAttackSpeed;
+
+				AuraPlayer.Add(*ActorItr);
+				if (!HasActivatedAura && OtherPlayerAura.hasAura()) ActivateAura();
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER JOINED AURA RANGE ***"));
+				CalculateItems();
+			}
+			else if (!IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && AuraPlayer.Contains(*ActorItr)){
+				OtherPlayerAura.PercentDamage -= ActorItr->AuraBonus.PercentDamage;
+				OtherPlayerAura.PercentArmor -= ActorItr->AuraBonus.PercentArmor;
+				OtherPlayerAura.PercentHealth -= ActorItr->AuraBonus.PercentHealth;
+				OtherPlayerAura.PercentMovementSpeed -= ActorItr->AuraBonus.PercentMovementSpeed;
+				OtherPlayerAura.PercentAttackSpeed -= ActorItr->AuraBonus.PercentAttackSpeed;
+
+				AuraPlayer.Remove(*ActorItr);
+				if(HasActivatedAura && !AuraBonus.hasAura() && !OtherPlayerAura.hasAura()) DeactivateAura();
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER LEFT AURA RANGE ***"));
+				CalculateItems();
+			}
+		}
+	}
+}
+
+#pragma endregion
+
+#pragma region Network - Aura
+
+void AGACharacter::OnRep_HasActivatedAura(){
+	if (HasActivatedAura){
+		CharacterActivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ACTIVATED AURA ***"));
+	}
+	else{
+		CharacterDeactivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DECTIVATED AURA ***"));
+	}
+}
+
+bool AGACharacter::ServerCheckPlayerInAuraRange_Validate(){return true;}
+void AGACharacter::ServerCheckPlayerInAuraRange_Implementation(){CheckPlayerInAuraRange();}
+
+bool AGACharacter::ServerCalculateAura_Validate(){return true;}
+void AGACharacter::ServerCalculateAura_Implementation(){CalculateAura();}
+
+bool AGACharacter::ServerActivateAura_Validate(){return true;}
+void AGACharacter::ServerActivateAura_Implementation(){ActivateAura();}
+
+bool AGACharacter::ServerDeactivateAura_Validate(){return true;}
+void AGACharacter::ServerDeactivateAura_Implementation(){DeactivateAura();}
+
+#pragma endregion
+
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Aura
+	DOREPLIFETIME(AGACharacter, HasActivatedAura);
+
 
 	// Armor
 	DOREPLIFETIME(AGACharacter, Armor); 
@@ -872,6 +994,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Player Stats
 	DOREPLIFETIME(AGACharacter, HealthPoints);
+	DOREPLIFETIME(AGACharacter, HealthResetValue);
 	DOREPLIFETIME(AGACharacter, OutOfCombatTime);
 	DOREPLIFETIME(AGACharacter, RegenerationAmount);
 	DOREPLIFETIME(AGACharacter, RegenerationRate);

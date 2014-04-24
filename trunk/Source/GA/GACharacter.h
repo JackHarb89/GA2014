@@ -31,6 +31,12 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated)																	AGAShop* Shop;
 	UPROPERTY(Replicated)																	AGAItem* ShopItem;
 
+	// Aura
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasActivatedAura)							bool HasActivatedAura;
+	UPROPERTY(Replicated)																	FGroupAura AuraBonus;
+	UPROPERTY(Replicated, Transient)														TArray<AGACharacter*> AuraPlayer;
+	UPROPERTY(Replicated)																	FGroupAura OtherPlayerAura;
+
 	// Items
 	UPROPERTY(Replicated)																	float ItemDamage;
 	UPROPERTY(Replicated)																	float ItemHealth;
@@ -91,6 +97,7 @@ class AGACharacter : public ACharacter
 
 	UPROPERTY(Replicated)																	float RegenerationTimer;
 	UPROPERTY(Replicated)																	float MaxHealth;
+	UPROPERTY(Replicated)																	float HealthResetValue;
 	UPROPERTY(Replicated)																	float RegenerationTime;
 	UPROPERTY(Replicated)																	bool RegenerationAnimationIsRunning;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_AllowedToRegenerate)						bool AllowedToRegenerate;
@@ -112,6 +119,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterPickedUpItem();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterEquipedItem();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterUsedPotion();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedAura();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedAura();
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -139,10 +148,19 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateItems();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasPickedUpItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasEquipedItem();
+
 	UFUNCTION(reliable, server, WithValidation)												void ServerUsePotion();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReducePotionCoolDown(float Delta);
+
 	UFUNCTION(reliable, server, WithValidation)												void ServerBuyItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerSellItem(AGAItem* item);
+
+	UFUNCTION(reliable, server, WithValidation)												void ServerActivateAura();
+	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivateAura();
+	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
+	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
+
+	
 
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackOnCoolDown();
@@ -154,11 +172,18 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasPickedUpItem();
 	UFUNCTION()																				void OnRep_HasEquipedItem(); 
 	UFUNCTION()																				void OnRep_HasUsedPotion();
+	UFUNCTION()																				void OnRep_HasActivatedAura();
 
 	void TakeDamageByEnemy(float Damage);
 
 
 protected:
+
+	// Aura
+	void ActivateAura();
+	void DeactivateAura();
+	void CheckPlayerInAuraRange();
+	void CalculateAura();
 
 	// Items
 	void EquipItem(AGAItem* item);
