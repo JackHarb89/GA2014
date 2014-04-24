@@ -83,7 +83,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackCoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackRange;
 
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackTimesCharged)				int32 SpecialAttackTimesCharged;
+	UPROPERTY(Replicated, BlueprintReadWrite,  ReplicatedUsing = OnRep_SpecialAttackTimesCharged)	int32 SpecialAttackTimesCharged;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackOnCoolDown)					bool SpecialAttackOnCoolDown;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_SpecialAttackIsCharging)					bool SpecialAttackIsCharging;
 	UPROPERTY(Replicated)																	float SpecialAttackCoolDownRestValue;
@@ -96,7 +96,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Stats")		float RegenerationRate;
 
 	UPROPERTY(Replicated)																	float RegenerationTimer;
-	UPROPERTY(Replicated)																	float MaxHealth;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Player Stats")					float MaxHealth;
 	UPROPERTY(Replicated)																	float HealthResetValue;
 	UPROPERTY(Replicated)																	float RegenerationTime;
 	UPROPERTY(Replicated)																	bool RegenerationAnimationIsRunning;
