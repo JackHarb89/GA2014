@@ -2,56 +2,12 @@
 
 #pragma once
 
+#include "GA.h"
+//#include "Engine.h"
+#include "GA_UI_Enums.h"
+#include "GA_UI_Area.h"
 #include "GameFramework/HUD.h"
 #include "GA_HUD.generated.h"
-
-////////// ////////// ////////// ////////// //////////
-
-class GA_UI_Area {
-public:
-	FString		text;
-	FString		tooltipText;
-
-	FVector2D	position;
-	FVector2D	size;
-
-	FColor		textColor;
-	FColor		backgroundColor;
-	UTexture2D*	backgroundImage;
-
-	FColor		hover_textColor;
-	FColor		hover_backgroundColor;
-	UTexture2D*	hover_backgroundImage;
-
-	GA_UI_Area(
-		FString text, FString tooltipText,
-		FVector2D position, FVector2D size,
-		FColor textColor, FColor hover_textColor,
-		FColor backgroundColor, FColor hover_backgroundColor
-		);
-	GA_UI_Area(
-		FString text, FString tooltipText,
-		FVector2D position, FVector2D size,
-		FColor textColor, FColor hover_textColor,
-		UTexture2D* backgroundImage, UTexture2D* hover_backgroundImage
-		);
-
-	void init(
-		FString text, FString tooltipText,
-		FVector2D position, FVector2D size,
-		FColor textColor, FColor hover_textColor,
-		FColor backgroundColor, FColor hover_backgroundColor,
-		UTexture2D* backgroundImage, UTexture2D* hover_backgroundImage
-		);
-
-	bool initialized;
-
-	bool isInArea(int32 mouseX, int32 mouseY);
-	bool isInArea(FVector2D mouse);
-
-	bool hasTooltip();
-	bool hasImage();
-};
 
 ////////// ////////// ////////// ////////// //////////
 
@@ -62,14 +18,6 @@ class AGA_HUD : public AHUD
 
 	// PlayerController bridge
 	APlayerController* playerController;
-
-
-	// DrawHelper
-	/** Peronal shortcut for the canvas */
-	void DrawTexture(UTexture2D* texture, float x, float y, float w, float h, float xT, float yT, float wT, float hT, EBlendMode BlendMode);
-	/** helpful shortcut for elements which don't have to be scaled or cropped */
-	void DrawTexture_FullSize(UTexture2D* texture, float x, float y);
-
 
 	// General
 	/** ran, after all game elements are created */
@@ -128,9 +76,14 @@ class AGA_HUD : public AHUD
 
 	/** Menu options? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug)
-		int8 currentMenuID;
+		int32 currentMenuID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug)
-		int8 nextMenuID;
+		int32 nextMenuID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IHopeThisDoesntWork)
+		TArray<UClass*> currentAreas;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = IHopeThisDoesntWork)
+		TArray<AGA_UI_Area*> currentSpawnedAreas;
 
 	// --------------- FUNCTIONS ---------------
 	// also includes not-shown variables only used in functions
@@ -139,34 +92,15 @@ class AGA_HUD : public AHUD
 	// Main				- manages everything (ingame-UI, menus, etc.)
 	bool isIngame;
 	bool openedMenu;	// being ingame and pressing ESC would toggle this
-	TArray<FString> initializedSections;
-	TArray<GA_UI_Area> currentAreas;
 
 	void Draw();
 
 	// Cursor			- Draws the correct cursor (position and state)
-	FVector2D CurrentMouseLocation;
-	bool cursorAboveArea;
-	bool mouseClicked;
-	void Init_Cursor();
+	FVector2D mouseLocation;
+	GA_UI_Area_mouseState mouseState = MOUSE_REGULAR;
 	void Draw_Cursor();
 
-	// Menu				- WITH CURSOR - only called, when no game is running
-	void Init_MainMenus();
-	void Draw_MainMenus();
-
-	// IngameStats		- only calls items, which don't require interaction (healthbars, cooldowns, map, etc.)
-	float* hp;
-	FVector2D* player2DPos;
-	void Init_IngameStats();
-	void Draw_IngameStats();
-
-	// IngameInterface	- WITH CURSOR - only calls items, which allow interaction (shop, inventory)
-	void Init_IngameInterface();
-	void Draw_IngameInterface();
-
-	// Menu				- WITH CURSOR - only called, when a game is paused
-	void Init_IngameMenus();
-	void Draw_IngameMenus();
-
+	// CanvasItems		- Everything, that can be specified in the Unreal Editor
+	void Spawn_CanvasItems();
+	void Draw_CanvasItems();
 };
