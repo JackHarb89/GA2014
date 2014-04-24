@@ -53,7 +53,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, Transient, VisibleAnywhere, Category = "Simple Attack")			float Critical;
 
 	// Armor
-	UPROPERTY(Replicated, Transient, VisibleAnywhere, Category = "Player Stats")			float Armor;
+	UPROPERTY(Replicated, Transient, VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")			float Armor;
 	UPROPERTY(Replicated, Transient, VisibleAnywhere, Category = "Player Stats")			float ArmorReduction;
 	UPROPERTY(Replicated)																	float ArmorReductionPercent;
 	UPROPERTY(Replicated, Transient)														float ArmorResetValue;
