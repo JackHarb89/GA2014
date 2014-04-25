@@ -855,7 +855,6 @@ void AGACharacter::ServerResetHasEquipedItem_Implementation(){HasEquipedItem = f
 
 #pragma endregion
 
-
 #pragma region Aura
 
 void AGACharacter::ActivateAura(){
@@ -1010,6 +1009,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Items	
 	DOREPLIFETIME(AGACharacter, Potions);
+	DOREPLIFETIME(AGACharacter, PotionCoolDown);
 	DOREPLIFETIME(AGACharacter, HasUsedPotion);
 	DOREPLIFETIME(AGACharacter, HasPickedUpItem);
 	DOREPLIFETIME(AGACharacter, HasEquipedItem);
