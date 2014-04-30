@@ -17,7 +17,6 @@ AGAItem::AGAItem(const class FPostConstructInitializeProperties& PCIP)
 void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-
 	DOREPLIFETIME(AGAItem, finishedDropAnimation);
 	DOREPLIFETIME(AGAItem, ItemID);
 	DOREPLIFETIME(AGAItem, Value);

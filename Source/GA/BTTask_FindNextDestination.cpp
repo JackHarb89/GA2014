@@ -11,7 +11,7 @@ UBTTask_FindNextDestination::UBTTask_FindNextDestination(const class FPostConstr
 
 }
 
-EBTNodeResult::Type UBTTask_FindNextDestination::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
+EBTNodeResult::Type UBTTask_FindNextDestination::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory)
 {
 	if (GetWorld()->GetFirstPlayerController() == NULL) return EBTNodeResult::Failed;
 
