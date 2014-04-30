@@ -11,7 +11,7 @@ UBTTask_FindEnemy::UBTTask_FindEnemy(const class FPostConstructInitializePropert
 
 }
 
-EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
+EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory)
 {
 	
 	if (GetWorld()->GetFirstPlayerController() == NULL) return EBTNodeResult::Failed;

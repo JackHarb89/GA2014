@@ -13,9 +13,8 @@ class AGASpawnTrigger : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY() bool isTriggered;
+	UPROPERTY(Transient) bool isTriggered;
 
 	virtual void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
-
 };
 

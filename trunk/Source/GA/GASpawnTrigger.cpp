@@ -7,10 +7,9 @@
 AGASpawnTrigger::AGASpawnTrigger(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-	isTriggered = false;
 }
 
-
+// If Trigger Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "TriggerAble" ***
 void AGASpawnTrigger::ReceiveActorBeginOverlap(class AActor* OtherActor){
 	if (OtherActor->ActorHasTag("TriggerAble") && !isTriggered){
 		isTriggered = true;

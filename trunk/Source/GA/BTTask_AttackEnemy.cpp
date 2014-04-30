@@ -13,7 +13,7 @@ UBTTask_AttackEnemy::UBTTask_AttackEnemy(const class FPostConstructInitializePro
 }
 
 
-EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory) const
+EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponent* OwnerComp, uint8* NodeMemory)
 {
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
 	if (MyAI && MyAI->GetPawn())
