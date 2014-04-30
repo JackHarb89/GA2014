@@ -108,10 +108,11 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 
 }
 
+// Initalize Player - Setting ResetValues
 void AGACharacter::InitPlayer(){
-	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
-	SpecialAttackCoolDownRestValue = SpecialAttackCoolDown;
-	PotionCoolDownRestValue = PotionCoolDown;
+	SimpleAttackCoolDownResetValue = SimpleAttackCoolDown;
+	SpecialAttackCoolDownResetValue = SpecialAttackCoolDown;
+	PotionCoolDownResetValue = PotionCoolDown;
 	HealthResetValue = HealthPoints;
 	MaxHealth = HealthResetValue + ItemHealth;
 	BaseMovementSpeed = CharacterMovement->MaxWalkSpeed;
@@ -263,7 +264,7 @@ void AGACharacter::ReduceSimpleAttackCoolDown(float Delta){
 		// Check If Cool Down Finished
 		if (SimpleAttackCoolDown <= 0){
 			SimpleAttackOnCoolDown = false;
-			SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
+			SimpleAttackCoolDown = SimpleAttackCoolDownResetValue / AttackSpeed;
 
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACK OFF COOLDOWN ***"));
 		}
@@ -363,7 +364,7 @@ void AGACharacter::ReduceSpecialAttackCoolDown(float Delta){
 			// Check If Cool Down Finished
 			if (SpecialAttackCoolDown <= 0){
 				SpecialAttackOnCoolDown = false;
-				SpecialAttackCoolDown = SpecialAttackCoolDownRestValue;
+				SpecialAttackCoolDown = SpecialAttackCoolDownResetValue;
 				UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPECIAL OFF COOLDOWN ***"));
 			}
 		}
@@ -535,7 +536,7 @@ void AGACharacter::CalculateItems(){
 
 		// Attack Speed
 		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
-		SimpleAttackCoolDown = SimpleAttackCoolDownRestValue / AttackSpeed;
+		SimpleAttackCoolDown = SimpleAttackCoolDownResetValue / AttackSpeed;
 
 		// Critical Chance
 		Critical = ItemStatsBonus.CriticalInPercent;
@@ -775,7 +776,7 @@ void AGACharacter::ReducePotionCoolDown(float Delta){
 		if (HasUsedPotion){
 			PotionCoolDown -= Delta;
 			if (PotionCoolDown <= 0){
-				PotionCoolDown = PotionCoolDownRestValue;
+				PotionCoolDown = PotionCoolDownResetValue;
 				HasUsedPotion = false;
 				UE_LOG(LogClass, Log, TEXT("*** SERVER :: POTION OFF COOLDOWN ***"));
 			}
@@ -980,14 +981,14 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	// Simple Attack
 	DOREPLIFETIME(AGACharacter, SimpleAttackDamage);
 	DOREPLIFETIME(AGACharacter, SimpleAttackCoolDown);
-	DOREPLIFETIME(AGACharacter, SimpleAttackCoolDownRestValue);
+	DOREPLIFETIME(AGACharacter, SimpleAttackCoolDownResetValue);
 	DOREPLIFETIME(AGACharacter, SimpleAttackOnCoolDown);
 
 	// Special Attack
 	DOREPLIFETIME(AGACharacter, SpecialAttackChargeTimer);
 	DOREPLIFETIME(AGACharacter, SpecialAttackTimesCharged);
 	DOREPLIFETIME(AGACharacter, SpecialAttackMaxCharges);
-	DOREPLIFETIME(AGACharacter, SpecialAttackCoolDownRestValue);
+	DOREPLIFETIME(AGACharacter, SpecialAttackCoolDownResetValue);
 	DOREPLIFETIME(AGACharacter, SpecialAttackOnCoolDown);
 	DOREPLIFETIME(AGACharacter, SpecialAttackIsCharging);
 
