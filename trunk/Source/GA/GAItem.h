@@ -6,9 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GAItem.generated.h"
 
-/**
- * 
- */
+// Rarity Types
 UENUM(BlueprintType)
 namespace EGARarity
 {
@@ -20,6 +18,7 @@ namespace EGARarity
 	};
 }
 
+// Slot Types
 UENUM(BlueprintType)
 namespace EGASlot
 {
@@ -49,6 +48,7 @@ struct FGroupAura
 	// Radius
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraGroup)		float EffectRadius;
 
+	// Return If Any Value > 0 is Set
 	bool FGroupAura::hasAura(){
 		if (PercentDamage > 0 || PercentArmor > 0 || PercentHealth > 0 || PercentAttackSpeed > 0 || PercentMovementSpeed > 0){
 			return true;
@@ -56,6 +56,7 @@ struct FGroupAura
 		return false;
 	}
 
+	// Construction With 0
 	FGroupAura(){
 		PercentDamage = 0;
 		PercentArmor = 0;
@@ -66,6 +67,7 @@ struct FGroupAura
 	}
 };
 
+// Aura For Player Only
 USTRUCT(BlueprintType)
 struct FPlayerAura
 {
@@ -78,6 +80,7 @@ struct FPlayerAura
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		float PercentAttackSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AuraPlayer)		float PercentMovementSpeed;
 
+	// Construction With 0
 	FPlayerAura(){
 		PercentDamage = 0;
 		PercentArmor = 0;
@@ -87,6 +90,7 @@ struct FPlayerAura
 	}
 };
 
+// Item Stats
 USTRUCT(BlueprintType)
 struct FStats
 {
@@ -110,14 +114,17 @@ struct FStats
 	// Movement
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")						float MovementInPercent;
 
+	// Set Attack To A Random Between Min And Max Attack
 	void CalculateAttack(){
 		Attack = FMath::RandRange(AttackLowRoll, AttackLowHigh);
 	}
 
+	// Set Armor To A Random Between Min And Max Armor
 	void CalculateArmor(){
 		Armor = FMath::RandRange(ArmorLowRoll, ArmorLowHigh);
 	}
 
+	// Construction With 0
 	FStats(){
 		// Attack
 		Attack = 0;
@@ -145,19 +152,26 @@ class AGAItem : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
+	// General
 	FName ItemName;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			int32 ItemID;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGASlot::Type> Slot;
 	
+	// Value
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			TEnumAsByte<EGARarity::Type> Rarity;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")			float Value;
 
+	// Item Stats
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Stats")			FStats ItemStats;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Player")	FPlayerAura AuraPlayer;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Aura Group")	FGroupAura AuraGroup;
 
-	UPROPERTY(Replicated)																bool finishedDropAnimation;
-
-	UFUNCTION(BlueprintCallable, Category = "Drop Animation")							void SetDropAnimationFinished();
+	// Drop Finished
+	UPROPERTY(Replicated, Transient)													bool finishedDropAnimation;
+	
+	// Server Drop Finished
 	UFUNCTION(reliable, server, WithValidation)											void ServerSetDropAnimationFinished();
+
+	// Blueprint Call Drop Finished
+	UFUNCTION(BlueprintCallable, Category = "Drop Animation")							void SetDropAnimationFinished();
 };
