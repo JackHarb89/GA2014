@@ -128,40 +128,46 @@ class AGACharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						float BaseLookUpRate;
 
-
+	// Server Simple Attack
 	UFUNCTION(reliable, server, WithValidation)												void ServerAttackSimple();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReduceSimpleAttackCoolDown(float Delta);
 
+	// Server Special Attack
 	UFUNCTION(reliable, server, WithValidation)												void ServerAttackSpecial();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReduceSpecialAttackCoolDown(float Delta);
-
 	UFUNCTION(reliable, server, WithValidation)												void ServerChargeSpecial();
 	UFUNCTION(reliable, server, WithValidation)												void ServerIncreaseChargeTime(float Delta);
 
+	// Server Regeneration
 	UFUNCTION(reliable, server, WithValidation)												void ServerRegenerateHealth(float Delta);
 	UFUNCTION(reliable, server, WithValidation)												void ServerTakeDamageByEnemy(float Damage);
 
+	// Server Check Death
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckDeath();
 
+	// Server Items
 	UFUNCTION(reliable, server, WithValidation)												void ServerPickUpItem(AGAItem* item);
 	UFUNCTION(reliable, server, WithValidation)												void ServerEquipItem(AGAItem* item);
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateItems();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasPickedUpItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasEquipedItem();
 
+	// Server Potions
 	UFUNCTION(reliable, server, WithValidation)												void ServerUsePotion();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReducePotionCoolDown(float Delta);
 
+	// Server Shop
 	UFUNCTION(reliable, server, WithValidation)												void ServerBuyItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerSellItem(AGAItem* item);
 
+	// Server Aura
 	UFUNCTION(reliable, server, WithValidation)												void ServerActivateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
 	
-
+	// Replication Notify Functions
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackIsCharging();
@@ -174,6 +180,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasUsedPotion();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
 
+	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
 
 

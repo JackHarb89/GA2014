@@ -118,8 +118,7 @@ bool AGAEnemy::IsInRange(AActor* target){
 	FVector playerLocation = GetActorLocation();
 	FVector targetLocation = target->GetActorLocation();
 
-	// Calculate Distance		*** WIP ***
-	if (abs(playerLocation.X - targetLocation.X) < SimpleAttackRange && abs(playerLocation.Y - targetLocation.Y) < SimpleAttackRange){ return true; }
+	if (FVector::Dist(playerLocation, targetLocation) <= SimpleAttackRange) return true;
 	return false;
 }
 
