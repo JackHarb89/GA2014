@@ -21,6 +21,7 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 
 #pragma region Player Spawn
 
+// Select Player Start Depending On Player Index
 AActor* AGAGameMode::ChoosePlayerStart(AController* Player)
 {
 	APlayerStart* BestStart = PlayerStarts[playerCount];

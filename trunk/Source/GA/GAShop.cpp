@@ -15,6 +15,7 @@ AGAShop::AGAShop(const class FPostConstructInitializeProperties& PCIP)
 	bReplicates = true;
 }
 
+// Replicates All Replicated Attributes
 void AGAShop::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -24,6 +25,7 @@ void AGAShop::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 
 #pragma region Buy Item
 
+// Generates One Item From The Possible Items
 void AGAShop::GenerateItem(){
 	if (Role < ROLE_Authority){
 		ServerGenerateItem();
@@ -38,13 +40,14 @@ void AGAShop::GenerateItem(){
 		FVector SpawnLocation = this->GetActorLocation();
 		FRotator SpawnRotation = this->GetActorRotation();
 
-		// Shop
+		// Spawn Item
 		BoughtItem = GetWorld()->SpawnActor<AGAItem>(ShopItems[randomIndex]->GeneratedClass, SpawnLocation, SpawnRotation, SpawnParams);
 		BoughtItem->finishedDropAnimation = true;
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: GENERATED ITEM ***"));
 	}
 }
 
+// Client Call To Buy The Generated Item
 AGAItem* AGAShop::BuyItem(){
 	GenerateItem();
 	return BoughtItem;
