@@ -8,12 +8,12 @@
 AGAItem::AGAItem(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-	finishedDropAnimation = false;
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateMovement = true;
 }
 
+// Replicates Replicated Attributes
 void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -30,6 +30,7 @@ void AGAItem::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 
 #pragma region Animation
 
+// Called From Blueprint After Animation Finished - In Addition Calculates Armor and Damage
 void AGAItem::SetDropAnimationFinished(){
 	if(Role < ROLE_Authority){
 		ServerSetDropAnimationFinished();
