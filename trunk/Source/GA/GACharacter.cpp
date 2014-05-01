@@ -13,7 +13,6 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-
 	isInit = false;
 
 	// Equip
@@ -158,6 +157,9 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	// Shop
 	InputComponent->BindAction("BuyItem", IE_Pressed, this, &AGACharacter::BuyItem);
 	InputComponent->BindAction("SellItem", IE_Pressed, this, &AGACharacter::SellLastItem);
+
+	// Chat
+	InputComponent->BindAction("SendMessage", IE_Pressed, this, &AGACharacter::SendMessage);
 
 	// Movement & Camera
 	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
@@ -790,6 +792,45 @@ void AGACharacter::CheckPlayerInAuraRange(){
 
 #pragma endregion
 
+#pragma region Textchat
+// TMP DUE TO NO UI
+void AGACharacter::SendMessage(){
+	SendChatMessage(GetName());
+}
+
+// Sends The Given Messagen To Server And All Clients
+void AGACharacter::SendChatMessage(const FString& Message){
+	if (Role < ROLE_Authority){
+		ServerSendChatMessage(Message);
+	}
+	else{
+		ChatLog.Add(Message);
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: %s ***"), *ChatLog[0]);
+	}
+}
+
+// Adds The Given Message To ChatLog As First Position
+void AGACharacter::AddMessageToChatLog(const FString& Message){
+	FString tmp;
+	for (int i = 0; i < ChatLog.Num()-1; i++){
+		tmp = ChatLog[i + 1];
+		ChatLog[i + 1] = ChatLog[i];
+	}
+	ChatLog[0] = Message;
+}
+
+#pragma endregion
+
+#pragma region Network - Textchat
+void AGACharacter::OnRep_ChatMessages(){
+	UE_LOG(LogClass, Log, TEXT("*** CLIENT :: %s ***"), *ChatLog[0]);
+}
+
+bool AGACharacter::ServerSendChatMessage_Validate(const FString& Message){ return true; }
+void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){ SendChatMessage(Message); }
+
+#pragma endregion
+
 #pragma region Network - Simple Attack
 
 // Client Reaction On Replication Notification - Simple Event Call
@@ -1051,6 +1092,9 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Shop
 	DOREPLIFETIME(AGACharacter, Shop);
+
+	// Chat
+	DOREPLIFETIME(AGACharacter, ChatLog);
 
 	// Items	
 	DOREPLIFETIME(AGACharacter, Potions);
