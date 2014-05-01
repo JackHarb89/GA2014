@@ -12,4 +12,9 @@ class AGAPlayerController : public APlayerController
 {
 	GENERATED_UCLASS_BODY()
 
+	// Client
+	UFUNCTION(exec) void ConnectToServer(const FString& ip);
+
+	// Server
+	UFUNCTION(exec) void HostGameWithMap(const FString& mapName);
 };

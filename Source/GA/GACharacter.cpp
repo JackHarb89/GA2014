@@ -805,6 +805,7 @@ void AGACharacter::SendChatMessage(const FString& Message){
 // Adds The Given Message To ChatLog As First Position
 void AGACharacter::AddMessageToChatLog(const FString& Message){
 	ChatLog.Insert(Message, 0);
+	
 }
 
 #pragma endregion
