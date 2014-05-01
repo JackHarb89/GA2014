@@ -158,9 +158,6 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("BuyItem", IE_Pressed, this, &AGACharacter::BuyItem);
 	InputComponent->BindAction("SellItem", IE_Pressed, this, &AGACharacter::SellLastItem);
 
-	// Chat
-	InputComponent->BindAction("SendMessage", IE_Pressed, this, &AGACharacter::SendMessage);
-
 	// Movement & Camera
 	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AGACharacter::MoveRight);
@@ -793,10 +790,6 @@ void AGACharacter::CheckPlayerInAuraRange(){
 #pragma endregion
 
 #pragma region Textchat
-// TMP DUE TO NO UI
-void AGACharacter::SendMessage(){
-	SendChatMessage(GetName());
-}
 
 // Sends The Given Messagen To Server And All Clients
 void AGACharacter::SendChatMessage(const FString& Message){
@@ -804,19 +797,14 @@ void AGACharacter::SendChatMessage(const FString& Message){
 		ServerSendChatMessage(Message);
 	}
 	else{
-		ChatLog.Add(Message);
+		AddMessageToChatLog(Message);
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: %s ***"), *ChatLog[0]);
 	}
 }
 
 // Adds The Given Message To ChatLog As First Position
 void AGACharacter::AddMessageToChatLog(const FString& Message){
-	FString tmp;
-	for (int i = 0; i < ChatLog.Num()-1; i++){
-		tmp = ChatLog[i + 1];
-		ChatLog[i + 1] = ChatLog[i];
-	}
-	ChatLog[0] = Message;
+	ChatLog.Insert(Message, 0);
 }
 
 #pragma endregion

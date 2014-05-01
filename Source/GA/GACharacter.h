@@ -192,11 +192,8 @@ class AGACharacter : public ACharacter
 
 
 protected:
-	// TMP DUE TO NO UI
-	void SendMessage();
-
 	// Chat
-	void SendChatMessage(const FString& Message);
+	UFUNCTION(exec) void SendChatMessage(const FString& Message);
 	void AddMessageToChatLog(const FString& Message);
 
 	// Aura
