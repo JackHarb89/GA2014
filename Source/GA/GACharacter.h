@@ -23,6 +23,9 @@ class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Chat
+	UPROPERTY(Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages)					TArray<FString> ChatLog;
+
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
 
@@ -166,6 +169,9 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
+	// Server Chat
+	UFUNCTION(reliable, server, WithValidation)												void ServerSendChatMessage(const FString& Message);
+
 	
 	// Replication Notify Functions
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
@@ -179,12 +185,19 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasEquipedItem(); 
 	UFUNCTION()																				void OnRep_HasUsedPotion();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
+	UFUNCTION()																				void OnRep_ChatMessages();
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
 
 
 protected:
+	// TMP DUE TO NO UI
+	void SendMessage();
+
+	// Chat
+	void SendChatMessage(const FString& Message);
+	void AddMessageToChatLog(const FString& Message);
 
 	// Aura
 	void ActivateAura();
