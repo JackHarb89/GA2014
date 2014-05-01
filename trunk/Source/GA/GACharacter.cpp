@@ -462,7 +462,8 @@ void AGACharacter::CheckDeath(){
 	else{
 		if (HealthPoints <= 0){
 			HasDied = true;
-			DestroyConstructedComponents();
+			Destroy();
+			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
 	}

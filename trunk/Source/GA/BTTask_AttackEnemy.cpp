@@ -22,12 +22,14 @@ EBTNodeResult::Type UBTTask_AttackEnemy::ExecuteTask(class UBehaviorTreeComponen
 		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
 		AGACharacter* ClosestPlayerPawn = Cast<AGACharacter>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID));
 
-		FVector PlayerLocation = ClosestPlayerPawn->GetActorLocation();
-		FVector EnemyLocation = MyAI->GetPawn()->GetActorLocation();
-		AGAEnemy* enemy = (AGAEnemy*) MyAI->GetCharacter();
+		if (ClosestPlayerPawn){
+			FVector PlayerLocation = ClosestPlayerPawn->GetActorLocation();
+			FVector EnemyLocation = MyAI->GetPawn()->GetActorLocation();
+			AGAEnemy* enemy = (AGAEnemy*)MyAI->GetCharacter();
 
-		if (FVector::Dist(PlayerLocation, EnemyLocation) <= enemy->SimpleAttackRange){
-			if (enemy->DealDamage()) return EBTNodeResult::Succeeded;
+			if (FVector::Dist(PlayerLocation, EnemyLocation) <= enemy->SimpleAttackRange){
+				if (enemy->DealDamage()) return EBTNodeResult::Succeeded;
+			}
 		}
 	}
 

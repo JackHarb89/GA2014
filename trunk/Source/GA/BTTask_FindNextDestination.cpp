@@ -20,20 +20,23 @@ EBTNodeResult::Type UBTTask_FindNextDestination::ExecuteTask(class UBehaviorTree
 	if (MyAI && EnemyPawn){
 		FName PlayerKeyID = "Player";
 		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
+
 		AGACharacter* ClosestPlayerPawn = Cast<AGACharacter>(OwnerComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID));
 		
+		if (ClosestPlayerPawn){
+			FVector direction = ClosestPlayerPawn->GetActorLocation() - EnemyPawn->GetActorLocation();
+			direction.Normalize();
+			float originalDistance = FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation());
 
-		FVector direction = ClosestPlayerPawn->GetActorLocation() - EnemyPawn->GetActorLocation();
-		direction.Normalize();
-		float originalDistance = FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation());
+			FVector tempDestination = EnemyPawn->GetActorLocation() + direction * originalDistance / 2;
 
-		FVector tempDestination = EnemyPawn->GetActorLocation() + direction * originalDistance / 2;
+			int32 Searchradius = 50;
+			FVector destination = UNavigationSystem::GetRandomPointInRadius(MyAI, tempDestination, Searchradius);
 
-		int32 Searchradius = 50;
-		FVector destination = UNavigationSystem::GetRandomPointInRadius(MyAI, tempDestination, Searchradius);
-		
-		OwnerComp->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), destination);
-		return EBTNodeResult::Succeeded;
+			OwnerComp->GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), destination);
+			return EBTNodeResult::Succeeded;
+		}
+
 	}
 	return EBTNodeResult::Failed;
 }
