@@ -95,7 +95,7 @@ void AGAEnemySpawn::InitWave(){
 		ServerInitWave();
 	}
 	else{
-		Destructible->SetOwner(this);
+		if(Destructible) Destructible->SetOwner(this);
 		FWave* waveStruct = &Waves[WaveNumber];
 		SpawnInterval = waveStruct->SpawnInterval;
 		isInit = true;
