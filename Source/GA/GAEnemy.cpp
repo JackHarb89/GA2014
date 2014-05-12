@@ -26,7 +26,7 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	SimpleAttackDamageMin = 25;
 	SimpleAttackDamageMax = 25;
 	SimpleAttackCoolDown = 0.75;
-	SimpleAttackOnCoolDown = false;
+	SimpleAttackOnCoolDown = true;
 	SimpleAttackRange = 200;
 
 	// Replicate to Server / Clients
@@ -36,7 +36,7 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 void AGAEnemy::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
 	if (!isInit) InitPlayer();
-	ReduceSimpleAttackCoolDown(DeltaTime);
+	if (AllowedToAttack) ReduceSimpleAttackCoolDown(DeltaTime);
 }
 
 void AGAEnemy::InitPlayer(){
@@ -65,11 +65,13 @@ void AGAEnemy::SpawnAIController(){
 }
 
 bool AGAEnemy::DealDamage(){
+	if (!AllowedToAttack) AllowedToAttack = true;
 	AttackSimple();
 	return true;
 }
 
 #pragma region Attack Simple
+
 
 void AGAEnemy::AttackSimple(){
 	if (Role < ROLE_Authority){
@@ -109,6 +111,7 @@ void AGAEnemy::ReduceSimpleAttackCoolDown(float Delta){
 			SimpleAttackOnCoolDown = false;
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACK OFF COOL DOWN ***"));
 			SimpleAttackCoolDown = SimpleAttackCoolDownRestValue;
+			AllowedToAttack = false;
 		}
 	}
 }

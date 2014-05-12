@@ -39,6 +39,7 @@ class AGAEnemy : public ACharacter
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasTookDamage)								bool HasTookDamage;
 
 	// Simple Attack
+	UPROPERTY(Replicated, Transient)															bool AllowedToAttack;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackDamageMin;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackDamageMax;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")			float SimpleAttackCoolDown;
@@ -61,7 +62,6 @@ class AGAEnemy : public ACharacter
 
 	UFUNCTION()																					void OnRep_HasTookDamage();
 	UFUNCTION()																					void OnRep_SimpleAttackOnCoolDown();
-
 
 
 	void TakeDamageByEnemy(float Damage);
