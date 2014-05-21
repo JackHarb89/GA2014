@@ -9,12 +9,21 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AGA_UI_Area::init(FVector2D* _mouseLocation, GA_UI_Area_mouseState* _mouseState) {
+void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding) {
 	if (initialized)
 		return;
 
+	// initialize this object
+	category = _category;
+
 	mouseLocation = _mouseLocation;
-	mouseState = _mouseState;
+	prevMouseLocation = _prevMouseLocation;
+	clickMouseLocation = _clickMouseLocation;
+
+	mouseHeld = _mouseHeld;
+	prevMouseHeld = _prevMouseHeld;
+
+	parent_padding = _parent_padding;
 
 	hover_font = hover_font ? hover_font : item_font;
 	active_font = active_font ? active_font : item_font;
@@ -55,7 +64,19 @@ void AGA_UI_Area::init(FVector2D* _mouseLocation, GA_UI_Area_mouseState* _mouseS
 	update();
 }
 
+void AGA_UI_Area::toggleChildren(bool state) {
+	for (int i = 0; i < childAreas.Num(); i++) {
+		((AGA_UI_Area*)childAreas[i])->active = state;
+	}
+}
+
+
 void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
+	if (category == UI_CAT_HOVER) {
+		buttonState = BUTTON_HOVER;
+		return;
+	}
+
 	if (old_buttonState == new_buttonState)
 		return;
 
@@ -63,45 +84,53 @@ void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
 	buttonState = new_buttonState;
 }
 
-void AGA_UI_Area::update() {
-	// refresh the mouseInButton-shortcut (shortens code)
-	mouseInButton = (
-		mouseLocation->X > item_position.X && mouseLocation->X < item_position.X + item_size.X
+bool AGA_UI_Area::posInButton(FVector2D* pos) {
+	return (
+		pos->X > parent_padding.X + item_position.X && pos->X < parent_padding.X + item_position.X + item_size.X
 		&&
-		mouseLocation->Y > item_position.Y && mouseLocation->Y < item_position.Y + item_size.Y
+		pos->Y > parent_padding.Y + item_position.Y && pos->Y < parent_padding.Y + item_position.Y + item_size.Y
 	);
+}
 
-	// Update buttonState
-	switch (*mouseState) {
-		case MOUSE_REGULAR:
-			if (mouseInButton) {
-				setButtonState(preventHover ? BUTTON_REGULAR : BUTTON_HOVER);
-			}
-			else {
-				setButtonState(BUTTON_REGULAR);
-			}
-			break;
-		case MOUSE_RELEASED:
-			if (mouseInButton) {
-				hasBeenClicked = true;
-				// TODO: Add event handler (switch to new menu or run other function)
-			}
+bool AGA_UI_Area::update() {
+	if (!initialized)
+		return false;
+
+	// refresh the mouseInButton-shortcut (shortens code)
+	mouseInButton = posInButton(mouseLocation);
+
+		// Update buttonState
+	if (*mouseHeld) {
+		if (mouseInButton) {
+			setButtonState(preventActive ? BUTTON_REGULAR : BUTTON_ACTIVE);
+		}
+		else {
 			setButtonState(BUTTON_REGULAR);
-			break;
-		case MOUSE_CLICKED:
-		case MOUSE_HELD:
-			if (mouseInButton) {
-				setButtonState(preventActive? BUTTON_REGULAR : BUTTON_ACTIVE);
-			}
-			else {
-				setButtonState(BUTTON_REGULAR);
-			}
-			break;
+		}
 	}
+	else {
+		if (mouseInButton) {
+			if (*prevMouseHeld) {
+				OnClick();
+			}
+			setButtonState(preventHover ? BUTTON_REGULAR : BUTTON_HOVER);
+		}
+		else {
+			setButtonState(BUTTON_REGULAR);
+		}
+	}
+
+	if (!currentlyDragged	&& *mouseHeld && posInButton(clickMouseLocation) && (mouseLocation->X != prevMouseLocation->X &&mouseLocation->Y != prevMouseLocation->Y)) {
+		currentlyDragged = true;
+	}
+	if (currentlyDragged	&& *prevMouseHeld && !*mouseHeld) {
+		currentlyDragged = false;
+	}
+
 
 	// return if the button state hasn't changed
 	if (buttonState == old_buttonState)
-		return;
+		return IsDraggable ? currentlyDragged : false;
 
 	// render text and change color only, if there is text set
 	if (item_text != "") {
@@ -172,4 +201,8 @@ void AGA_UI_Area::update() {
 			}
 			break;
 	}
+
+	toggleChildren(buttonState == BUTTON_HOVER);
+
+	return IsDraggable ? currentlyDragged : false;
 }
