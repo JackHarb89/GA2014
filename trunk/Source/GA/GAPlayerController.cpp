@@ -5,11 +5,10 @@
 
 
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+: Super(PCIP)
 {
-	
+	bShowMouseCursor = false;	// currently set to false to allow regular playing - will be set by the UI in the future
 }
-
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
 void AGAPlayerController::ConnectToServer(const FString& ip){

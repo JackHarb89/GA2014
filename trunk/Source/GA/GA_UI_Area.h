@@ -6,17 +6,51 @@
 #include "GA_UI_Enums.h"
 #include "GA_UI_Area.generated.h"
 
+
+// A different namespace is required for each enum that should be Blueprint-editable
+/********************* TEXT ALIGN ********************/
+
+/**
+* UI_Area horizontal text align
+* Determines the horizontal alignment of a text
+*/
+UENUM(BlueprintType)
+namespace GA_UI_Area_hTextAlign {
+	enum GA_UI_Area_hTextAlign {
+		TEXT_LEFT		UMETA(DisplayName = "Left"),
+		TEXT_CENTER		UMETA(DisplayName = "Center"),
+		TEXT_RIGHT		UMETA(DisplayName = "Right"),
+	};
+}
+
+/**
+* UI_Area vertical text align
+* Determines the vertical alignment of a text
+
+*/
+UENUM(BlueprintType)
+namespace GA_UI_Area_vTextAlign {
+	enum GA_UI_Area_vTextAlign {
+		TEXT_TOP		UMETA(DisplayName = "Top"),
+		TEXT_MIDDLE		UMETA(DisplayName = "Middle"),
+		TEXT_BOTTOM		UMETA(DisplayName = "Bottom"),
+	};
+}
+
 UCLASS()
 class AGA_UI_Area : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
 public:
-	bool initialized;
+	bool initialized = false;
 
-	// only vaild answers, if .update() has been called on this object at this frame
+	GA_UI_Area_Category		category;
+
+
+	bool					posInButton(FVector2D* pos);
+	// only vaild answer, if .update() has been called on this object at this frame
 	bool					mouseInButton;
-	bool					hasBeenClicked;
 
 	// prevent certain changes
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
@@ -59,9 +93,34 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
 	FVector2D				item_position;
+	FVector2D				fin_item_position;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
 	FVector2D				item_size;
+	FVector2D				fin_item_size;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
+	FVector2D				text_position;
+	FVector2D				fin_text_position;
+
+	// optional - will only be used, if it's not [0,0]
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
+	FVector2D				text_size;
+	FVector2D				fin_text_size;
+
+	// used to allow relative positioning to a parent
+	FVector2D				parent_padding;
+	FVector2D				fin_parent_padding;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
+	TEnumAsByte<GA_UI_Area_hTextAlign::GA_UI_Area_hTextAlign>	text_horizontalAlignment;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
+	TEnumAsByte<GA_UI_Area_vTextAlign::GA_UI_Area_vTextAlign>	text_verticalAlignment;
+	// TODO 250: Add tooltip (will be used for items as well)
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
+	float					letterSpacing;
 	// TODO 250: Add tooltip (will be used for items as well)
 
 
@@ -112,15 +171,48 @@ public:
 
 	UMaterialInterface*		current_backgroundMaterial;
 
-	GA_UI_Area_buttonState old_buttonState;
-	GA_UI_Area_buttonState buttonState;
+
+	GA_UI_Area_buttonState	old_buttonState;
+	GA_UI_Area_buttonState	buttonState;
 	void setButtonState(GA_UI_Area_buttonState new_buttonState);
 
-	void init(FVector2D* _mouseLocation, GA_UI_Area_mouseState* _mouseState);
+	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding);
 	void draw(UCanvas* canvasToUse);
-	void update();
+	bool update();
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
+	TArray<UClass*>	childAreas;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnClick();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
+	bool IsDraggable;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnStartDrag();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnStoppedDrag();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
+	bool IsDropZone;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnReceivedDrop(AGA_UI_Area* droppedArea);
+
+
+	void toggleChildren(bool state);
+	bool					active = true;
 
 private:
-	GA_UI_Area_mouseState*	mouseState;
+	bool					currentlyDragged;
+
+	bool*					prevMouseHeld;
+	bool*					mouseHeld;
+
+	FVector2D*				originalSize;
+	FVector2D*				currentScreenSize;
+
+	FVector2D*				clickMouseLocation;
+	FVector2D*				prevMouseLocation;
 	FVector2D*				mouseLocation;
 };
