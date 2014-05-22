@@ -795,7 +795,7 @@ void AGACharacter::CheckPlayerInAuraRange(){
 // Sends The Given Messagen To Server And All Clients
 void AGACharacter::SendChatMessage(const FString& Message){
 	if (Role < ROLE_Authority){
-		ServerSendChatMessage(Message);
+		ServerSendChatMessage(*Message);
 	}
 	else{
 		AddMessageToChatLog(Message);
@@ -806,7 +806,6 @@ void AGACharacter::SendChatMessage(const FString& Message){
 // Adds The Given Message To ChatLog As First Position
 void AGACharacter::AddMessageToChatLog(const FString& Message){
 	ChatLog.Insert(Message, 0);
-	
 }
 
 #pragma endregion

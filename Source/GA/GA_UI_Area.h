@@ -90,6 +90,9 @@ public:
 	FString*				current_text;
 	// TODO 500: After that : Add positioning / scaling of the text
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnBeingDrawn();
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
 	FVector2D				item_position;
@@ -182,7 +185,9 @@ public:
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
-	TArray<UClass*>	childAreas;
+	TArray<UClass*>			childAreas;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
+	TArray<AGA_UI_Area*>	spawnedChildAreas;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnClick();
