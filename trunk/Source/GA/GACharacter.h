@@ -24,7 +24,7 @@ class AGACharacter : public ACharacter
 	GENERATED_UCLASS_BODY()
 
 	// Chat
-	UPROPERTY(Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages)					TArray<FString> ChatLog;
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")					TArray<FString> ChatLog;
 
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
@@ -190,10 +190,13 @@ class AGACharacter : public ACharacter
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
 
+	// Chat
+	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
+	
 
 protected:
 	// Chat
-	UFUNCTION(exec) void SendChatMessage(const FString& Message);
+	// made this function public, so the UI can launch them
 	void AddMessageToChatLog(const FString& Message);
 
 	// Aura

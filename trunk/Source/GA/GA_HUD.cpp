@@ -43,8 +43,6 @@ void AGA_HUD::Draw() {
 	currentRes = FVector2D(GEngine->GetGameUserSettings()->GetScreenResolution());
 	currentScale = FVector2D(currentRes[0] / originRes[0], currentRes[1] / originRes[1]);
 
-	UE_LOG(LogClass, Log, TEXT("*** Current: [%f, %f] [%f, %f] [%f, %f] ***"), currentScale[0], currentScale[1], currentRes[0], currentRes[1], originRes[0], originRes[1]);
-
 	// IMPORTANT: Some area-classes don't allow to scale X and Y seperately
 	// Y ([1]) is being used in that case
 
@@ -109,7 +107,7 @@ void AGA_HUD::Draw_Cursor() {
 	}
 }
 
-void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }) {
+void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }, TArray<AGA_UI_Area*>* spawnInfoList = nullptr) {
 	FActorSpawnParameters SpawnInfo;
 
 	SpawnInfo.Owner = this;
@@ -122,6 +120,9 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 		SpawnInfo
 	);
 	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, _parent_padding);
+
+	if (spawnInfoList != nullptr)
+		spawnInfoList->Add((AGA_UI_Area*)area);
 
 	currentSpawnedAreas.Add((AGA_UI_Area*)area);
 
@@ -142,12 +143,12 @@ void AGA_HUD::Spawn_CanvasItems() {
 	// spawn all children
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
 		if (area && area->IsValidLowLevel()) {
-			TArray<UClass*> tmpAreas = (area)->childAreas;
-			int tmp = tmpAreas.Num();
+			TArray<UClass*> childAreas = (area)->childAreas;
+			int tmp = childAreas.Num();
 
 			if (tmp > 0)
-				for (int j = 0; j < tmpAreas.Num(); j++) {
-					RunSpawnLogic(tmpAreas[j], UI_CAT_HOVER, (area)->item_position);
+				for (int j = 0; j < childAreas.Num(); j++) {
+					RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas));
 				}
 		}
 		else {
@@ -301,6 +302,9 @@ void AGA_HUD::Draw_CanvasItems() {
 			// and change the dropphase, if it's not being dragged anymore, but matches the current area
 			dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
 		}
+
+		area->OnBeingDrawn();
+
 		RunDrawLogic(area);
 	}
 
