@@ -106,9 +106,6 @@ class AGA_HUD : public AHUD
 	FVector2D currentScale;
 
 	// Main				- manages everything (ingame-UI, menus, etc.)
-	bool isIngame;
-	bool openedMenu;	// being ingame and pressing ESC would toggle this
-
 	void Draw();
 
 	// Drag&Drop		- Logic and parameters for drag- and drop-operations
@@ -129,7 +126,19 @@ class AGA_HUD : public AHUD
 
 	// CanvasItems		- Everything, that can be specified in the Unreal Editor
 	void Spawn_CanvasItems();
-	void RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding, TArray<AGA_UI_Area*>* spawnInfoList);
+	void RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }, TArray<AGA_UI_Area*>* spawnInfoList = nullptr);
 	void Draw_CanvasItems();
 	void RunDrawLogic(AGA_UI_Area* suppliedArea);
+
+	// Input			- Manages incoming keypresses and currently active input areas
+	void ActivateTypingArea(AGA_UI_Area*);
+	void EndCurrentInput(bool sendContent);
+	AGA_UI_Area* activeTypingArea;
+
+	FString blinkChar;				// char(s) that is/are being added, to indicate, that an area is selected
+	float blinkCharRefreshRate;
+
+	void ParseKeyInput(const FString& newCharAsString);
+
+	FString currentContent;
 };

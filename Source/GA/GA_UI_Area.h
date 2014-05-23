@@ -54,9 +54,11 @@ public:
 
 	// prevent certain changes
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
-	bool					preventHover;
+		bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
-	bool					preventActive;
+		bool					preventActive;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+		bool					isTextArea;
 
 	GA_UI_Area_type	type;
 
