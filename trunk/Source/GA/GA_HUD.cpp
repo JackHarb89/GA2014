@@ -11,8 +11,8 @@ AGA_HUD::AGA_HUD(const class FPostConstructInitializeProperties& PCIP)
 {
 	currentMenuID = 0;
 	nextMenuID = 0;
-	isIngame = false;
-	openedMenu = false;
+
+	blinkChar = FString("_");
 }
 
 void AGA_HUD::UpdateValues() {
@@ -37,6 +37,82 @@ void AGA_HUD::PostRender() {
 	UpdateValues();
 
 	Draw();
+}
+
+void AGA_HUD::Spawn_CanvasItems() {
+	if (currentSpawnedAreas.Num() != 0)
+		return;
+
+	// spawn all main-objects
+	for (UClass* area : currentAreas) {
+		RunSpawnLogic(area, UI_CAT_MAIN);
+	}
+
+	// spawn all children
+	for (AGA_UI_Area* area : currentSpawnedAreas) {
+		if (area && area->IsValidLowLevel()) {
+			TArray<UClass*> childAreas = (area)->childAreas;
+			int tmp = childAreas.Num();
+
+			if (tmp > 0)
+			for (int j = 0; j < childAreas.Num(); j++) {
+				RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas));
+			}
+		}
+		else {
+			//UE_LOG(LogClass, Log, TEXT("*** Areaamount 2 INVALID!!!! ***"));
+		}
+	}
+}
+
+void AGA_HUD::Draw_CanvasItems() {
+	Spawn_CanvasItems();
+
+	if (dropPhase == GA_UI_Dropphase::DROPPHASE_DROP_NEXT) {
+		dropPhase = GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS;
+		dropArea = nullptr;
+	}
+
+	for (AGA_UI_Area* area : currentSpawnedAreas) {
+		if (mouseHeld && area->posInButton(&mouseLocation))
+			ActivateTypingArea(area);
+		else if (!mouseHeld && area->posInButton(&mouseLocation))
+			EndCurrentInput(false);
+
+		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
+			bool tmp = true;
+
+		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->IsDropZone && area->posInButton(&mouseLocation))
+			dropArea = area;
+
+		if (area->update()) {
+			// save the area, if it's currently being dragged
+			dragArea = area;
+		}
+		else if (area == dragArea && dropPhase != GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
+			// and change the dropphase, if it's not being dragged anymore, but matches the current area
+			dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
+		}
+
+		area->OnBeingDrawn();
+
+		RunDrawLogic(area);
+	}
+
+	if (dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
+		if (dropArea != nullptr) {
+			dropArea->OnReceivedDrop(dragArea);
+		}
+
+		dropArea = nullptr;
+		dragArea = nullptr;
+		dropPhase = GA_UI_Dropphase::DROPPHASE_NONE;
+	}
+
+	if (nextMenuID != currentMenuID && nextMenuID != -1) {
+		currentMenuID = nextMenuID;
+	}
+
 }
 
 void AGA_HUD::Draw() {
@@ -107,7 +183,7 @@ void AGA_HUD::Draw_Cursor() {
 	}
 }
 
-void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }, TArray<AGA_UI_Area*>* spawnInfoList = nullptr) {
+void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding, TArray<AGA_UI_Area*>* spawnInfoList) {
 	FActorSpawnParameters SpawnInfo;
 
 	SpawnInfo.Owner = this;
@@ -129,32 +205,6 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 	//GEngine->GameUserSettings->ApplySettings
 
 	//ApplySettings
-}
-
-void AGA_HUD::Spawn_CanvasItems() {
-	if (currentSpawnedAreas.Num() != 0)
-		return;
-
-	// spawn all main-objects
-	for (UClass* area : currentAreas) {
-		RunSpawnLogic(area, UI_CAT_MAIN);
-	}
-
-	// spawn all children
-	for (AGA_UI_Area* area : currentSpawnedAreas) {
-		if (area && area->IsValidLowLevel()) {
-			TArray<UClass*> childAreas = (area)->childAreas;
-			int tmp = childAreas.Num();
-
-			if (tmp > 0)
-				for (int j = 0; j < childAreas.Num(); j++) {
-					RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas));
-				}
-		}
-		else {
-			//UE_LOG(LogClass, Log, TEXT("*** Areaamount 2 INVALID!!!! ***"));
-		}
-	}
 }
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
@@ -279,47 +329,23 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 	}
 }
 
-void AGA_HUD::Draw_CanvasItems() {
-	Spawn_CanvasItems();
+void AGA_HUD::ActivateTypingArea(AGA_UI_Area* suppliedArea) {
+	activeTypingArea = suppliedArea;
+}
 
-	if (dropPhase == GA_UI_Dropphase::DROPPHASE_DROP_NEXT) {
-		dropPhase = GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS;
-		dropArea = nullptr;
+void AGA_HUD::EndCurrentInput(bool sendContent) {
+	if (sendContent) {
+		activeTypingArea->item_text = currentContent;
 	}
 
-	for (AGA_UI_Area* area : currentSpawnedAreas) {
-		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
-			bool tmp = true;
+	currentContent = "";
+	activeTypingArea = nullptr;
+}
 
-		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->IsDropZone && area->posInButton(&mouseLocation))
-			dropArea = area;
+void AGA_HUD::ParseKeyInput(const FString& newCharAsString) {
+	//EndCurrentInput(true);
+	/*else if (newCharAsString == TCharBase::NextLine)
+		EndCurrentInput(false);*/
 
-		if (area->update()) {
-			// save the area, if it's currently being dragged
-			dragArea = area;
-		}
-		else if (area == dragArea && dropPhase != GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
-			// and change the dropphase, if it's not being dragged anymore, but matches the current area
-			dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
-		}
-
-		area->OnBeingDrawn();
-
-		RunDrawLogic(area);
-	}
-
-	if (dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
-		if (dropArea != nullptr) {
-			dropArea->OnReceivedDrop(dragArea);
-		}
-
-		dropArea = nullptr;
-		dragArea = nullptr;
-		dropPhase = GA_UI_Dropphase::DROPPHASE_NONE;
-	}
-
-	if (nextMenuID != currentMenuID && nextMenuID != -1) {
-		currentMenuID = nextMenuID;
-	}
-
+	UE_LOG(LogClass, Log, TEXT("*** Current key: %s ***"), *newCharAsString);
 }
