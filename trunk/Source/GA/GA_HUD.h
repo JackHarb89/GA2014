@@ -42,10 +42,6 @@ class AGA_HUD : public AHUD
 	/** ran every possible frame */
 	void Ticker();
 
-	/** Total HUD scale */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
-	float HUDScale;
-
 
 	// Fonts
 	// Font size should be > 48 - downscaling is easier
@@ -57,10 +53,6 @@ class AGA_HUD : public AHUD
 	/** Special Font */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Fonts)
 	UFont* Font_SpecialRegular;
-
-	/** Font scale (relative to font file) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Fonts)
-	float FontScale;
 
 
 	// 2D Textures 
@@ -75,14 +67,6 @@ class AGA_HUD : public AHUD
 	/** Active (mouse held down) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Cursor)
 	UTexture2D* Cursor_Active;
-
-	/** Backgrounds */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Backgrounds)
-	UTexture2D* MainMenu_Tex;
-
-	/** Background materials (used for advanced VFX) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Backgrounds_Materials)
-	UMaterialInterface* MainMenu_Mat;
 
 	/** Menu options? */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug)
@@ -100,7 +84,7 @@ class AGA_HUD : public AHUD
 	// Draw-functions
 	// Scale
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resolution)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	FVector2D originRes;
 	FVector2D currentRes;
 	FVector2D currentScale;
@@ -135,10 +119,11 @@ class AGA_HUD : public AHUD
 	void EndCurrentInput(bool sendContent);
 	AGA_UI_Area* activeTypingArea;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TextAreas)
 	FString blinkChar;				// char(s) that is/are being added, to indicate, that an area is selected
-	float blinkCharRefreshRate;
 
 	void ParseKeyInput(const FString& newCharAsString);
 
+	FString oldContent;
 	FString currentContent;
 };

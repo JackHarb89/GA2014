@@ -11,7 +11,6 @@ bool UGA_GameViewportClient::InputChar(FViewport* InViewport, int32 ControllerId
 	bool result;
 	result = Super::InputChar(InViewport, ControllerId, Character);
 
-	// should probably just add a ctor to FString that takes a TCHAR
 	FString CharacterString;
 	CharacterString += Character;
 

@@ -76,7 +76,8 @@ void AGA_HUD::Draw_CanvasItems() {
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
 		if (mouseHeld && area->posInButton(&mouseLocation))
 			ActivateTypingArea(area);
-		else if (!mouseHeld && area->posInButton(&mouseLocation))
+
+		if (mouseHeld && !area->posInButton(&mouseLocation) && area == activeTypingArea)
 			EndCurrentInput(false);
 
 		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
@@ -253,7 +254,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 		}
 
 		// draw the text (on top)
-		if (*suppliedArea->current_text != "") {
+		if (suppliedArea->isTextArea || *suppliedArea->current_text != "") {
 
 			// calculate the size for alignment
 			FVector2D realPositon = FVector2D::ZeroVector;
@@ -305,9 +306,22 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 
 			// realPosition now contains the correct position
 
+			// handle text-area and regular input
+			FText textToDraw;
+			if (!suppliedArea->isTextArea)
+				textToDraw = FText::FromString(*suppliedArea->current_text);
+			else if (suppliedArea == activeTypingArea)
+				textToDraw = FText::FromString(
+					suppliedArea->item_text
+				+
+					(
+						((FDateTime::Now()).GetMillisecond() > 500) ? blinkChar : ""
+					)
+				);
+
 			TextItem = FCanvasTextItem(
 				realPositon * currentScale,
-				FText::FromString(*suppliedArea->current_text),
+				textToDraw,
 				suppliedArea->current_font,
 				*suppliedArea->current_textColor
 			);
@@ -330,22 +344,57 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 }
 
 void AGA_HUD::ActivateTypingArea(AGA_UI_Area* suppliedArea) {
+	if (!suppliedArea->isTextArea)
+		return;
+
 	activeTypingArea = suppliedArea;
+	oldContent = activeTypingArea->item_text;
+	currentContent = activeTypingArea->item_text;
 }
 
 void AGA_HUD::EndCurrentInput(bool sendContent) {
-	if (sendContent) {
-		activeTypingArea->item_text = currentContent;
-	}
+	FString objName = activeTypingArea == nullptr ? "NULL" : activeTypingArea->GetName();
 
+	UE_LOG(LogClass, Log, TEXT("*** %s current content. ('%s' in '%s') ***"),
+		sendContent ? *FString("Accepting") : *FString("Throwing away"),
+		*currentContent,
+		*objName
+	);
+
+	activeTypingArea->item_text = sendContent ? currentContent : oldContent;
+
+	if (sendContent)
+		activeTypingArea->OnConfirmInput();
+
+	oldContent = "";
 	currentContent = "";
 	activeTypingArea = nullptr;
 }
 
-void AGA_HUD::ParseKeyInput(const FString& newCharAsString) {
-	//EndCurrentInput(true);
-	/*else if (newCharAsString == TCharBase::NextLine)
-		EndCurrentInput(false);*/
+void AGA_HUD::ParseKeyInput(const FString& newChar) {
+	//FString objName = (activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName();
+	UE_LOG(LogClass, Log, TEXT("*** Current key: %d %s [d] in '%s' ***"), newChar[0], *newChar, *((activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName()));
 
-	UE_LOG(LogClass, Log, TEXT("*** Current key: %s ***"), *newCharAsString);
+	// return if there's no active text-area
+	if (activeTypingArea == nullptr)
+		return;
+
+	// Handle Escape and Enter
+	if (newChar[0] == 13) {			// Enter
+		EndCurrentInput(true);
+		return;
+	}
+	else if (newChar[0] == 27) {	// Escape
+		EndCurrentInput(false);
+		return;
+	}
+	else if (newChar[0] == 8) {		// Backspace
+		if (currentContent.Len() >= 1)
+			currentContent.RemoveAt(currentContent.Len() - 1, 1);
+	}
+	else {
+		currentContent += newChar;
+	}
+
+	activeTypingArea->item_text = currentContent;
 }

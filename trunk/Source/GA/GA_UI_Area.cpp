@@ -134,17 +134,18 @@ bool AGA_UI_Area::update() {
 
 	// render text and change color only, if there is text set
 	if (item_text != "") {
-		switch (buttonState) {
-			case BUTTON_REGULAR:
-				current_text = &item_text;
-				break;
-			case BUTTON_HOVER:
-				current_text = &hover_text;
-				break;
-			case BUTTON_ACTIVE:
-				current_text = &active_text;
-				break;
-		}
+		if (!isTextArea)
+			switch (buttonState) {
+				case BUTTON_REGULAR:
+					current_text = &item_text;
+					break;
+				case BUTTON_HOVER:
+					current_text = &hover_text;
+					break;
+				case BUTTON_ACTIVE:
+					current_text = &active_text;
+					break;
+			}
 
 		switch (buttonState) {
 			case BUTTON_REGULAR:
