@@ -170,7 +170,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
 	// Server Chat
-	UFUNCTION(reliable, server, WithValidation)												void ServerSendChatMessage(const FString& Message);
+	UFUNCTION(Category="Chat", BlueprintCallable, reliable, server, WithValidation)			void ServerSendChatMessage(const FString& Message);
 
 	
 	// Replication Notify Functions

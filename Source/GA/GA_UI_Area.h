@@ -54,11 +54,13 @@ public:
 
 	// prevent certain changes
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
-		bool					preventHover;
+	bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
-		bool					preventActive;
+	bool					preventActive;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
-		bool					isTextArea;
+	bool					IsDropZone;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+	bool					isTextArea;
 
 	GA_UI_Area_type	type;
 
@@ -192,20 +194,20 @@ public:
 	TArray<AGA_UI_Area*>	spawnedChildAreas;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnClick();
+	virtual void OnClick();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
 	bool IsDraggable;
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnStartDrag();
+	virtual void OnStartDrag();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnStoppedDrag();
+	virtual void OnStoppedDrag();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
-	bool IsDropZone;
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnReceivedDrop(AGA_UI_Area* droppedArea);
+	virtual void OnReceivedDrop(AGA_UI_Area* droppedArea);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	virtual void OnConfirmInput();
 
 	void toggleChildren(bool state);
 	bool					active = true;
