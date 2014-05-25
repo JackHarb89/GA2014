@@ -24,6 +24,7 @@ class AGACharacter : public ACharacter
 	GENERATED_UCLASS_BODY()
 
 	// Chat
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, Category = "Chat")					FString UserName;
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")					TArray<FString> ChatLog;
 
 	// Movement

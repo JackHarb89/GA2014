@@ -12,6 +12,8 @@ class AGAPlayerController : public APlayerController
 {
 	GENERATED_UCLASS_BODY()
 
+	virtual void AGAPlayerController::PlayerTick(float DeltaTime);
+
 	// Client
 	UFUNCTION(exec) void ConnectToServer(const FString& ip);
 

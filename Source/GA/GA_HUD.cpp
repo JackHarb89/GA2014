@@ -307,7 +307,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			// realPosition now contains the correct position
 
 			// handle text-area and regular input
-			FText textToDraw;
+			FText textToDraw = FText::GetEmpty();
 			if (!suppliedArea->isTextArea)
 				textToDraw = FText::FromString(*suppliedArea->current_text);
 			else if (suppliedArea == activeTypingArea)
@@ -374,10 +374,20 @@ void AGA_HUD::EndCurrentInput(bool sendContent) {
 void AGA_HUD::ParseKeyInput(const FString& newChar) {
 	//FString objName = (activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName();
 	UE_LOG(LogClass, Log, TEXT("*** Current key: %d %s [d] in '%s' ***"), newChar[0], *newChar, *((activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName()));
+	
+	// jump to the chat, if we're ingame and enter is pressed
+	if (activeTypingArea == nullptr) {
+		// TODO: implement "is ingame" check here
 
-	// return if there's no active text-area
-	if (activeTypingArea == nullptr)
+		if (newChar[0] == 13)
+			for (AGA_UI_Area* area : currentSpawnedAreas) {
+				if (area->isTextArea) {
+					activeTypingArea = area;
+					break;
+				}
+			}
 		return;
+	}
 
 	// Handle Escape and Enter
 	if (newChar[0] == 13) {			// Enter

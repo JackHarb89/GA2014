@@ -1,13 +1,24 @@
 // Copyright 1998-2014 Epic Games, Inc. All Rights Reserved.
 
 #include "GA.h"
+#include "GA_HUD.h"
 #include "GAPlayerController.h"
 
 
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-	bShowMouseCursor = false;	// currently set to false to allow regular playing - will be set by the UI in the future
+}
+
+void AGAPlayerController::PlayerTick(float DeltaTime) {
+	Super::PlayerTick(DeltaTime);
+
+	if (((AGA_HUD*)MyHUD)->activeTypingArea == nullptr) {
+		bShowMouseCursor = false;
+	}
+	else {
+		bShowMouseCursor = true;
+	}
 }
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
