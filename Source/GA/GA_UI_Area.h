@@ -58,6 +58,8 @@ public:
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventActive;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+	bool					IsDraggable;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					IsDropZone;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					isTextArea;
@@ -196,8 +198,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnClick();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Events")
-	bool IsDraggable;
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnStartDrag();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
