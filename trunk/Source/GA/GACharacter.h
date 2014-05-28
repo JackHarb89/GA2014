@@ -194,7 +194,7 @@ class AGACharacter : public ACharacter
 	// Chat
 	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
 	
-
+	UFUNCTION(Category = "Chat", BlueprintCallable)			void BuyItem();					// has to be public to be called by blueprint classes
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
@@ -210,7 +210,6 @@ protected:
 	void EquipItem(AGAItem* item);
 	void PickUpItem(AGAItem* item);
 	void CalculateItems();
-	void BuyItem();
 	void SellItem(AGAItem* item);
 
 	// *** TEMPORARY DUE TO NO UI ***
