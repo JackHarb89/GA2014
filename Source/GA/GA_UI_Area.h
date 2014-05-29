@@ -53,6 +53,8 @@ public:
 	bool					mouseInButton;
 
 	// prevent certain changes
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
+	bool					Inactive;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
@@ -68,9 +70,9 @@ public:
 
 	// TODO 10: Rewrite this, so it not only supports IDs, but different Events (and is Blueprint compatible)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDs")
-	int32 activeOnMenuID;
+	int32					activeOnMenuID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDs")
-	int32 switchToMenuID;
+	int32					switchToMenuID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fonts")
 	UFont*					item_font;
@@ -99,6 +101,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnBeingDrawn();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Z-Index")
+	int32					zLayer;
+	int32					final_zLayer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vectors")
 	FVector2D				item_position;
@@ -185,14 +190,14 @@ public:
 	GA_UI_Area_buttonState	buttonState;
 	void setButtonState(GA_UI_Area_buttonState new_buttonState);
 
-	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding);
+	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer);
 	void draw(UCanvas* canvasToUse);
 	bool update();
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
 	TArray<UClass*>			childAreas;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
+	UPROPERTY(BlueprintReadWrite, Category = "Areas")
 	TArray<AGA_UI_Area*>	spawnedChildAreas;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
@@ -210,8 +215,10 @@ public:
 	virtual void OnConfirmInput();
 
 	void toggleChildren(bool state);
-	bool					active = true;
 
+	friend bool AGA_UI_Area::operator< (const AGA_UI_Area& lArea, const AGA_UI_Area& rArea) {
+		return lArea.final_zLayer < rArea.final_zLayer;
+	}
 private:
 	bool					currentlyDragged;
 
