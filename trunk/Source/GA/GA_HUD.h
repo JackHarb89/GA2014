@@ -110,7 +110,7 @@ class AGA_HUD : public AHUD
 
 	// CanvasItems		- Everything, that can be specified in the Unreal Editor
 	void Spawn_CanvasItems();
-	void RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }, TArray<AGA_UI_Area*>* spawnInfoList = nullptr);
+	void RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding = { 0, 0 }, TArray<AGA_UI_Area*>* spawnInfoList = nullptr, int32 parent_zLayer = 0);
 	void Draw_CanvasItems();
 	void RunDrawLogic(AGA_UI_Area* suppliedArea);
 

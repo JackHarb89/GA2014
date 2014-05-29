@@ -9,9 +9,11 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding) {
+void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer) {
 	if (initialized)
 		return;
+
+	final_zLayer = zLayer + parentZLayer;
 
 	// initialize this object
 	category = _category;
@@ -66,7 +68,7 @@ void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLoca
 
 void AGA_UI_Area::toggleChildren(bool state) {
 	for (int i = 0; i < childAreas.Num(); i++) {
-		((AGA_UI_Area*)childAreas[i])->active = state;
+		((AGA_UI_Area*)childAreas[i])->Inactive = !state;
 	}
 }
 

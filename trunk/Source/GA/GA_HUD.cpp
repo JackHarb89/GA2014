@@ -56,13 +56,16 @@ void AGA_HUD::Spawn_CanvasItems() {
 
 			if (tmp > 0)
 			for (int j = 0; j < childAreas.Num(); j++) {
-				RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas));
+				RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas), (area->zLayer + 1));
 			}
 		}
 		else {
 			//UE_LOG(LogClass, Log, TEXT("*** Areaamount 2 INVALID!!!! ***"));
 		}
 	}
+
+	// sort them (by their Z-Index)
+	currentSpawnedAreas.Sort();
 }
 
 void AGA_HUD::Draw_CanvasItems() {
@@ -94,8 +97,6 @@ void AGA_HUD::Draw_CanvasItems() {
 			// and change the dropphase, if it's not being dragged anymore, but matches the current area
 			dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
 		}
-
-		area->OnBeingDrawn();
 
 		RunDrawLogic(area);
 	}
@@ -184,7 +185,7 @@ void AGA_HUD::Draw_Cursor() {
 	}
 }
 
-void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding, TArray<AGA_UI_Area*>* spawnInfoList) {
+void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding, TArray<AGA_UI_Area*>* spawnInfoList, int32 parent_zLayer) {
 	FActorSpawnParameters SpawnInfo;
 
 	SpawnInfo.Owner = this;
@@ -196,7 +197,9 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 		FRotator(0, 0, 0),
 		SpawnInfo
 	);
-	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, _parent_padding);
+	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, _parent_padding, parent_zLayer);
+
+	UE_LOG(LogClass, Log, TEXT("*** New layer: %d ***"), (area->zLayer + parent_zLayer + 1));
 
 	if (spawnInfoList != nullptr)
 		spawnInfoList->Add((AGA_UI_Area*)area);
@@ -210,8 +213,10 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 	if (suppliedArea->initialized) {
-		if (!suppliedArea->active)
+		if (suppliedArea->Inactive)
 			return;
+
+		suppliedArea->OnBeingDrawn();
 
 		// only execute draw-commands, if the menuID is currently active
 		if (currentMenuID != suppliedArea->activeOnMenuID)
@@ -339,7 +344,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 		}
 	}
 	else {
-		suppliedArea->init(UI_CAT_MAIN, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, { 0, 0 });
+		suppliedArea->init(UI_CAT_MAIN, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, { 0, 0 }, 0);
 	}
 }
 
