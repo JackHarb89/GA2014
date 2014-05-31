@@ -192,7 +192,7 @@ public:
 	GA_UI_Area_buttonState	buttonState;
 	void setButtonState(GA_UI_Area_buttonState new_buttonState);
 
-	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer);
+	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer);
 	void draw(UCanvas* canvasToUse);
 	bool update();
 
@@ -233,4 +233,5 @@ private:
 	FVector2D*				clickMouseLocation;
 	FVector2D*				prevMouseLocation;
 	FVector2D*				mouseLocation;
+	FVector2D*				currentScale;
 };

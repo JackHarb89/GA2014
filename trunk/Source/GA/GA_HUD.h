@@ -74,6 +74,10 @@ class AGA_HUD : public AHUD
 	int32 nextMenuID;
 
 	TMap<FString, bool>	enabledSections;
+	UFUNCTION(BlueprintCallable, Category = Sections)
+	int32 toggleSection(FString name, bool newValue);
+	UFUNCTION(BlueprintCallable, Category = Sections)
+	int32 getSection(FString name);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Areas)
 	TArray<UClass*> currentAreas;

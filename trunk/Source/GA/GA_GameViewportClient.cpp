@@ -14,8 +14,6 @@ bool UGA_GameViewportClient::InputChar(FViewport* InViewport, int32 ControllerId
 	FString CharacterString;
 	CharacterString += Character;
 
-	UE_LOG(LogClass, Log, TEXT("*** Current key: %s ***"), *CharacterString);
-
 	/************************************************************************/
 	/* CUSTOM                                                               */
 	/************************************************************************/
