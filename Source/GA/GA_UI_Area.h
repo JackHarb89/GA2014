@@ -65,6 +65,8 @@ public:
 	bool					IsDropZone;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					isTextArea;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "IDs")
+	FString					SectionName;
 
 	GA_UI_Area_type	type;
 

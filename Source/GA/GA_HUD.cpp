@@ -29,6 +29,12 @@ void AGA_HUD::UpdateValues() {
 void AGA_HUD::PostInitializeComponents() {
 	Super::PostInitializeComponents();
 
+	// TODO: Allow blueprint access to the keys and values (somehow make it use UPROPERTY)
+	enabledSections = TMap<FString, bool>();
+	enabledSections.Add("inventory", false);
+	enabledSections.Add("sessioninfo", false);
+	enabledSections.Add("escapemenu", false);
+
 	// get player controller
 	playerController = GetOwningPlayerController();
 }
@@ -213,7 +219,7 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 	if (suppliedArea->initialized) {
-		if (suppliedArea->Inactive)
+		 if (suppliedArea->Inactive || (suppliedArea->SectionName != "" && !enabledSections[suppliedArea->SectionName]))
 			return;
 
 		suppliedArea->OnBeingDrawn();
