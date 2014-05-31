@@ -26,6 +26,29 @@ void AGA_HUD::UpdateValues() {
 		clickMouseLocation = mouseLocation;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//////////////////// TMap Interface-Hack /////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// returns the new value 0/1(false/true) or -1 on failure
+int32 AGA_HUD::toggleSection(FString name, bool newValue) {
+	if (!enabledSections.Contains(name))
+		return -1;
+
+	enabledSections[name] = newValue;
+
+	return enabledSections[name] ? 1 : 0;
+}
+
+int32 AGA_HUD::getSection(FString name) {
+	if (!enabledSections.Contains(name))
+		return -1;
+
+	return enabledSections[name] ? 1 : 0;
+}
+//////////////////////////////////////////////////////////////////////////
+////////////////// TMap Interface-Hack END ///////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 void AGA_HUD::PostInitializeComponents() {
 	Super::PostInitializeComponents();
 
@@ -34,6 +57,8 @@ void AGA_HUD::PostInitializeComponents() {
 	enabledSections.Add("inventory", false);
 	enabledSections.Add("sessioninfo", false);
 	enabledSections.Add("escapemenu", false);
+	enabledSections.Add("storycontainer", false);
+	enabledSections.Add("worldmessages", false);
 
 	// get player controller
 	playerController = GetOwningPlayerController();
@@ -203,9 +228,7 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 		FRotator(0, 0, 0),
 		SpawnInfo
 	);
-	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, _parent_padding, parent_zLayer);
-
-	UE_LOG(LogClass, Log, TEXT("*** New layer: %d ***"), (area->zLayer + parent_zLayer + 1));
+	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &currentScale, &mouseHeld, &prevMouseHeld, _parent_padding, parent_zLayer);
 
 	if (spawnInfoList != nullptr)
 		spawnInfoList->Add((AGA_UI_Area*)area);
@@ -350,7 +373,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 		}
 	}
 	else {
-		suppliedArea->init(UI_CAT_MAIN, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &mouseHeld, &prevMouseHeld, { 0, 0 }, 0);
+		suppliedArea->init(UI_CAT_MAIN, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &currentScale, &mouseHeld, &prevMouseHeld, { 0, 0 }, 0);
 	}
 }
 
@@ -383,8 +406,7 @@ void AGA_HUD::EndCurrentInput(bool sendContent) {
 }
 
 void AGA_HUD::ParseKeyInput(const FString& newChar) {
-	//FString objName = (activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName();
-	UE_LOG(LogClass, Log, TEXT("*** Current key: %d %s [d] in '%s' ***"), newChar[0], *newChar, *((activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName()));
+	//UE_LOG(LogClass, Log, TEXT("*** Current key: %d %s [d] in '%s' ***"), newChar[0], *newChar, *((activeTypingArea == nullptr) ? "NULL" : activeTypingArea->GetName()));
 	
 	// jump to the chat, if we're ingame and enter is pressed
 	if (activeTypingArea == nullptr) {

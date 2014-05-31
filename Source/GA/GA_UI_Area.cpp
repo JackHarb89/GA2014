@@ -9,7 +9,7 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer) {
+void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer) {
 	if (initialized)
 		return;
 
@@ -17,6 +17,7 @@ void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLoca
 
 	// initialize this object
 	category = _category;
+	currentScale = _currentScale;
 
 	mouseLocation = _mouseLocation;
 	prevMouseLocation = _prevMouseLocation;
@@ -88,9 +89,9 @@ void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
 
 bool AGA_UI_Area::posInButton(FVector2D* pos) {
 	return (
-		pos->X > parent_padding.X + item_position.X && pos->X < parent_padding.X + item_position.X + item_size.X
+		(pos->X > (parent_padding.X + item_position.X) * currentScale->X) && pos->X < ((parent_padding.X + item_position.X + item_size.X) * currentScale->X)
 		&&
-		pos->Y > parent_padding.Y + item_position.Y && pos->Y < parent_padding.Y + item_position.Y + item_size.Y
+		(pos->Y > (parent_padding.Y + item_position.Y) * currentScale->Y) && pos->Y < ((parent_padding.Y + item_position.Y + item_size.Y) * currentScale->Y)
 	);
 }
 
