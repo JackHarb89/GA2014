@@ -20,7 +20,6 @@ namespace GA_UI_Dropphase {
 	};
 }
 
-
 UCLASS()
 class AGA_HUD : public AHUD
 {
@@ -74,6 +73,8 @@ class AGA_HUD : public AHUD
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug)
 	int32 nextMenuID;
 
+	TMap<FString, bool>	enabledSections;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Areas)
 	TArray<UClass*> currentAreas;
 	TArray<AGA_UI_Area*> currentSpawnedAreas;
@@ -120,7 +121,7 @@ class AGA_HUD : public AHUD
 	AGA_UI_Area* activeTypingArea;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TextAreas)
-	FString blinkChar;				// char(s) that is/are being added, to indicate, that an area is selected
+	FString blinkChar;									// char(s) that is/are being added, to indicate, that an area is selected
 
 	void ParseKeyInput(const FString& newCharAsString);
 
