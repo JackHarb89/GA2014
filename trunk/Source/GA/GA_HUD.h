@@ -92,6 +92,7 @@ class AGA_HUD : public AHUD
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	FVector2D originRes;
 	FVector2D currentRes;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = General)
 	FVector2D currentScale;
 
 	// Main				- manages everything (ingame-UI, menus, etc.)
