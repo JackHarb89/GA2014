@@ -7,7 +7,7 @@
 AGAGameState::AGAGameState(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
-
+	MiniMapCamera = NULL;
 }
 
 

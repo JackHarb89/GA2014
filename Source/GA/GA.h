@@ -5,4 +5,11 @@
 
 #include "Engine.h"
 
+// Add SceneCapture for Minimap
+#include "../../../../../Source/Runtime/Engine/Classes/Engine/SceneCapture.h"
+#include "../../../../../Source/Runtime/Engine/Classes/Engine/SceneCapture2D.h"
+#include "../../../../../Source/Runtime/Engine/Classes/Components/SceneCaptureComponent.h"
+#include "../../../../../Source/Runtime/Engine/Classes/Components/SceneCaptureComponent2D.h"
+#include "../../../../../Source/Runtime/Engine/Classes/Components/SceneCaptureComponentCube.h"
+
 #endif

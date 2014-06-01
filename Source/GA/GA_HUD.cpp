@@ -157,6 +157,9 @@ void AGA_HUD::Draw() {
 
 	if (!playerController->PlayerInput) return;
 
+	// Blueprint hook
+	ReceiveDrawHUD(Canvas->SizeX, Canvas->SizeY);
+
 	AGA_HUD::Draw_CanvasItems();
 
 	AGA_HUD::Draw_DragNDrop();

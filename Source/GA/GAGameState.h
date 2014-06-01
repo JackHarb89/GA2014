@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/GameState.h"
+#include "StrategyMiniMapCapture.h"
 #include "GAGameState.generated.h"
 
 /**
@@ -13,6 +14,6 @@ class AGAGameState : public AGameState
 {
 	GENERATED_UCLASS_BODY()
 
-	
-	
+	TWeakObjectPtr<class AStrategyMiniMapCapture> MiniMapCamera;
+	FBox WorldBounds;
 };
