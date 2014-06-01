@@ -23,9 +23,12 @@ class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Base Health
+	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Base Health")						int32 BaseHealth;
+
 	// Chat
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, Category = "Chat")					FString UserName;
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")					TArray<FString> ChatLog;
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")			TArray<FString> ChatLog;
 
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
@@ -170,6 +173,9 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
+	// Server Base Health
+	UFUNCTION(reliable, server, WithValidation)												void ServerReduceBaseHealth();
+
 	// Server Chat
 	UFUNCTION(Category="Chat", BlueprintCallable, reliable, server, WithValidation)			void ServerSendChatMessage(const FString& Message);
 
@@ -190,6 +196,7 @@ class AGACharacter : public ACharacter
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
+	void ReduceBaseHealth();
 
 	// Chat
 	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
