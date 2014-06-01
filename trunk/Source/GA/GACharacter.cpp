@@ -15,6 +15,9 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 {
 	isInit = false;
 
+	// Base Health
+	BaseHealth = 25;
+
 	// Equip
 	ItemDamage = 0;
 	ItemHealth = 0;
@@ -447,6 +450,20 @@ void AGACharacter::TakeDamageByEnemy(float Damage){
 		HasTookDamage = true;
 		CharacterTookDamage();
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
+	}
+}
+
+#pragma endregion
+
+#pragma region Base Health
+
+void AGACharacter::ReduceBaseHealth(){
+	if (Role < ROLE_Authority){
+		ServerReduceBaseHealth();
+	}
+	else {
+		BaseHealth--;
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: BASE TOOK DAMAGE (%d) ***"),BaseHealth);
 	}
 }
 
@@ -920,6 +937,14 @@ void AGACharacter::OnRep_HasTookDamage(){
 
 bool AGACharacter::ServerTakeDamageByEnemy_Validate(float Damage){return true;}
 void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){TakeDamageByEnemy(Damage);}
+
+#pragma endregion
+
+#pragma region Network - Base Health
+
+bool AGACharacter::ServerReduceBaseHealth_Validate(){return true;}
+void AGACharacter::ServerReduceBaseHealth_Implementation(){ReduceBaseHealth();}
+
 
 #pragma endregion
 

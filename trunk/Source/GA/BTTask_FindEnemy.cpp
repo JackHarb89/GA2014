@@ -19,12 +19,16 @@ EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent*
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
 	APawn* EnemyPawn = MyAI->GetPawn();
 	if (MyAI && EnemyPawn){
+		float AggroRange = 1500;
 		APawn* ClosestPlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
 		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) >
 				FVector::Dist(EnemyPawn->GetActorLocation(), ActorItr->GetActorLocation())){
 				ClosestPlayerPawn = *ActorItr;
 			}
+		}
+		if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) > AggroRange){
+			ClosestPlayerPawn = NULL;
 		}
 		OwnerComp->GetBlackboardComponent()->SetValueAsObject(GetSelectedBlackboardKey(), ClosestPlayerPawn);
 		return EBTNodeResult::Succeeded;
