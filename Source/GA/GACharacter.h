@@ -100,7 +100,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Base Health")						int32 BaseHealth;
 
 	// Chat
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, Category = "Chat")					FString UserName;
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")					FString UserName;
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")			TArray<FString> ChatLog;
 
 	// Movement
@@ -201,6 +201,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterUsedPotion();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedAura();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -250,7 +251,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerReduceBaseHealth();
 
 	// Server Chat
-	UFUNCTION(Category="Chat", BlueprintCallable, reliable, server, WithValidation)			void ServerSendChatMessage(const FString& Message);
+	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerSendChatMessage(const FString& Message);
+	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerChangeUserName(const FString& Message);
 
 	
 	// Replication Notify Functions
@@ -266,6 +268,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasUsedPotion();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
 	UFUNCTION()																				void OnRep_ChatMessages();
+	UFUNCTION()																				void OnRep_UserName();
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
@@ -277,6 +280,7 @@ class AGACharacter : public ACharacter
 	// have to be public to be called by blueprint classes
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void BuyItem();
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void SellItem(AGAItem* item);
+	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
 protected:
 	// Chat
 	// made this function public, so the UI can launch them

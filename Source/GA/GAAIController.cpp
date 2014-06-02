@@ -13,8 +13,8 @@ AGAAIController::AGAAIController(const class FPostConstructInitializeProperties&
 
 	BehaviorComp = PCIP.CreateDefaultSubobject<UBehaviorTreeComponent>(this, TEXT("BehaviorComp"));
 	
-	bWantsPlayerState = true;
-	PrimaryActorTick.bCanEverTick = true;
+	//bWantsPlayerState = true;
+	//PrimaryActorTick.bCanEverTick = true;
 }
 
 void AGAAIController::Possess(APawn* InPawn)
