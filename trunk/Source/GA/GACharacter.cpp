@@ -1086,6 +1086,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Special Attack
 	DOREPLIFETIME(AGACharacter, SpecialAttackChargeTimer);
+	DOREPLIFETIME(AGACharacter, SpecialAttackCoolDown);
 	DOREPLIFETIME(AGACharacter, SpecialAttackTimesCharged);
 	DOREPLIFETIME(AGACharacter, SpecialAttackMaxCharges);
 	DOREPLIFETIME(AGACharacter, SpecialAttackCoolDownResetValue);
