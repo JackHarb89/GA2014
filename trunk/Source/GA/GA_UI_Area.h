@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GA.h"
 #include "GameFramework/Actor.h"
 #include "GA_UI_Enums.h"
 #include "GA_UI_Area.generated.h"
@@ -194,6 +195,8 @@ public:
 
 	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer);
 	void draw(UCanvas* canvasToUse);
+
+	UFUNCTION(BlueprintCallable, Category = Refresher)
 	bool update();
 
 

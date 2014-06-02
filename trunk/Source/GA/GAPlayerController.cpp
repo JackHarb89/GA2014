@@ -16,7 +16,7 @@ void AGAPlayerController::PlayerTick(float DeltaTime) {
 		bShowMouseCursor = false;
 	}
 	else {
-	bShowMouseCursor = true;
+		bShowMouseCursor = true;
 	}
 }
 

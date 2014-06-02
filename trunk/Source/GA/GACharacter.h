@@ -6,6 +6,76 @@
 #include "GAShop.h"
 #include "GACharacter.generated.h"
 
+// actual inventory
+USTRUCT()
+struct FInventoryRow {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<AGAItem*> column;
+
+	FInventoryRow(int32 avalibleColumns) {
+		for (int i = 0; i < avalibleColumns; i++) {
+			column.Add(nullptr);
+		}
+	}
+
+	FInventoryRow() {}
+};
+
+USTRUCT()
+struct FGA_Inventory {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FInventoryRow> rows;
+
+	int32 columnAmount;
+	int32 rowAmount;
+
+	FGA_Inventory () {
+		columnAmount = 5;
+		rowAmount = 3;
+		for (int i = 0; i < rowAmount; i++) {
+			rows.Add(FInventoryRow(columnAmount));
+		}
+	}
+
+ 	bool newSlot(int32 &row, int32 &col) {
+		for (int i = 0; i < rowAmount; i++) {
+			for (int j = 0; j < columnAmount; j++) {
+				if (rows[i].column[j] == nullptr) {
+					row = i;
+					col = j;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	void registerElement(AGAItem* newItem) {
+		// get first free slot
+		int32 row = 0;
+		int32 col = 0;
+		if (newSlot(row, col))
+			rows[row].column[col] = newItem;
+		else 
+			UE_LOG(LogClass, Log, TEXT("*** Found no new slot! (That's kinda bad - or the inventory is simply full...) ***"));
+	}
+
+	bool clearElement(int row, int col) {
+		bool returnThis = rows[row].column[col] != nullptr;
+
+		// garbage clean the actual "item" array, since we only delete the reference
+		rows[row].column[col] = nullptr;
+
+		return returnThis;
+	}
+};
+// actual inventory end
+
 USTRUCT(BlueprintType)
 struct FEquipment
 {
@@ -22,6 +92,9 @@ UCLASS()
 class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
+	FGA_Inventory inventory;
 
 	// Base Health
 	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Base Health")						int32 BaseHealth;
@@ -201,7 +274,9 @@ class AGACharacter : public ACharacter
 	// Chat
 	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
 	
-	UFUNCTION(Category = "Chat", BlueprintCallable)			void BuyItem();					// has to be public to be called by blueprint classes
+	// have to be public to be called by blueprint classes
+	UFUNCTION(Category = "Shop", BlueprintCallable)											void BuyItem();
+	UFUNCTION(Category = "Shop", BlueprintCallable)											void SellItem(AGAItem* item);
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
@@ -217,7 +292,6 @@ protected:
 	void EquipItem(AGAItem* item);
 	void PickUpItem(AGAItem* item);
 	void CalculateItems();
-	void SellItem(AGAItem* item);
 
 	// *** TEMPORARY DUE TO NO UI ***
 	void SellLastItem();

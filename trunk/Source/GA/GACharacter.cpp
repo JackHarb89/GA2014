@@ -657,6 +657,7 @@ void AGACharacter::PickUpItem(AGAItem* item){
 		else{
 			InventoryItems.Add(item);
 			item->DestroyConstructedComponents();
+			inventory.registerElement(item);
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
 			EquipItem(item);
 		}
