@@ -31,19 +31,34 @@ void AGA_HUD::UpdateValues() {
 //////////////////////////////////////////////////////////////////////////
 // returns the new value 0/1(false/true) or -1 on failure
 int32 AGA_HUD::toggleSection(FString name, bool newValue) {
-	if (!enabledSections.Contains(name))
+	int32 entryID;
+	if (!enabledSectionNames.Contains(name)) {
 		return -1;
+	}
+	else {
+		entryID = enabledSectionNames.Find(name);
+		
+		if (entryID == -1)
+			return -1;
+	}
 
-	enabledSections[name] = newValue;
+	enabledSectionStates[entryID] = newValue;
 
-	return enabledSections[name] ? 1 : 0;
+	return enabledSectionStates[entryID] ? 1 : 0;
 }
 
 int32 AGA_HUD::getSection(FString name) {
-	if (!enabledSections.Contains(name))
+	int32 entryID;
+	if (!enabledSectionNames.Contains(name)) {
 		return -1;
-
-	return enabledSections[name] ? 1 : 0;
+	}
+	else {
+		entryID = enabledSectionNames.Find(name);
+		if (entryID == -1)
+			return -1;
+		else
+			return enabledSectionStates[entryID] ? 1 : 0;
+	}
 }
 //////////////////////////////////////////////////////////////////////////
 ////////////////// TMap Interface-Hack END ///////////////////////////////
@@ -52,13 +67,20 @@ int32 AGA_HUD::getSection(FString name) {
 void AGA_HUD::PostInitializeComponents() {
 	Super::PostInitializeComponents();
 
-	// TODO: Allow blueprint access to the keys and values (somehow make it use UPROPERTY)
-	enabledSections = TMap<FString, bool>();
-	enabledSections.Add("inventory", false);
-	enabledSections.Add("sessioninfo", false);
-	enabledSections.Add("escapemenu", false);
-	enabledSections.Add("storycontainer", false);
-	enabledSections.Add("worldmessages", false);
+	enabledSectionNames.Add("inventory");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("sessioninfo");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("escapemenu");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("storycontainer");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("worldmessages");
+	enabledSectionStates.Add(false);
 
 	// get player controller
 	playerController = GetOwningPlayerController();
@@ -81,13 +103,9 @@ void AGA_HUD::Spawn_CanvasItems() {
 
 	// spawn all children
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
-		if (area && area->IsValidLowLevel()) {
-			TArray<UClass*> childAreas = (area)->childAreas;
-			int tmp = childAreas.Num();
-
-			if (tmp > 0)
-			for (int j = 0; j < childAreas.Num(); j++) {
-				RunSpawnLogic(childAreas[j], UI_CAT_HOVER, (area)->item_position, &(area->spawnedChildAreas), (area->zLayer + 1));
+		if (area != NULL) {
+			for (int j = 0; j < area->childAreas.Num(); j++) {
+				RunSpawnLogic(area->childAreas[j], UI_CAT_HOVER, area->item_position, &(area->spawnedChildAreas), (area->zLayer + 1));
 			}
 		}
 		else {
@@ -107,6 +125,7 @@ void AGA_HUD::Draw_CanvasItems() {
 		dropArea = nullptr;
 	}
 
+	
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
 		if (mouseHeld && area->posInButton(&mouseLocation))
 			ActivateTypingArea(area);
@@ -114,8 +133,11 @@ void AGA_HUD::Draw_CanvasItems() {
 		if (mouseHeld && !area->posInButton(&mouseLocation) && area == activeTypingArea)
 			EndCurrentInput(false);
 
-		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
-			bool tmp = true;
+		/*
+			To delete
+			if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
+				bool tmp = true;
+		*/
 
 		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->IsDropZone && area->posInButton(&mouseLocation))
 			dropArea = area;
@@ -145,7 +167,6 @@ void AGA_HUD::Draw_CanvasItems() {
 	if (nextMenuID != currentMenuID && nextMenuID != -1) {
 		currentMenuID = nextMenuID;
 	}
-
 }
 
 void AGA_HUD::Draw() {
@@ -160,11 +181,11 @@ void AGA_HUD::Draw() {
 	// Blueprint hook
 	ReceiveDrawHUD(Canvas->SizeX, Canvas->SizeY);
 
-	AGA_HUD::Draw_CanvasItems();
+	Draw_CanvasItems();
 
-	AGA_HUD::Draw_DragNDrop();
+	Draw_DragNDrop();
 
-	AGA_HUD::Draw_Cursor();
+	Draw_Cursor();
 }
 
 void AGA_HUD::Draw_DragNDrop() {
@@ -231,6 +252,10 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 		FRotator(0, 0, 0),
 		SpawnInfo
 	);
+	if (area == NULL) {
+		UE_LOG(LogClass, Log, TEXT("*** Area couldn't spawn. ***"));
+		return;
+	}
 	area->init(_category, &clickMouseLocation, &prevMouseLocation, &mouseLocation, &currentScale, &mouseHeld, &prevMouseHeld, _parent_padding, parent_zLayer);
 
 	if (spawnInfoList != nullptr)
@@ -245,8 +270,21 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 	if (suppliedArea->initialized) {
-		 if (suppliedArea->Inactive || (suppliedArea->SectionName != "" && !enabledSections[suppliedArea->SectionName]))
+		if (suppliedArea->Inactive)
 			return;
+
+		if (suppliedArea->SectionName != "") {
+			switch (getSection(suppliedArea->SectionName)) {
+				case -1:
+					UE_LOG(LogClass, Log, TEXT("*** Area has section-name '%s', that isn't listed in the 'enabledSectionNames'. ***"), *suppliedArea->SectionName);
+					break;
+				case 0:
+					return;
+					break;
+				case 1:
+					break;
+			}
+		}
 
 		suppliedArea->OnBeingDrawn();
 

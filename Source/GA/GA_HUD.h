@@ -73,7 +73,12 @@ class AGA_HUD : public AHUD
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Debug)
 	int32 nextMenuID;
 
-	TMap<FString, bool>	enabledSections;
+	// hack for TMap-garbage clean prevention
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Section)
+	TArray<FString> enabledSectionNames;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Section)
+	TArray<bool> enabledSectionStates;
+	
 	UFUNCTION(BlueprintCallable, Category = Sections)
 	int32 toggleSection(FString name, bool newValue);
 	UFUNCTION(BlueprintCallable, Category = Sections)
