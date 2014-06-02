@@ -200,9 +200,9 @@ public:
 	bool update();
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Areas")
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Areas")
 	TArray<UClass*>			childAreas;
-	UPROPERTY(BlueprintReadWrite, Category = "Areas")
+	UPROPERTY(Transient, BlueprintReadWrite, Category = "Areas")
 	TArray<AGA_UI_Area*>	spawnedChildAreas;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")

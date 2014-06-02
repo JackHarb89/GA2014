@@ -7,6 +7,7 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
 	PrimaryActorTick.bCanEverTick = true;
+	currentlyDragged = false;
 }
 
 void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer) {
@@ -68,8 +69,8 @@ void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLoca
 }
 
 void AGA_UI_Area::toggleChildren(bool state) {
-	for (int i = 0; i < childAreas.Num(); i++) {
-		((AGA_UI_Area*)childAreas[i])->Inactive = !state;
+	for (int i = 0; i < spawnedChildAreas.Num(); i++) {
+		spawnedChildAreas[i]->Inactive = !state;
 	}
 }
 
