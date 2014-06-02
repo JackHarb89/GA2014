@@ -33,8 +33,8 @@ void AGAShop::GenerateItem(){
 	else{
 		int32 randomIndex = FMath::RandRange(0, ShopItems.Num() - 1);
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = Instigator;
+		SpawnParams.Owner = this->GetOwner();
+		SpawnParams.Instigator = this->GetInstigator();
 		SpawnParams.bNoCollisionFail = true;
 
 		FVector SpawnLocation = this->GetActorLocation();

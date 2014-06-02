@@ -56,7 +56,7 @@ void AGAEnemy::SpawnAIController(){
 		SpawnInfo.Instigator = Instigator;
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.OverrideLevel = GetLevel();
-		Controller = GetWorld()->SpawnActor<AController>(AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnInfo);
+		Controller = GetWorld()->SpawnActor<AGAAIController>(AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnInfo);
 		if (Controller != NULL)
 		{
 			Controller->Possess(this);
@@ -203,7 +203,7 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 		CharacterTookDamage();
 		if (HealthPoints <= 0){
 			CheckItemDrop();
-			this->Destroy();
+			if (GetWorld())	GetWorld()->DestroyActor(this);
 		}
 	}
 }

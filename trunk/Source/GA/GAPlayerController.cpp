@@ -11,7 +11,7 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
-	Super::PlayerTick(DeltaTime);	
+	Super::PlayerTick(DeltaTime);
 	if (((AGA_HUD*)MyHUD)->activeTypingArea == nullptr && !((AGA_HUD*)MyHUD)->getSection("inventory") && !((AGA_HUD*)MyHUD)->getSection("escapemenu")) {
 		bShowMouseCursor = false;
 	}

@@ -123,12 +123,12 @@ void AGACharacter::InitPlayer(){
 
 	// Shop
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = Instigator;
+	SpawnParams.Owner = this->GetOwner();
+	SpawnParams.Instigator = this->GetInstigator();
 	SpawnParams.bNoCollisionFail = true;
 
-	FVector SpawnLocation = this->GetActorLocation();
-	FRotator SpawnRotation = this->GetActorRotation();
+	FVector SpawnLocation = { 0, 0, 0 };  // this->GetActorLocation();
+	FRotator SpawnRotation = { 0, 0, 0 }; //this->GetActorRotation();
 	
 	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass,SpawnLocation,SpawnRotation,SpawnParams);
 	
@@ -833,6 +833,26 @@ void AGACharacter::OnRep_ChatMessages(){
 	UE_LOG(LogClass, Log, TEXT("*** CLIENT :: %s ***"), *ChatLog[0]);
 }
 
+// ****  TMP ****
+void AGACharacter::OnRep_UserName(){
+	CharacterChangedName();
+	UE_LOG(LogClass, Log, TEXT("*** CLIENT :: CHANGED USER NAME ***"));
+}
+
+void AGACharacter::ChangeUserName(const FString& Message){
+	if (Role < ROLE_Authority){
+		ServerChangeUserName(Message);
+	}
+	else{
+		UserName = Message;
+		CharacterChangedName();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CHANGED USER NAME ***"));
+	}
+}
+
+bool AGACharacter::ServerChangeUserName_Validate(const FString& Message){ return true; }
+void AGACharacter::ServerChangeUserName_Implementation(const FString& Message){ ChangeUserName(Message); }
+
 bool AGACharacter::ServerSendChatMessage_Validate(const FString& Message){ return true; }
 void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){ SendChatMessage(Message); }
 
@@ -1111,6 +1131,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Chat
 	DOREPLIFETIME(AGACharacter, ChatLog);
+	DOREPLIFETIME(AGACharacter, UserName);
 
 	// Items	
 	DOREPLIFETIME(AGACharacter, Potions);

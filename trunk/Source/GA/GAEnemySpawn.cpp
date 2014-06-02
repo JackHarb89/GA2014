@@ -65,7 +65,7 @@ void AGAEnemySpawn::DestroySpawn(){
 		ServerDestroySpawn();
 	}
 	else {
-		this->Destroy();
+		if (GetWorld())	GetWorld()->DestroyActor(this);
 	}
 }
 
