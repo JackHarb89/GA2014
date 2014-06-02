@@ -123,12 +123,12 @@ void AGACharacter::InitPlayer(){
 
 	// Shop
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this->GetOwner();
-	SpawnParams.Instigator = this->GetInstigator();
+	SpawnParams.Owner = GetOwner();
+	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.bNoCollisionFail = true;
 
-	FVector SpawnLocation = { 0, 0, 0 };  // this->GetActorLocation();
-	FRotator SpawnRotation = { 0, 0, 0 }; //this->GetActorRotation();
+	FVector SpawnLocation = { 0, 0, 0 };
+	FRotator SpawnRotation = { 0, 0, 0 };
 	
 	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass,SpawnLocation,SpawnRotation,SpawnParams);
 	
@@ -171,7 +171,6 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 }
 
 #pragma region Movement
-
 
 void AGACharacter::TurnAtRate(float Rate)
 {

@@ -53,7 +53,7 @@ void AGAEnemy::SpawnAIController(){
 	if (AIControllerClass != NULL)
 	{
 		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.Instigator = Instigator;
+		SpawnInfo.Instigator = GetInstigator();
 		SpawnInfo.bNoCollisionFail = true;
 		SpawnInfo.OverrideLevel = GetLevel();
 		Controller = GetWorld()->SpawnActor<AGAAIController>(AIControllerClass, GetActorLocation(), GetActorRotation(), SpawnInfo);
@@ -153,15 +153,15 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 	UWorld* const World = GetWorld();
 	if (World){
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = Instigator;
+		SpawnParams.Owner = GetOwner();
+		SpawnParams.Instigator = GetInstigator();
 		SpawnParams.bNoCollisionFail = true;
 
 		FVector SpawnLocation;
 		FRotator SpawnRotation;
 
-		SpawnLocation = this->GetActorLocation();
-		SpawnRotation = this->GetActorRotation();
+		SpawnLocation = GetActorLocation();
+		SpawnRotation = GetActorRotation();
 
 		AGAItem* DropedItem = World->SpawnActor<AGAItem>(item, SpawnLocation, SpawnRotation, SpawnParams);
 		if (DropedItem != NULL) {
