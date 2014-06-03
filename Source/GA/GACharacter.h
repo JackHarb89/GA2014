@@ -281,6 +281,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void BuyItem();
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void SellItem(AGAItem* item);
 	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
+
+	UFUNCTION(Category = "Combat", BlueprintCallable)										bool IsCharging();
 protected:
 	// Chat
 	// made this function public, so the UI can launch them

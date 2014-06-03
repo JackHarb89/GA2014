@@ -386,6 +386,10 @@ bool AGACharacter::isAllowedToMove(){
 	return !SpecialAttackIsCharging;
 }
 
+bool AGACharacter::IsCharging(){
+	return SpecialAttackIsCharging;
+}
+
 #pragma endregion
 
 #pragma region Regeneration
