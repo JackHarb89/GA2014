@@ -198,16 +198,37 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else{
-		HealthPoints -= (Damage - (Armor*0.25*Damage)/100);
+		HealthPoints -= (Damage - (Armor*0.25*Damage) / 100);
 		HasTookDamage = true;
 		CharacterTookDamage();
+		CheckDeath();
+	}
+}
+
+#pragma endregion
+
+#pragma region Check Death
+void AGAEnemy::CheckDeath(){
+	if (Role < ROLE_Authority){
+		ServerCheckDeath();
+	}
+	else {
 		if (HealthPoints <= 0){
-			CheckItemDrop();
-			if (GetWorld())	GetWorld()->DestroyActor(this);
+			CharacterDied();
 		}
 	}
 }
 
+bool AGAEnemy::ServerCheckDeath_Validate(){ return true; }
+void AGAEnemy::ServerCheckDeath_Implementation(){ CheckDeath(); }
+#pragma endregion
+
+#pragma region Do Death
+void AGAEnemy::DoDeath(){
+	CheckItemDrop();
+	if (GetWorld())
+		GetWorld()->DestroyActor(this);
+}
 #pragma endregion
 
 #pragma region Network - Attack Simple

@@ -28,6 +28,7 @@ class AGAEnemy : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
+public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Behavior)				class UBehaviorTree* EnemyBehavior;
 
 	// Loottable
@@ -52,8 +53,12 @@ class AGAEnemy : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterAttackedSimple();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterTookDamage();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")						void CharacterDied();
+
 	UFUNCTION(reliable, server, WithValidation)													void ServerAttackSimple();
 	UFUNCTION(reliable, server, WithValidation)													void ServerReduceSimpleAttackCoolDown(float Delta);
+
+	UFUNCTION(reliable, server, WithValidation)													void ServerCheckDeath();
 
 	UFUNCTION(reliable, server, WithValidation)													void ServerTakeDamageByEnemy(float Damage);
 	UFUNCTION(unreliable, server, WithValidation)												void ServerResetHasTookDamage();
@@ -62,7 +67,8 @@ class AGAEnemy : public ACharacter
 
 	UFUNCTION()																					void OnRep_HasTookDamage();
 	UFUNCTION()																					void OnRep_SimpleAttackOnCoolDown();
-
+	
+	UFUNCTION(Category = "Death", BlueprintCallable)											void DoDeath();
 
 	void TakeDamageByEnemy(float Damage);
 	bool DealDamage();
@@ -79,4 +85,6 @@ class AGAEnemy : public ACharacter
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 	void SpawnAIController();
+protected:
+	void CheckDeath();
 };
