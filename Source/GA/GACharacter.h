@@ -193,7 +193,6 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAttackedSpecial();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterStartedCharging();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterIsCharging();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterStartedRegeneration();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterFinishedRegeneration();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterPickedUpItem();
@@ -203,6 +202,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDied();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterHasTakenDamage(float Damage);
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -286,6 +286,9 @@ class AGACharacter : public ACharacter
 	UFUNCTION(Category = "Combat", BlueprintCallable)										bool IsCharging();
 
 	UFUNCTION(Category = "Death", BlueprintCallable)										void DoDeath();
+
+	UFUNCTION(Category = "Damage", BlueprintCallable)										void ApplyDamage(float Damage);
+
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
