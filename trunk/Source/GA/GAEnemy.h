@@ -51,9 +51,11 @@ public:
 
 	// Events
 	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterAttackedSimple();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterTookDamage();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Combat Event")							void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")						void CharacterDied();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")						void CharacterHasTakenDamage(float Damage);
+
 
 	UFUNCTION(reliable, server, WithValidation)													void ServerAttackSimple();
 	UFUNCTION(reliable, server, WithValidation)													void ServerReduceSimpleAttackCoolDown(float Delta);
@@ -69,6 +71,9 @@ public:
 	UFUNCTION()																					void OnRep_SimpleAttackOnCoolDown();
 	
 	UFUNCTION(Category = "Death", BlueprintCallable)											void DoDeath();
+
+	UFUNCTION(Category = "Damage", BlueprintCallable)										void ApplyDamage(float Damage);
+
 
 	void TakeDamageByEnemy(float Damage);
 	bool DealDamage();

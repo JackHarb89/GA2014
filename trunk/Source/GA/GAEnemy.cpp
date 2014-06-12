@@ -198,11 +198,15 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else{
-		HealthPoints -= (Damage - (Armor*0.25*Damage) / 100);
-		HasTookDamage = true;
-		CharacterTookDamage();
-		CheckDeath();
+		CharacterHasTakenDamage(Damage);
 	}
+}
+
+void AGAEnemy::ApplyDamage(float Damage) {
+	HealthPoints -= (Damage - (Armor*0.25*Damage) / 100);
+	HasTookDamage = true;
+	CharacterTookDamage();
+	CheckDeath();
 }
 
 #pragma endregion

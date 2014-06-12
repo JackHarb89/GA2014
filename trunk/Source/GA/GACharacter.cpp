@@ -438,22 +438,25 @@ void AGACharacter::RegenerateHealth(float Delta){
 #pragma region Take Damage
 
 // Player Take Damage By Enemy For The Given Amount (Reduced By Armor)
-void AGACharacter::TakeDamageByEnemy(float Damage){
-	if (Role < ROLE_Authority){
+void AGACharacter::TakeDamageByEnemy(float Damage) {
+	if (Role < ROLE_Authority) {
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else {
-		AllowedToRegenerate = false;
-		RegenerationAnimationIsRunning = false;
-		RegenerationTimer = 0;
-		RegenerationTime = 0;
-		CharacterFinishedRegeneration();
-		HealthPoints -= (Damage - (Armor * ArmorReductionPercent * Damage) / 100);
-
-		HasTookDamage = true;
-		CharacterTookDamage();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
+		CharacterHasTakenDamage(Damage);
 	}
+}
+
+void AGACharacter::ApplyDamage(float Damage) {
+	AllowedToRegenerate = false;
+	RegenerationAnimationIsRunning = false;
+	RegenerationTimer = 0;
+	RegenerationTime = 0;
+	CharacterFinishedRegeneration();
+	HealthPoints -= (Damage - (Armor * ArmorReductionPercent * Damage) / 100);
+
+	HasTookDamage = true;
+	UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
 }
 
 #pragma endregion
@@ -961,7 +964,6 @@ void AGACharacter::ServerRegenerateHealth_Implementation(float Delta){ Regenerat
 // Client Reaction On Replication Notification - Only React If True
 void AGACharacter::OnRep_HasTookDamage(){
 	if (HasTookDamage){
-		CharacterTookDamage();
 		CharacterFinishedRegeneration();
 		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: TOOK DAMAGE ***"));
 		HasTookDamage = false;
