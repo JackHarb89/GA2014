@@ -472,6 +472,16 @@ void AGACharacter::ReduceBaseHealth(){
 
 #pragma endregion
 
+#pragma region Do Death
+
+// Checks The Health Amount And Kill The Player If 0 Or Below
+void AGACharacter::DoDeath(){
+	HasDied = true;
+	Destroy();
+}
+
+#pragma endregion
+
 #pragma region Check Death
 
 // Checks The Health Amount And Kill The Player If 0 Or Below
@@ -481,8 +491,7 @@ void AGACharacter::CheckDeath(){
 	}
 	else{
 		if (HealthPoints <= 0){
-			HasDied = true;
-			Destroy();
+			CharacterDied();
 			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
@@ -982,7 +991,7 @@ void AGACharacter::OnRep_HasDied(){
 	}
 }
 
-bool AGACharacter::ServerCheckDeath_Validate(){return true;}
+bool AGACharacter::ServerCheckDeath_Validate(){ return true; }
 void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
 #pragma endregion

@@ -202,6 +202,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDied();
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -283,6 +284,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
 
 	UFUNCTION(Category = "Combat", BlueprintCallable)										bool IsCharging();
+
+	UFUNCTION(Category = "Death", BlueprintCallable)										void DoDeath();
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
