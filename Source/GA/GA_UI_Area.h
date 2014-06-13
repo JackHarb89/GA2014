@@ -56,6 +56,8 @@ public:
 	// prevent certain changes
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
 	bool					Inactive;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
+	bool					dontRefresh;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
@@ -186,6 +188,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Background - Material")
 	UMaterialInterface*		active_backgroundMaterial;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Background - Material")
 	UMaterialInterface*		current_backgroundMaterial;
 
 

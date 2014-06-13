@@ -76,7 +76,7 @@ void AGA_UI_Area::toggleChildren(bool state) {
 
 
 void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
-	if (category == UI_CAT_HOVER) {
+	if (category == UI_CAT_HOVER || dontRefresh) {
 		buttonState = BUTTON_REGULAR;
 		return;
 	}
