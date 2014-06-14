@@ -105,7 +105,7 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Shop
-	static ConstructorHelpers::FObjectFinder<UBlueprint> ShopBP(TEXT("/Game/Blueprints/Shop.Shop"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> ShopBP(TEXT("/Game/UI/Classes/Shop.Shop"));
 	ShopClass = (UClass*)ShopBP.Object->GeneratedClass;
 
 }
