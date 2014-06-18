@@ -12,9 +12,6 @@ AGASpawnTrigger::AGASpawnTrigger(const class FPostConstructInitializeProperties&
 
 // If Trigger Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "TriggerAble" ***
 void AGASpawnTrigger::ReceiveActorBeginOverlap(class AActor* OtherActor){
-	if (ActorHasTag("BaseTrigger")){
-		UE_LOG(LogClass, Log, TEXT("*** TRIGGER :: I AM BASE TRIGGER ***"));
-	}
 	if (OtherActor->ActorHasTag("TriggerAble") && !isTriggered){
 		isTriggered = true;
 		UE_LOG(LogClass, Log, TEXT("*** TRIGGER :: TOUCHED ACTOR ***"));
