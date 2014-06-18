@@ -19,4 +19,9 @@ class AGAPlayerController : public APlayerController
 
 	// Server
 	UFUNCTION(exec) void HostGameWithMap(const FString& mapName);
+	UFUNCTION(exec) void SetListenPort(int32 newPort);
+
+private:
+
+	int32 ListenPort;
 };

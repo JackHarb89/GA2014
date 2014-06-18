@@ -8,6 +8,7 @@
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	ListenPort = 7777;
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
@@ -22,10 +23,17 @@ void AGAPlayerController::PlayerTick(float DeltaTime) {
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
 void AGAPlayerController::ConnectToServer(const FString& ip){
-	ClientTravel((TEXT("%s"), *ip), TRAVEL_Absolute, false);
+	ClientTravel((TEXT("%s"), *ip), TRAVEL_Absolute, true);
 }
 
-// Start Listening For Connections. Map Example: "Example_Map"
+// Start Listening For Connections. Map Example: "Example_Map" *** CHANGE CURRENT MAP DID NOT WORK ATM ***
 void AGAPlayerController::HostGameWithMap(const FString& mapName){
-	GetWorld()->ServerTravel((TEXT("%s?Listen"), *mapName), true, true);
+	FURL url = GetWorld()->URL;
+	url.Map = mapName;
+	url.Port = ListenPort;
+	GetWorld()->Listen(url);
+}
+
+void AGAPlayerController::SetListenPort(int32 newPort){
+	ListenPort = newPort;
 }
