@@ -96,9 +96,6 @@ class AGACharacter : public ACharacter
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
 
-	// Base Health
-	UPROPERTY(BlueprintReadWrite, Replicated, Category = "Base Health")						int32 BaseHealth;
-
 	// Chat
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")					FString UserName;
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")			TArray<FString> ChatLog;
@@ -203,6 +200,8 @@ class AGACharacter : public ACharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDied();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterHasTakenDamage(float Damage);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterLostGame();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterWonGame();
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -248,9 +247,6 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
-	// Server Base Health
-	UFUNCTION(reliable, server, WithValidation)												void ServerReduceBaseHealth();
-
 	// Server Chat
 	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerSendChatMessage(const FString& Message);
 	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerChangeUserName(const FString& Message);
@@ -273,7 +269,6 @@ class AGACharacter : public ACharacter
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage);
-	void ReduceBaseHealth();
 
 	// Chat
 	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);

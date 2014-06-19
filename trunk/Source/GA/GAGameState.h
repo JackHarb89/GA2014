@@ -16,4 +16,10 @@ class AGAGameState : public AGameState
 
 	TWeakObjectPtr<class AStrategyMiniMapCapture> MiniMapCamera;
 	FBox WorldBounds;
+
+	void ReduceBaseHealth();
+	void FinishGame();
+
+private:
+	int32 BaseHealthPoints;
 };

@@ -13,6 +13,7 @@ class AGASpawnDestructible : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")		bool IsMountainHeart;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Stats")		float HealtPoints;
 

@@ -3,6 +3,7 @@
 #include "GA.h"
 #include "GACharacter.h"
 #include "GASpawnTrigger.h"
+#include "GAGameState.h"
 
 
 AGASpawnTrigger::AGASpawnTrigger(const class FPostConstructInitializeProperties& PCIP)
@@ -16,10 +17,9 @@ void AGASpawnTrigger::ReceiveActorBeginOverlap(class AActor* OtherActor){
 		isTriggered = true;
 		UE_LOG(LogClass, Log, TEXT("*** TRIGGER :: TOUCHED ACTOR ***"));
 	}
-	else if (OtherActor->ActorHasTag("Orc") && ActorHasTag("BaseTrigger")){
-		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			ActorItr->ReduceBaseHealth();
-		}
+	else if (OtherActor->ActorHasTag("Orc") && ActorHasTag("BaseTrigger") && GetWorld()->GetGameState<AGAGameState>()){
+
+		GetWorld()->GetGameState<AGAGameState>()->ReduceBaseHealth();
 		OtherActor->DestroyConstructedComponents();
 		OtherActor->Destroy();
 		UE_LOG(LogClass, Log, TEXT("*** TRIGGER :: TOUCHED ACTOR ORC ***"));
