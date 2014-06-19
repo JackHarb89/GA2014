@@ -4,11 +4,13 @@
 #include "GASpawnDestructible.h"
 #include "Net/UnrealNetwork.h"
 #include "GAEnemySpawn.h"
+#include "GAGameState.h"
 
 
 AGASpawnDestructible::AGASpawnDestructible(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	IsMountainHeart = false;
 	HealtPoints = 100;
 	bReplicates = true;
 	bAlwaysRelevant = true;
@@ -30,7 +32,10 @@ void AGASpawnDestructible::TakeDamageByEnemy(float Damage){
 		DestructibleTookDamage();
 		if (HealtPoints <= 0){
 			Cast <AGAEnemySpawn>(GetOwner())->DestroySpawn();
-			DestructibleWasDestroyed();
+			if (IsMountainHeart) {
+				GetWorld()->GetGameState<AGAGameState>()->FinishGame();
+			}
+			else DestructibleWasDestroyed();
 		}
 	}
 }

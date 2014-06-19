@@ -2,12 +2,32 @@
 
 #include "GA.h"
 #include "GAGameState.h"
+#include "GACharacter.h"
 
 
 AGAGameState::AGAGameState(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 	MiniMapCamera = NULL;
+	BaseHealthPoints = 3;
 }
 
+void AGAGameState::ReduceBaseHealth(){
+	BaseHealthPoints--;
+	UE_LOG(LogClass, Log, TEXT("*** SERVER :: BASE TOOK DAMAGE (%d) ***"), BaseHealthPoints);
+
+	if (BaseHealthPoints == 0){
+		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			ActorItr->CharacterLostGame();
+		}
+	}
+
+}
+
+void AGAGameState::FinishGame(){
+	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		ActorItr->CharacterWonGame();
+	}
+	UE_LOG(LogClass, Log, TEXT("*** SERVER :: HEART WAS DESTROYED ***"));
+}
 
