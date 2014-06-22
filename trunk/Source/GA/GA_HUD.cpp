@@ -170,7 +170,9 @@ void AGA_HUD::Draw_CanvasItems() {
 }
 
 void AGA_HUD::Draw() {
-	currentRes = FVector2D(GEngine->GetGameUserSettings()->GetScreenResolution());
+	if (GEngine)
+		GEngine->GameViewport->GetViewportSize(currentRes);
+
 	currentScale = FVector2D(currentRes[0] / originRes[0], currentRes[1] / originRes[1]);
 
 	// IMPORTANT: Some area-classes don't allow to scale X and Y seperately
