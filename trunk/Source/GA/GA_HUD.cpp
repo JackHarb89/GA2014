@@ -207,11 +207,12 @@ void AGA_HUD::Draw_DragNDrop() {
 			// removed ClipTile Argument *** dragArea->item_size.Y ***
 			Canvas->DrawTile(
 				dragArea->item_backgroundImage,
-				mouseLocation.X, mouseLocation.Y, 0,
+				mouseLocation.X, mouseLocation.Y, 
 				dragArea->item_size.X * currentScale[0], dragArea->item_size.Y * currentScale[1],
 				0, //texture offset X
 				0, //texture offset Y
 				dragArea->item_size.X, // don't scale the texture (would cause tiling)
+				dragArea->item_size.Y, // don't scale the texture (would cause tiling)
 				BLEND_Translucent
 			);
 			break;
@@ -232,12 +233,13 @@ void AGA_HUD::Draw_Cursor() {
 	if (Cursor_Normal){
 	// removed ClipTile Argument *** Cursor_Normal->GetSurfaceHeight() ***
 	Canvas->DrawTile(
-		Cursor_Normal, mouseLocation.X, mouseLocation.Y, 0,
+		Cursor_Normal, mouseLocation.X, mouseLocation.Y,
 		Cursor_Normal->GetSurfaceWidth(),
 		Cursor_Normal->GetSurfaceHeight(),
 		0,
 		0,
 		Cursor_Normal->GetSurfaceWidth(),
+		Cursor_Normal->GetSurfaceHeight(),
 		BLEND_Translucent
 		);
 	}
@@ -312,11 +314,12 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			// removed ClipTile Argument *** finalScale[1] ***
 			Canvas->DrawTile(
 				suppliedArea->current_backgroundImage,
-				finalPos[0] * currentScale[0], finalPos[1] * currentScale[1], 0, // z-position
+				finalPos[0] * currentScale[0], finalPos[1] * currentScale[1], // z-position
 				finalScale[0] * currentScale[0], finalScale[1] * currentScale[1],
 				0, //texture start width
 				0, //texture start height
 				finalScale[0],  // don't scale the texture (would cause tiling)
+				finalScale[1],  // don't scale the texture (would cause tiling)
 				BLEND_Translucent
 				);
 			break;
