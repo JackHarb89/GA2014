@@ -5,6 +5,7 @@
 #include "GAItem.h"
 #include "GAShop.h"
 #include "GAWeapon.h"
+#include "GAAttackableCharacter.h"
 #include "GACharacter.generated.h"
 
 // actual inventory
@@ -90,7 +91,7 @@ struct FEquipment
 };
 
 UCLASS()
-class AGACharacter : public ACharacter
+class AGACharacter : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
@@ -274,7 +275,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_UserName();
 
 	// Public Function To Call To Take Damage
-	void TakeDamageByEnemy(float Damage);
+	void TakeDamageByEnemy(float Damage) OVERRIDE;
 
 	// Chat
 	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
@@ -293,7 +294,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSimpleAttackingTo(bool NewState);
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSpecialAttackingTo(bool NewState);
 
-	void DealDamage();
+	void DealDamage(class AActor* OtherActor);
 
 protected:
 	// Chat

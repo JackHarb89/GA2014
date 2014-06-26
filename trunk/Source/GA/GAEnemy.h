@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GAItem.h"
+#include "GAAttackableCharacter.h"
 #include "GAEnemy.generated.h"
 
 /**
@@ -24,7 +25,7 @@ struct FGameItem
 
 
 UCLASS()
-class AGAEnemy : public ACharacter
+class AGAEnemy : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
@@ -72,10 +73,10 @@ public:
 	
 	UFUNCTION(Category = "Death", BlueprintCallable)											void DoDeath();
 
-	UFUNCTION(Category = "Damage", BlueprintCallable)										void ApplyDamage(float Damage);
+	UFUNCTION(Category = "Damage", BlueprintCallable)											void ApplyDamage(float Damage);
 
 
-	void TakeDamageByEnemy(float Damage);
+	void TakeDamageByEnemy(float Damage) OVERRIDE;
 	bool DealDamage();
 	void AttackSimple();
 	void ReduceSimpleAttackCoolDown(float DeltaTime);
