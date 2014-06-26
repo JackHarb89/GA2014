@@ -190,8 +190,8 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
 	
 	// EVENTS
-	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAplliedSimpleForce();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAplliedSpecialForce();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAppliedSimpleForce();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAppliedSpecialForce();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAttackedSimple();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAttackedSpecial();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterStartedCharging();
