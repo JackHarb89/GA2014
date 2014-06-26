@@ -232,10 +232,12 @@ void AGACharacter::DealDamage(){
 	if (IsSimpleAttacking){
 		Damage = SimpleAttackDamage + ItemDamage;
 		Range = SimpleAttackRange;
+		CharacterAplliedSimpleForce();
 	}
 	else if (IsSpecialAttacking){
 		Damage = CalculateSpecialAttackDamage();
 		Range = SpecialAttackRange;
+		CharacterAplliedSpecialForce();
 	}
 	else return;
 
