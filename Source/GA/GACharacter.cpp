@@ -226,26 +226,34 @@ void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 }
 
 void AGACharacter::DealDamage(){
-	// Damage Calculation
+	float Damage, Range;
+
+	// Damage & Range Calculation
 	if (IsSimpleAttacking){
-		float Damage = SimpleAttackDamage + ItemDamage;
+		Damage = SimpleAttackDamage + ItemDamage;
+		Range = SimpleAttackRange;
+	}
+	else if (IsSpecialAttacking){
+		Damage = CalculateSpecialAttackDamage();
+		Range = SpecialAttackRange;
+	}
+	else return;
 
-		// Critical Hit
-		float random = FMath::RandRange(0, 100);
-		if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
+	// Critical Hit
+	float random = FMath::RandRange(0, 100);
+	if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
 
-		// Find Enemy To Deal Damage
-		for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			if (IsInRange(*ActorItr, SimpleAttackRange)){
-				ActorItr->TakeDamageByEnemy(Damage);
-			}
+	// Find Enemy To Deal Damage
+	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		if (IsInRange(*ActorItr, Range)){
+			ActorItr->TakeDamageByEnemy(Damage);
 		}
+	}
 
-		// Find Destructible To Deal Damage
-		for (TActorIterator<AGASpawnDestructible> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			if (IsInRange(*ActorItr, SimpleAttackRange)){
-				ActorItr->TakeDamageByEnemy(Damage);
-			}
+	// Find Destructible To Deal Damage
+	for (TActorIterator<AGASpawnDestructible> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		if (IsInRange(*ActorItr, Range)){
+			ActorItr->TakeDamageByEnemy(Damage);
 		}
 	}
 }
@@ -313,19 +321,9 @@ void AGACharacter::AttackSpecial(){
 		// Set Cool Down
 		SpecialAttackOnCoolDown = true;
 		SpecialAttackIsCharging = false;
-
-		float Damage = CalculateSpecialAttackDamage();
-
-		// Find Actor To Deal Damage
-		for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-		{
-			if (IsInRange(*ActorItr, SpecialAttackRange)){
-				ActorItr->TakeDamageByEnemy(Damage);
-			}
-		}
-
 		SpecialAttackTimesCharged = 0;
 		SpecialAttackChargeTimer = 0;
+
 		CharacterAttackedSpecial();
 
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SPECIAL ***"));
