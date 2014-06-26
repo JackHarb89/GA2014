@@ -14,6 +14,9 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 	isInit = false;
+	WeaponActor = nullptr;
+	IsSimpleAttacking = false;
+	IsSpecialAttacking = false;
 
 	// Equip
 	ItemDamage = 0;
@@ -214,19 +217,17 @@ void AGACharacter::MoveRight(float Value)
 
 #pragma region Simple Attack
 
-// Simple Attack - Call This Function If The Player Should Attack Normal
-void AGACharacter::AttackSimple(){
-	if (Role < ROLE_Authority){
-		ServerAttackSimple();
-	}
-	else {
-		// Check If Attack Is On Cool Down
-		if (SimpleAttackOnCoolDown) return;
+void AGACharacter::SetIsSimpleAttackingTo(bool NewState){
+	IsSimpleAttacking = NewState;
+}
 
-		// Set Cool Down
-		SimpleAttackOnCoolDown = true;
+void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
+	IsSpecialAttacking = NewState;
+}
 
-		// Damage Calculation
+void AGACharacter::DealDamage(){
+	// Damage Calculation
+	if (IsSimpleAttacking){
 		float Damage = SimpleAttackDamage + ItemDamage;
 
 		// Critical Hit
@@ -246,9 +247,23 @@ void AGACharacter::AttackSimple(){
 				ActorItr->TakeDamageByEnemy(Damage);
 			}
 		}
+	}
+}
+
+// Simple Attack - Call This Function If The Player Should Attack Normal
+void AGACharacter::AttackSimple(){
+	if (Role < ROLE_Authority){
+		ServerAttackSimple();
+	}
+	else {
+		// Check If Attack Is On Cool Down
+		if (SimpleAttackOnCoolDown) return;
+
+		// Set Cool Down
+		SimpleAttackOnCoolDown = true;
 
 		CharacterAttackedSimple();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE (%f) ***"), Damage);
+		//UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE (%f) ***"), Damage);
 	}
 }
 
@@ -1135,4 +1150,9 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Ressource
 	DOREPLIFETIME(AGACharacter, Ressource);
+}
+
+// Sets the Weapon Actor
+void AGACharacter::SetWeaponActor(AGAWeapon *Weapon){
+	WeaponActor = Weapon;
 }

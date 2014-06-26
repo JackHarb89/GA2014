@@ -4,6 +4,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GAItem.h"
 #include "GAShop.h"
+#include "GAWeapon.h"
 #include "GACharacter.generated.h"
 
 // actual inventory
@@ -140,6 +141,7 @@ class AGACharacter : public ACharacter
 
 	// Equip
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")				FEquipment EquipItems;
+	UPROPERTY(Replicated)																	AGAWeapon *WeaponActor;
 
 	// Inventory
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")				TArray<AGAItem*> InventoryItems;
@@ -147,6 +149,7 @@ class AGACharacter : public ACharacter
 
 
 	// Simple Attack
+	UPROPERTY(Replicated)																	bool IsSimpleAttacking;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")		float SimpleAttackDamage;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")		float SimpleAttackCoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Simple Attack")		float SimpleAttackRange;
@@ -154,6 +157,7 @@ class AGACharacter : public ACharacter
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Simple Attack")					float SimpleAttackCoolDownResetValue;
 
 	// Special Attack
+	UPROPERTY(Replicated)																	bool IsSpecialAttacking;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackBaseDamage;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackMaxCharges;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Special Attack")	float SpecialAttackChargeInterval;
@@ -284,10 +288,17 @@ class AGACharacter : public ACharacter
 
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void ApplyDamage(float Damage);
 
+	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSimpleAttackingTo(bool NewState);
+	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSpecialAttackingTo(bool NewState);
+
+	void DealDamage();
+
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
 	void AddMessageToChatLog(const FString& Message);
+
+	void SetWeaponActor(AGAWeapon *Weapon);
 
 	// Aura
 	void ActivateAura();
