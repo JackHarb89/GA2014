@@ -3,13 +3,14 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "GAAttackableCharacter.h"
 #include "GASpawnDestructible.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AGASpawnDestructible : public AActor
+class AGASpawnDestructible : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
@@ -22,6 +23,6 @@ class AGASpawnDestructible : public AActor
 	
 	UFUNCTION(reliable, server, WithValidation)										void ServerTakeDamageByEnemy(float Damage);
 
-	void TakeDamageByEnemy(float Damage);
+	void TakeDamageByEnemy(float Damage) OVERRIDE;
 
 };

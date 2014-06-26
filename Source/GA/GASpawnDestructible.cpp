@@ -14,6 +14,7 @@ AGASpawnDestructible::AGASpawnDestructible(const class FPostConstructInitializeP
 	HealtPoints = 100;
 	bReplicates = true;
 	bAlwaysRelevant = true;
+	Tags.Add("Destructible");
 }
 
 void AGASpawnDestructible::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{

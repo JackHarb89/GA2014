@@ -225,7 +225,7 @@ void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 	IsSpecialAttacking = NewState;
 }
 
-void AGACharacter::DealDamage(){
+void AGACharacter::DealDamage(class AActor* OtherActor){
 	float Damage, Range;
 
 	// Damage & Range Calculation
@@ -245,19 +245,8 @@ void AGACharacter::DealDamage(){
 	float random = FMath::RandRange(0, 100);
 	if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
 
-	// Find Enemy To Deal Damage
-	for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-		if (IsInRange(*ActorItr, Range)){
-			ActorItr->TakeDamageByEnemy(Damage);
-		}
-	}
-
-	// Find Destructible To Deal Damage
-	for (TActorIterator<AGASpawnDestructible> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-		if (IsInRange(*ActorItr, Range)){
-			ActorItr->TakeDamageByEnemy(Damage);
-		}
-	}
+	// Deal Damage
+	((AGAAttackableCharacter*)OtherActor)->TakeDamageByEnemy(Damage);
 }
 
 // Simple Attack - Call This Function If The Player Should Attack Normal
