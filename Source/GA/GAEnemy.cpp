@@ -198,7 +198,7 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else{
-		CharacterHasTakenDamage(Damage);
+		ApplyDamage(Damage);
 	}
 }
 
@@ -218,6 +218,7 @@ void AGAEnemy::CheckDeath(){
 	}
 	else {
 		if (HealthPoints <= 0){
+			CheckItemDrop();
 			CharacterDied();
 		}
 	}
@@ -225,14 +226,6 @@ void AGAEnemy::CheckDeath(){
 
 bool AGAEnemy::ServerCheckDeath_Validate(){ return true; }
 void AGAEnemy::ServerCheckDeath_Implementation(){ CheckDeath(); }
-#pragma endregion
-
-#pragma region Do Death
-void AGAEnemy::DoDeath(){
-	CheckItemDrop();
-	if (GetWorld())
-		GetWorld()->DestroyActor(this);
-}
 #pragma endregion
 
 #pragma region Network - Attack Simple

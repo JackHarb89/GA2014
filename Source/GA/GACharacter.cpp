@@ -219,10 +219,12 @@ void AGACharacter::MoveRight(float Value)
 
 void AGACharacter::SetIsSimpleAttackingTo(bool NewState){
 	IsSimpleAttacking = NewState;
+	WeaponActor->RemoveHitedActors();
 }
 
 void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 	IsSpecialAttacking = NewState;
+	WeaponActor->RemoveHitedActors();
 }
 
 void AGACharacter::DealDamage(class AActor* OtherActor){

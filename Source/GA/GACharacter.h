@@ -295,13 +295,12 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSpecialAttackingTo(bool NewState);
 
 	void DealDamage(class AActor* OtherActor);
+	void SetWeaponActor(AGAWeapon *Weapon);
 
 protected:
 	// Chat
 	// made this function public, so the UI can launch them
 	void AddMessageToChatLog(const FString& Message);
-
-	void SetWeaponActor(AGAWeapon *Weapon);
 
 	// Aura
 	void ActivateAura();
