@@ -216,6 +216,9 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						float BaseLookUpRate;
 
+	// Server Attack
+	UFUNCTION(reliable, server, WithValidation)												void ServerDealDamage(class AActor* OtherActor);
+
 	// Server Simple Attack
 	UFUNCTION(reliable, server, WithValidation)												void ServerAttackSimple();
 	UFUNCTION(reliable, server, WithValidation)												void ServerReduceSimpleAttackCoolDown(float Delta);
@@ -257,6 +260,9 @@ class AGACharacter : public AGAAttackableCharacter
 	// Server Chat
 	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerSendChatMessage(const FString& Message);
 	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerChangeUserName(const FString& Message);
+
+	// Equip Weapon
+	UFUNCTION(reliable, server, WithValidation)												void ServerSetWeaponActor(AGAWeapon *Weapon);
 
 	
 	// Replication Notify Functions
