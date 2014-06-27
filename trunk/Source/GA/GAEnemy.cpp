@@ -212,6 +212,7 @@ void AGAEnemy::ApplyDamage(float Damage) {
 #pragma endregion
 
 #pragma region Check Death
+
 void AGAEnemy::CheckDeath(){
 	if (Role < ROLE_Authority){
 		ServerCheckDeath();
@@ -224,8 +225,9 @@ void AGAEnemy::CheckDeath(){
 	}
 }
 
-bool AGAEnemy::ServerCheckDeath_Validate(){ return true; }
-void AGAEnemy::ServerCheckDeath_Implementation(){ CheckDeath(); }
+bool AGAEnemy::ServerCheckDeath_Validate(){return true;}
+void AGAEnemy::ServerCheckDeath_Implementation(){CheckDeath();}
+
 #pragma endregion
 
 #pragma region Network - Attack Simple

@@ -18,4 +18,5 @@ class AGAWeapon : public AActor
 	void RemoveHitedActors();
 
 	TArray<AActor*> HitedActors;
+	UFUNCTION(reliable, server, WithValidation)					void ServerSetNewOwner(AActor* NewOwner);
 };

@@ -228,27 +228,34 @@ void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 }
 
 void AGACharacter::DealDamage(class AActor* OtherActor){
-	float Damage, Range;
-
-	// Damage & Range Calculation
-	if (IsSimpleAttacking){
-		Damage = SimpleAttackDamage + ItemDamage;
-		Range = SimpleAttackRange;
-		CharacterAppliedSimpleForce();
+	if (Role < ROLE_Authority){
+		ServerDealDamage(OtherActor);
 	}
-	else if (IsSpecialAttacking){
-		Damage = CalculateSpecialAttackDamage();
-		Range = SpecialAttackRange;
-		CharacterAppliedSpecialForce();
+	else{
+		float Damage, Range;
+
+		// Damage & Range Calculation
+		if (IsSimpleAttacking){
+			Damage = SimpleAttackDamage + ItemDamage;
+			Range = SimpleAttackRange;
+			CharacterAppliedSimpleForce();
+		}
+		else if (IsSpecialAttacking){
+			Damage = CalculateSpecialAttackDamage();
+			Range = SpecialAttackRange;
+			CharacterAppliedSpecialForce();
+		}
+		else return;
+
+		// Critical Hit
+		float random = FMath::RandRange(0, 100);
+		if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
+
+		// Deal Damage
+		((AGAAttackableCharacter*)OtherActor)->TakeDamageByEnemy(Damage);
+
+		UE_LOG(LogClass, Log, TEXT("*** WEAPON :: DEALT DAMAGE (%.1f)***"), Damage);
 	}
-	else return;
-
-	// Critical Hit
-	float random = FMath::RandRange(0, 100);
-	if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
-
-	// Deal Damage
-	((AGAAttackableCharacter*)OtherActor)->TakeDamageByEnemy(Damage);
 }
 
 // Simple Attack - Call This Function If The Player Should Attack Normal
@@ -264,7 +271,7 @@ void AGACharacter::AttackSimple(){
 		SimpleAttackOnCoolDown = true;
 
 		CharacterAttackedSimple();
-		//UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE (%f) ***"), Damage);
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE ***"));
 	}
 }
 
@@ -864,6 +871,10 @@ void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){
 
 #pragma region Network - Simple Attack
 
+
+bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){return true;}
+void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){DealDamage(OtherActor);}
+
 // Client Reaction On Replication Notification - Simple Event Call
 void AGACharacter::OnRep_SimpleAttackOnCoolDown(){
 	if (SimpleAttackOnCoolDown){
@@ -1128,7 +1139,8 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, ChatLog);
 	DOREPLIFETIME(AGACharacter, UserName);
 
-	// Items	
+	// Items
+	DOREPLIFETIME(AGACharacter, WeaponActor);
 	DOREPLIFETIME(AGACharacter, Potions);
 	DOREPLIFETIME(AGACharacter, PotionCoolDown);
 	DOREPLIFETIME(AGACharacter, HasUsedPotion);
@@ -1145,5 +1157,13 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 // Sets the Weapon Actor
 void AGACharacter::SetWeaponActor(AGAWeapon *Weapon){
-	WeaponActor = Weapon;
+	if(Role < ROLE_Authority){
+		ServerSetWeaponActor(Weapon);
+	}
+	else{
+		WeaponActor = Weapon;
+	}
 }
+
+bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon *Weapon){return true;}
+void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon *Weapon){SetWeaponActor(Weapon);}
