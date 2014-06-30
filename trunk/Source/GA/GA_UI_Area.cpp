@@ -96,12 +96,21 @@ bool AGA_UI_Area::posInButton(FVector2D* pos) {
 	);
 }
 
+void AGA_UI_Area::runBlueprintEvents() {
+	if (mouseInButton)
+		OnMouseOver();
+
+	if (!*mouseHeld && mouseInButton && *prevMouseHeld)
+		OnClick();
+}
+
 bool AGA_UI_Area::update() {
 	if (!initialized)
 		return false;
 
 	// refresh the mouseInButton-shortcut (shortens code)
 	mouseInButton = posInButton(mouseLocation);
+	
 
 		// Update buttonState
 	if (*mouseHeld) {
@@ -114,9 +123,6 @@ bool AGA_UI_Area::update() {
 	}
 	else {
 		if (mouseInButton) {
-			if (*prevMouseHeld) {
-				OnClick();
-			}
 			setButtonState(preventHover ? BUTTON_REGULAR : BUTTON_HOVER);
 		}
 		else {
