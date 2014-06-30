@@ -15,7 +15,7 @@ UENUM(BlueprintType)
 namespace GA_UI_Dropphase {
 	enum GA_UI_Dropphase {
 		DROPPHASE_NONE,
-		DROPPHASE_DROP_NEXT ,
+		DROPPHASE_DROP_NEXT,
 		DROPPHASE_SEARCH_AREAS
 	};
 }
@@ -109,6 +109,8 @@ class AGA_HUD : public AHUD
 	FVector2D clickMouseLocation;
 	AGA_UI_Area* dragArea;
 	AGA_UI_Area* dropArea;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pointer)
+	AGA_UI_Area* hoveredArea;
 
 	void Draw_DragNDrop();
 

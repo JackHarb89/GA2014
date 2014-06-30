@@ -51,6 +51,7 @@ public:
 
 	bool					posInButton(FVector2D* pos);
 	// only vaild answer, if .update() has been called on this object at this frame
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
 	bool					mouseInButton;
 
 	// prevent certain changes
@@ -58,6 +59,8 @@ public:
 	bool					Inactive;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
 	bool					dontRefresh;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
+	bool					dontUseParentPadding;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
@@ -202,6 +205,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Refresher)
 	bool update();
 
+	void runBlueprintEvents();
+
 
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Areas")
 	TArray<UClass*>			childAreas;
@@ -210,6 +215,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnClick();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	virtual void OnMouseOver();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnStartDrag();

@@ -82,6 +82,9 @@ void AGA_HUD::PostInitializeComponents() {
 	enabledSectionNames.Add("worldmessages");
 	enabledSectionStates.Add(false);
 
+	enabledSectionNames.Add("iteminfo");
+	enabledSectionStates.Add(false);
+
 	// get player controller
 	playerController = GetOwningPlayerController();
 }
@@ -207,7 +210,7 @@ void AGA_HUD::Draw_DragNDrop() {
 			// removed ClipTile Argument *** dragArea->item_size.Y ***
 			Canvas->DrawTile(
 				dragArea->item_backgroundImage,
-				mouseLocation.X, mouseLocation.Y, 
+				mouseLocation.X, mouseLocation.Y,
 				dragArea->item_size.X * currentScale[0], dragArea->item_size.Y * currentScale[1],
 				0, //texture offset X
 				0, //texture offset Y
@@ -297,7 +300,13 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 		if (currentMenuID != suppliedArea->activeOnMenuID)
 			return;
 
-		FVector2D finalPos = { suppliedArea->parent_padding.X + suppliedArea->item_position.X, suppliedArea->parent_padding.Y + suppliedArea->item_position.Y };
+		suppliedArea->runBlueprintEvents();
+
+		FVector2D finalPos =
+			suppliedArea->dontUseParentPadding ?
+			FVector2D(suppliedArea->item_position.X, suppliedArea->item_position.Y) :
+			FVector2D(suppliedArea->parent_padding.X + suppliedArea->item_position.X, suppliedArea->parent_padding.Y + suppliedArea->item_position.Y);
+
 		FVector2D finalScale = { suppliedArea->item_size.X, suppliedArea->item_size.Y };
 
 		// draw the background
@@ -354,8 +363,8 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			Canvas->TextSize(
 				suppliedArea->current_font,
 				*suppliedArea->current_text,
-				realPositon.X,
-				realPositon.Y,
+				realPositon[0],
+				realPositon[1],
 				currentScale[0],
 				currentScale[1]
 			);
