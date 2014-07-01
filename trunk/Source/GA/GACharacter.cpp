@@ -454,7 +454,7 @@ void AGACharacter::TakeDamageByEnemy(float Damage) {
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else {
-		CharacterHasTakenDamage(Damage);
+		ApplyDamage(Damage);
 	}
 }
 
@@ -491,7 +491,9 @@ void AGACharacter::CheckDeath(){
 	}
 	else{
 		if (HealthPoints <= 0){
+			HasDied = true;
 			CharacterDied();
+			Destroy();
 			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}

@@ -19,19 +19,19 @@ EBTNodeResult::Type UBTTask_FindEnemy::ExecuteTask(class UBehaviorTreeComponent*
 	AAIController* MyAI = Cast<AAIController>(OwnerComp->GetOwner());
 	APawn* EnemyPawn = MyAI->GetPawn();
 	if (MyAI && EnemyPawn){
-		float AggroRange = 1500;
-		APawn* ClosestPlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) >
-				FVector::Dist(EnemyPawn->GetActorLocation(), ActorItr->GetActorLocation())){
-				ClosestPlayerPawn = *ActorItr;
-			}
+		FName PlayerKeyID = "Target";
+		uint8 BlackboardKeyID = OwnerComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
+
+		AActor* Target = ((AActor*) OwnerComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID));
+		if (Target) {
+			UNavigationSystem::SimpleMoveToActor(MyAI, Target);
+			//MyAI->MoveToActor(Target);
+			return EBTNodeResult::Succeeded;
 		}
-		if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) > AggroRange){
-			ClosestPlayerPawn = NULL;
+		else {
+			MyAI->StopMovement();
+			return EBTNodeResult::Failed;
 		}
-		OwnerComp->GetBlackboardComponent()->SetValueAsObject(GetSelectedBlackboardKey(), ClosestPlayerPawn);
-		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;
 }
