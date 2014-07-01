@@ -244,6 +244,9 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 			Damage = CalculateSpecialAttackDamage();
 			Range = SpecialAttackRange;
 			CharacterAppliedSpecialForce();
+
+			SpecialAttackTimesCharged = 0;
+			SpecialAttackChargeTimer = 0;
 		}
 		else return;
 
@@ -321,8 +324,6 @@ void AGACharacter::AttackSpecial(){
 		// Set Cool Down
 		SpecialAttackOnCoolDown = true;
 		SpecialAttackIsCharging = false;
-		SpecialAttackTimesCharged = 0;
-		SpecialAttackChargeTimer = 0;
 
 		CharacterAttackedSpecial();
 
