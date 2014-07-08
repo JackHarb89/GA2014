@@ -9,6 +9,7 @@
 AGASpawnTrigger::AGASpawnTrigger(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	Tags.Add("BaseTrigger");
 }
 
 // If Trigger Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "TriggerAble" ***

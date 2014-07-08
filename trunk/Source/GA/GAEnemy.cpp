@@ -29,6 +29,9 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	SimpleAttackOnCoolDown = true;
 	SimpleAttackRange = 200;
 
+
+	Tags.Add("Orc");
+
 	// Replicate to Server / Clients
 	bReplicates = true;
 }

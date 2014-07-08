@@ -32,7 +32,7 @@ void AGASpawnDestructible::TakeDamageByEnemy(float Damage){
 		HealtPoints -= Damage;
 		DestructibleTookDamage();
 		if (HealtPoints <= 0){
-			Cast <AGAEnemySpawn>(GetOwner())->DestroySpawn();
+			//Cast <AGAEnemySpawn>(GetOwner())->DestroySpawn();
 			if (IsMountainHeart) {
 				GetWorld()->GetGameState<AGAGameState>()->FinishGame();
 			}
