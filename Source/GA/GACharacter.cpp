@@ -471,16 +471,6 @@ void AGACharacter::ApplyDamage(float Damage) {
 
 #pragma endregion
 
-#pragma region Do Death
-
-// Checks The Health Amount And Kill The Player If 0 Or Below
-void AGACharacter::DoDeath(){
-	HasDied = true;
-	Destroy();
-}
-
-#pragma endregion
-
 #pragma region Check Death
 
 // Checks The Health Amount And Kill The Player If 0 Or Below
