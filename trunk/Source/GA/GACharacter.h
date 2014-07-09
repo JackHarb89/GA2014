@@ -67,6 +67,15 @@ struct FGA_Inventory {
 			UE_LOG(LogClass, Log, TEXT("*** Found no new slot! (That's kinda bad - or the inventory is simply full...) ***"));
 	}
 
+	bool setItem(int32 row, int32 col, AGAItem* item) {
+		if (row < rowAmount && col < columnAmount) {
+			rows[row].column[col] = item;
+			return true;
+		}
+
+		return false;
+	}
+
 	bool clearElement(int row, int col) {
 		bool returnThis = rows[row].column[col] != nullptr;
 
@@ -100,7 +109,7 @@ class AGACharacter : public AGAAttackableCharacter
 
 	// Chat
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")					FString UserName;
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")			TArray<FString> ChatLog;
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")				TArray<FString> ChatLog;
 
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
@@ -297,6 +306,10 @@ class AGACharacter : public AGAAttackableCharacter
 
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSimpleAttackingTo(bool NewState);
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSpecialAttackingTo(bool NewState);
+	UFUNCTION(Category = "Inventory", BlueprintCallable)									void UnequipItem(EGASlot::Type itemType);
+	UFUNCTION(Category = "Inventory", BlueprintCallable)									void EquipItem(AGAItem* item);
+	UFUNCTION(Category = "Inventory", BlueprintCallable)									void SetItemSlot(int32 row, int32 col, AGAItem* item);
+	UFUNCTION(Category = "Inventory", BlueprintCallable)									bool ClearItemSlot(int32 row, int32 col);
 
 	void DealDamage(class AActor* OtherActor);
 	void SetWeaponActor(AGAWeapon *Weapon);
@@ -313,7 +326,6 @@ protected:
 	void CalculateAura();
 
 	// Items
-	void EquipItem(AGAItem* item);
 	void PickUpItem(AGAItem* item);
 	void CalculateItems();
 
