@@ -86,6 +86,8 @@ void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
 
 	old_buttonState = buttonState;
 	buttonState = new_buttonState;
+
+	updateStateValues();
 }
 
 bool AGA_UI_Area::posInButton(FVector2D* pos) {
@@ -102,17 +104,8 @@ void AGA_UI_Area::runBlueprintEvents() {
 
 	if (!*mouseHeld && mouseInButton && *prevMouseHeld)
 		OnClick();
-}
 
-bool AGA_UI_Area::update() {
-	if (!initialized)
-		return false;
-
-	// refresh the mouseInButton-shortcut (shortens code)
-	mouseInButton = posInButton(mouseLocation);
-	
-
-		// Update buttonState
+	// Update buttonState
 	if (*mouseHeld) {
 		if (mouseInButton) {
 			setButtonState(preventActive ? BUTTON_REGULAR : BUTTON_ACTIVE);
@@ -129,7 +122,87 @@ bool AGA_UI_Area::update() {
 			setButtonState(BUTTON_REGULAR);
 		}
 	}
+}
 
+void AGA_UI_Area::updateStateValues() {
+	if (item_text != "") {
+		if (!isTextArea)
+			switch (buttonState) {
+			case BUTTON_REGULAR:
+				current_text = &item_text;
+				break;
+			case BUTTON_HOVER:
+				current_text = &hover_text;
+				break;
+			case BUTTON_ACTIVE:
+				current_text = &active_text;
+				break;
+		}
+
+		switch (buttonState) {
+		case BUTTON_REGULAR:
+			current_textColor = &item_textColor;
+			break;
+		case BUTTON_HOVER:
+			current_textColor = &hover_textColor;
+			break;
+		case BUTTON_ACTIVE:
+			current_textColor = &active_textColor;
+			break;
+		}
+	}
+
+	// render corresponding background
+	switch (type) {
+	case AREA_MATERIAL:
+		switch (buttonState) {
+		case BUTTON_REGULAR:
+			current_backgroundMaterial = item_backgroundMaterial;
+			break;
+		case BUTTON_HOVER:
+			current_backgroundMaterial = hover_backgroundMaterial;
+			break;
+		case BUTTON_ACTIVE:
+			current_backgroundMaterial = active_backgroundMaterial;
+			break;
+		}
+		break;
+	case AREA_IMAGE:
+		switch (buttonState) {
+		case BUTTON_REGULAR:
+			current_backgroundImage = item_backgroundImage;
+			break;
+		case BUTTON_HOVER:
+			current_backgroundImage = hover_backgroundImage;
+			break;
+		case BUTTON_ACTIVE:
+			current_backgroundImage = active_backgroundImage;
+			break;
+		}
+		break;
+	case AREA_COLOR:
+		switch (buttonState) {
+		case BUTTON_REGULAR:
+			current_backgroundColor = &item_backgroundColor;
+			break;
+		case BUTTON_HOVER:
+			current_backgroundColor = &hover_backgroundColor;
+			break;
+		case BUTTON_ACTIVE:
+			current_backgroundColor = &active_backgroundColor;
+			break;
+		}
+		break;
+	}
+}
+
+bool AGA_UI_Area::update() {
+	if (!initialized)
+		return false;
+
+	// refresh the mouseInButton-shortcut (shortens code)
+	mouseInButton = posInButton(mouseLocation);
+	
 	if (!currentlyDragged	&& *mouseHeld && posInButton(clickMouseLocation) && (mouseLocation->X != prevMouseLocation->X &&mouseLocation->Y != prevMouseLocation->Y)) {
 		currentlyDragged = true;
 	}
@@ -143,75 +216,8 @@ bool AGA_UI_Area::update() {
 		return IsDraggable ? currentlyDragged : false;
 
 	// render text and change color only, if there is text set
-	if (item_text != "") {
-		if (!isTextArea)
-			switch (buttonState) {
-				case BUTTON_REGULAR:
-					current_text = &item_text;
-					break;
-				case BUTTON_HOVER:
-					current_text = &hover_text;
-					break;
-				case BUTTON_ACTIVE:
-					current_text = &active_text;
-					break;
-			}
-
-		switch (buttonState) {
-			case BUTTON_REGULAR:
-				current_textColor = &item_textColor;
-				break;
-			case BUTTON_HOVER:
-				current_textColor = &hover_textColor;
-				break;
-			case BUTTON_ACTIVE:
-				current_textColor = &active_textColor;
-				break;
-		}
-	}
-
-	// render corresponding background
-	switch (type) {
-		case AREA_MATERIAL:
-			switch (buttonState) {
-				case BUTTON_REGULAR:
-					current_backgroundMaterial = item_backgroundMaterial;
-					break;
-				case BUTTON_HOVER:
-					current_backgroundMaterial = hover_backgroundMaterial;
-					break;
-				case BUTTON_ACTIVE:
-					current_backgroundMaterial = active_backgroundMaterial;
-					break;
-			}
-			break;
-		case AREA_IMAGE:
-			switch (buttonState) {
-				case BUTTON_REGULAR:
-					current_backgroundImage = item_backgroundImage;
-					break;
-				case BUTTON_HOVER:
-					current_backgroundImage = hover_backgroundImage;
-					break;
-				case BUTTON_ACTIVE:
-					current_backgroundImage = active_backgroundImage;
-					break;
-			}
-			break;
-		case AREA_COLOR:
-			switch (buttonState) {
-				case BUTTON_REGULAR:
-					current_backgroundColor = &item_backgroundColor;
-					break;
-				case BUTTON_HOVER:
-					current_backgroundColor = &hover_backgroundColor;
-					break;
-				case BUTTON_ACTIVE:
-					current_backgroundColor = &active_backgroundColor;
-					break;
-			}
-			break;
-	}
+	
+	updateStateValues();
 
 	toggleChildren(buttonState == BUTTON_HOVER);
 
