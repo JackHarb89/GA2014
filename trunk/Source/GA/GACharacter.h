@@ -292,9 +292,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
 
 	UFUNCTION(Category = "Combat", BlueprintCallable)										bool IsCharging();
-
-	UFUNCTION(Category = "Death", BlueprintCallable)										void DoDeath();
-
+	
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void ApplyDamage(float Damage);
 
 	UFUNCTION(Category = "Damage", BlueprintCallable)										void SetIsSimpleAttackingTo(bool NewState);
