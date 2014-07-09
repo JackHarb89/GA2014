@@ -47,6 +47,9 @@ int32 AGA_HUD::toggleSection(FString name, bool newValue) {
 	return enabledSectionStates[entryID] ? 1 : 0;
 }
 
+/**
+	
+*/
 int32 AGA_HUD::getSection(FString name) {
 	int32 entryID;
 	if (!enabledSectionNames.Contains(name)) {
@@ -127,31 +130,26 @@ void AGA_HUD::Draw_CanvasItems() {
 		dropPhase = GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS;
 		dropArea = nullptr;
 	}
-
 	
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
-		if (mouseHeld && area->posInButton(&mouseLocation))
-			ActivateTypingArea(area);
+		if (!area->Inactive && (area->SectionName != "" && getSection(area->SectionName) > 0) && currentMenuID == area->activeOnMenuID) {
+			if (mouseHeld && area->posInButton(&mouseLocation))
+				ActivateTypingArea(area);
 
-		if (mouseHeld && !area->posInButton(&mouseLocation) && area == activeTypingArea)
-			EndCurrentInput(false);
+			if (mouseHeld && !area->posInButton(&mouseLocation) && area == activeTypingArea)
+				EndCurrentInput(false);
 
-		/*
-			To delete
-			if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->posInButton(&mouseLocation))
-				bool tmp = true;
-		*/
+			if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->IsDropZone && area->posInButton(&mouseLocation))
+				dropArea = area;
 
-		if ((dropPhase == GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) && area->IsDropZone && area->posInButton(&mouseLocation))
-			dropArea = area;
-
-		if (area->update()) {
-			// save the area, if it's currently being dragged
-			dragArea = area;
-		}
-		else if (area == dragArea && dropPhase != GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
-			// and change the dropphase, if it's not being dragged anymore, but matches the current area
-			dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
+			if (area->update()) {
+				// save the area, if it's currently being dragged
+				dragArea = area;
+			}
+			else if (area == dragArea && dropPhase != GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS) {
+				// and change the dropphase, if it's not being dragged anymore, but matches the current area
+				dropPhase = GA_UI_Dropphase::DROPPHASE_DROP_NEXT;
+			}
 		}
 
 		RunDrawLogic(area);
@@ -277,9 +275,12 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 }
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
+	suppliedArea->setButtonState(BUTTON_REGULAR);
 	if (suppliedArea->initialized) {
-		if (suppliedArea->Inactive)
+		if (suppliedArea->Inactive) {
+			suppliedArea->toggleChildren(false);
 			return;
+		}
 
 		if (suppliedArea->SectionName != "") {
 			switch (getSection(suppliedArea->SectionName)) {
@@ -287,6 +288,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 					UE_LOG(LogClass, Log, TEXT("*** Area has section-name '%s', that isn't listed in the 'enabledSectionNames'. ***"), *suppliedArea->SectionName);
 					break;
 				case 0:
+					suppliedArea->toggleChildren(false);
 					return;
 					break;
 				case 1:
@@ -294,13 +296,17 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			}
 		}
 
-		suppliedArea->OnBeingDrawn();
-
 		// only execute draw-commands, if the menuID is currently active
-		if (currentMenuID != suppliedArea->activeOnMenuID)
+		if (currentMenuID != suppliedArea->activeOnMenuID) {
+			suppliedArea->toggleChildren(false);
 			return;
+		}
+
+		suppliedArea->toggleChildren(true);
 
 		suppliedArea->runBlueprintEvents();
+
+		suppliedArea->OnBeingDrawn();
 
 		FVector2D finalPos =
 			suppliedArea->dontUseParentPadding ?

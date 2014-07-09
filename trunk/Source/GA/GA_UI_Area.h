@@ -198,6 +198,8 @@ public:
 	GA_UI_Area_buttonState	old_buttonState;
 	GA_UI_Area_buttonState	buttonState;
 	void setButtonState(GA_UI_Area_buttonState new_buttonState);
+	UFUNCTION(BlueprintCallable, Category = Refresher)
+	void updateStateValues();
 
 	void init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer);
 	void draw(UCanvas* canvasToUse);
