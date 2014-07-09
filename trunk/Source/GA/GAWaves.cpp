@@ -59,7 +59,7 @@ void AGAWaves::SetRemainingWaves(){
 
 void AGAWaves::SetSpawnActive(){
 	if (Role == ROLE_Authority){
-		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive){
+		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive && SpawnWaveIndex <= Waves.Num() - 1){
 			// Use a random Spawnlocation
 			RandIndex = FMath::RandRange(0, EnemySpawns.Num() - 1);
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetSpawnActivationStatusTo(true);
