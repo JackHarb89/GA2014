@@ -19,7 +19,11 @@ class AGAGameState : public AGameState
 
 	void ReduceBaseHealth();
 	void FinishGame();
+	void SetRemainingWaves(int32 Remaining);
+	int32 GetRemainingWaves();
 
 private:
+
 	int32 BaseHealthPoints;
+	int32 RemainingWaves;
 };
