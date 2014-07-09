@@ -65,10 +65,13 @@ class AGAWaves : public AActor
 	float SpawnTimer;
 	int32 SpawnWaveIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextWaveTimer;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<FWave> Waves;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray<AActor*> EnemySpawns;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextWaveTimer;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<FWave> Waves;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<AActor*> EnemySpawns;
 
+private:
+	
+	void IncreaseSpawnTimer(float DeltaTime);
 	void SpawnNextWave();
 	virtual void Tick(float Delta) OVERRIDE;
 };
