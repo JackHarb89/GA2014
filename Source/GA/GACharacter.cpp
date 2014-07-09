@@ -482,7 +482,6 @@ void AGACharacter::CheckDeath(){
 		if (HealthPoints <= 0){
 			HasDied = true;
 			CharacterDied();
-			Destroy();
 			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
@@ -972,7 +971,7 @@ void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){TakeDama
 // Client Reaction On Replication Notification - Only React If True
 void AGACharacter::OnRep_HasDied(){
 	if (HasDied){
-		DestroyConstructedComponents();
+		CharacterDied();
 		UE_LOG(LogClass, Warning, TEXT("*** CLIENT :: DIED ***"));
 	}
 }
