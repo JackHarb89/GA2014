@@ -10,6 +10,7 @@ AGAEnemySpawn::AGAEnemySpawn(const class FPostConstructInitializeProperties& PCI
 	: Super(PCIP)
 {
 	SpawnTimer = 0;
+	IsSpawnActive = false;
 
 	// Replicate to Server / Clients
 	bReplicates = true;
@@ -32,7 +33,7 @@ void AGAEnemySpawn::IncreaseSpawnTimer(float DeltaTime){
 
 void AGAEnemySpawn::SpawnCurrentWave(){
 	if (Role == ROLE_Authority){
-		if (&CurrentWave && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1){
+		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive == true){
 			switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
 			case(EGAEnemy::GASmallEnemy) :
 				SpawnEnemy((&CurrentWave)->GetSmallEnemy());
@@ -46,6 +47,10 @@ void AGAEnemySpawn::SpawnCurrentWave(){
 			}
 			SpawnTimer = 0;
 			CurrentWave.EnemyIndex++;
+		}
+		else if (!CurrentWave.HasNoReferences() && CurrentWave.EnemyIndex > CurrentWave.Wave.Num() - 1 && IsSpawnActive == true){
+			SetSpawnActivationStatusTo(false);
+			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: WAVE SPAWN FINISHED ***"));
 		}
 	}
 }
@@ -82,4 +87,36 @@ void AGAEnemySpawn::SetCurrentWave(FWave NewWave){
 	if (Role == ROLE_Authority){
 		CurrentWave = NewWave;
 	}
+}
+
+void AGAEnemySpawn::SetSpawnActivationStatusTo(bool State){
+	if (Role == ROLE_Authority){
+		IsSpawnActive = State;
+		if (IsSpawnActive){
+			SpawnBecameActive();
+			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: SPAWN BECAME ACTIVE ***"));
+		}
+		else {
+			SpawnBecameInactive();
+			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: SPAWN BECAME INACTIVE ***"));
+		}
+	}
+}
+
+void AGAEnemySpawn::OnRep_IsSpawnActive(){
+	if (IsSpawnActive){
+		SpawnBecameActive();
+		UE_LOG(LogClass, Warning, TEXT("*** CLIENT :: SPAWN BECAME ACTIVE ***"));
+	}
+	else {
+		SpawnBecameInactive();
+		UE_LOG(LogClass, Warning, TEXT("*** CLIENT :: SPAWN BECAME INACTIVE ***"));
+	}
+}
+
+// Replicates All Replicated Properties
+void AGAEnemySpawn::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGAEnemySpawn, IsSpawnActive);
 }

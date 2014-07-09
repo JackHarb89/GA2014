@@ -48,10 +48,17 @@ struct FWave
 		return (UClass*)BigEnemy->GeneratedClass;
 	}
 
-	bool isWaveFinished(){
+	bool HasNoReferences(){
+		if (SmallEnemy == NULL && NormalEnemy == NULL && BigEnemy == NULL) return true;
+		return false;
+	}
+
+
+	bool IsWaveFinished(){
 		if (EnemyIndex == Wave.Num()-1) return true;
 		return false;
 	}
+
 	FWave(){
 		EnemyIndex = 0;
 	}
@@ -71,8 +78,12 @@ class AGAWaves : public AActor
 private:
 
 	int32 SpawnWaveIndex;
-	bool IsFirstTick;
+	int32 RandIndex;
 
+	bool IsFirstTick;
+	bool IsSpawnSetActive;
+
+	void SetSpawnActive();
 	void InitReamingWaves();
 	void SetRemainingWaves();
 	void IncreaseSpawnTimer(float DeltaTime);

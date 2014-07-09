@@ -16,12 +16,26 @@ class AGAEnemySpawn : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	UPROPERTY()	FWave CurrentWave;
+public:
+
+	void SetCurrentWave(FWave NewWave);
+	void SetSpawnActivationStatusTo(bool State);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Light")				TArray<ALight*> SpawnLight;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Spawn Event")					void SpawnBecameActive();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Spawn Event")					void SpawnBecameInactive();
+
+private:
+
 	float SpawnTimer;
+
+	UPROPERTY()	FWave CurrentWave;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsSpawnActive)						bool IsSpawnActive;
+
+	UFUNCTION()																			void OnRep_IsSpawnActive();
 
 	void IncreaseSpawnTimer(float DeltaTime);
 	void SpawnCurrentWave();
 	void SpawnEnemy(TSubclassOf<class AActor> EnemyClass);
-	void SetCurrentWave(FWave NewWave);
 	virtual void Tick(float Delta) OVERRIDE;
 };
