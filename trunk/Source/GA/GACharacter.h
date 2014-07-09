@@ -142,7 +142,7 @@ class AGACharacter : public AGAAttackableCharacter
 
 	// Equip
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")				FEquipment EquipItems;
-	UPROPERTY(Replicated)																	AGAWeapon *WeaponActor;
+	UPROPERTY(Replicated)																	AGAWeapon* WeaponActor;
 
 	// Inventory
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Item")				TArray<AGAItem*> InventoryItems;
