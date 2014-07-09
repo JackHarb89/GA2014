@@ -10,6 +10,11 @@ AGAEnemySpawn::AGAEnemySpawn(const class FPostConstructInitializeProperties& PCI
 	: Super(PCIP)
 {
 	SpawnTimer = 0;
+
+	// Replicate to Server / Clients
+	bReplicates = true;
+	bAlwaysRelevant = true;
+
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -20,53 +25,61 @@ void AGAEnemySpawn::Tick(float DeltaTime){
 }
 
 void AGAEnemySpawn::IncreaseSpawnTimer(float DeltaTime){
-	SpawnTimer += DeltaTime;
+	if (Role == ROLE_Authority){
+		SpawnTimer += DeltaTime;
+	}
 }
 
 void AGAEnemySpawn::SpawnCurrentWave(){
-	if (&CurrentWave && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num()-1){
-		switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
-		case(EGAEnemy::GASmallEnemy) :
-			SpawnEnemy((&CurrentWave)->GetSmallEnemy());
-			break;
-		case(EGAEnemy::GANormalEnemy) :
-			SpawnEnemy((&CurrentWave)->GetNormalEnemy());
-			break;
-		case(EGAEnemy::GABigEnemy) :
-			SpawnEnemy((&CurrentWave)->GetBigEnemy());
-			break;
+	if (Role == ROLE_Authority){
+		if (&CurrentWave && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1){
+			switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
+			case(EGAEnemy::GASmallEnemy) :
+				SpawnEnemy((&CurrentWave)->GetSmallEnemy());
+				break;
+			case(EGAEnemy::GANormalEnemy) :
+				SpawnEnemy((&CurrentWave)->GetNormalEnemy());
+				break;
+			case(EGAEnemy::GABigEnemy) :
+				SpawnEnemy((&CurrentWave)->GetBigEnemy());
+				break;
+			}
+			SpawnTimer = 0;
+			CurrentWave.EnemyIndex++;
 		}
-		SpawnTimer = 0;
-		CurrentWave.EnemyIndex++;
 	}
 }
 
 void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> EnemyClass){
-	UWorld* const World = GetWorld();
-	if (World){
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = Instigator;
-		SpawnParams.bNoCollisionFail = true;
+	if (Role == ROLE_Authority){
+		UWorld* const World = GetWorld();
+		if (World){
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = Instigator;
+			SpawnParams.bNoCollisionFail = true;
 
-		FVector SpawnLocation;
-		FRotator SpawnRotation;
-		
-		SpawnLocation = GetActorLocation();
-		SpawnRotation = GetActorRotation();
-		
-		AGAEnemy* Enemy = World->SpawnActor<AGAEnemy>(EnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
-		if (Enemy != NULL) {
-			Enemy->SpawnAIController();
-			Enemy->BeginPlay();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNED ***"));
-		}
-		else {
-			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: FAILED TO SPAWN ***"));
+			FVector SpawnLocation;
+			FRotator SpawnRotation;
+
+			SpawnLocation = GetActorLocation();
+			SpawnRotation = GetActorRotation();
+
+			AGAEnemy* Enemy = World->SpawnActor<AGAEnemy>(EnemyClass, SpawnLocation, SpawnRotation, SpawnParams);
+			if (Enemy != NULL) {
+				Enemy->SpawnAIController();
+				Enemy->BeginPlay();
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNED ***"));
+			}
+			else {
+				UE_LOG(LogClass, Warning, TEXT("*** SERVER :: FAILED TO SPAWN ***"));
+			}
 		}
 	}
 }
 
 void AGAEnemySpawn::SetCurrentWave(FWave NewWave){
-	CurrentWave = NewWave;
+	if (Role == ROLE_Authority){
+		CurrentWave = NewWave;
+	}
 }
