@@ -3,9 +3,6 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "GASpawnTrigger.h"
-#include "GASpawnDestructible.h"
-#include "GAEnemySpawnLocation.h"
 #include "GAWaves.h"
 #include "GAEnemySpawn.generated.h"
 
