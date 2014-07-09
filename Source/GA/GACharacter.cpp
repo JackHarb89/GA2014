@@ -595,6 +595,32 @@ void AGACharacter::CalculateItems(){
 	}
 }
 
+void AGACharacter::SetItemSlot(int32 row, int32 col, AGAItem* item) {
+	inventory.setItem(row, col, item);
+}
+
+bool AGACharacter::ClearItemSlot(int32 row, int32 col) {
+	return inventory.clearElement(row, col);
+}
+
+void AGACharacter::UnequipItem(EGASlot::Type itemType){
+	switch (itemType) {
+		case EGASlot::GAHead:
+			EquipItems.Head = nullptr;
+			break;
+		case EGASlot::GAChest:
+			EquipItems.Chest = nullptr;
+			break;
+		case EGASlot::GATrinket:
+			EquipItems.Trinket00 = nullptr;
+			break;
+		case EGASlot::GAWeapon:
+			EquipItems.Weapon = nullptr;
+			break;
+	}
+}
+
+
 // Function Will Equip The Given Item And Unequip If Slot Is Not Empty
 void AGACharacter::EquipItem(AGAItem* item){
 	if (Role < ROLE_Authority){
@@ -659,9 +685,34 @@ void AGACharacter::PickUpItem(AGAItem* item){
 		else{
 			InventoryItems.Add(item);
 			item->DestroyConstructedComponents();
-			inventory.registerElement(item);
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-			EquipItem(item);
+			
+			switch (item->Slot) {
+				case EGASlot::GAHead:
+					if (EquipItems.Head == nullptr)
+						EquipItem(item);
+					else
+						inventory.registerElement(item);
+					break;
+				case EGASlot::GAChest:
+					if (EquipItems.Chest == nullptr)
+						EquipItem(item);
+					else
+						inventory.registerElement(item);
+					break;
+				case EGASlot::GATrinket:
+					if (EquipItems.Trinket00 == nullptr)
+						EquipItem(item);
+					else
+						inventory.registerElement(item);
+					break;
+				case EGASlot::GAWeapon:
+					if (EquipItems.Weapon == nullptr)
+						EquipItem(item);
+					else
+						inventory.registerElement(item);
+					break;
+			}
 		}
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
