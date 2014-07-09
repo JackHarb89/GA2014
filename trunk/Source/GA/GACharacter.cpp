@@ -5,7 +5,6 @@
 #include "GAEnemy.h"
 #include "GAPlayerController.h"
 #include "Net/UnrealNetwork.h"
-#include "GASpawnDestructible.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AGACharacter
