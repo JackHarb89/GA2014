@@ -1148,7 +1148,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 }
 
 // Sets the Weapon Actor
-void AGACharacter::SetWeaponActor(AGAWeapon *Weapon){
+void AGACharacter::SetWeaponActor(AGAWeapon* Weapon){
 	if(Role < ROLE_Authority){
 		ServerSetWeaponActor(Weapon);
 	}
@@ -1157,5 +1157,5 @@ void AGACharacter::SetWeaponActor(AGAWeapon *Weapon){
 	}
 }
 
-bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon *Weapon){return true;}
-void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon *Weapon){SetWeaponActor(Weapon);}
+bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon* Weapon){return true;}
+void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon* Weapon){SetWeaponActor(Weapon);}
