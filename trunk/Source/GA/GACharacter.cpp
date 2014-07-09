@@ -618,6 +618,8 @@ void AGACharacter::UnequipItem(EGASlot::Type itemType){
 			EquipItems.Weapon = nullptr;
 			break;
 	}
+	CalculateAura();
+	CalculateItems();
 }
 
 
