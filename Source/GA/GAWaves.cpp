@@ -13,6 +13,9 @@ AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 	IsFirstTick = true;
 	IsSpawnSetActive = false;
 
+	NextWaveTimer = 15;
+	NextSpawnActiveTimer = 10;
+
 	SpawnWaveIndex = 0;
 	SpawnTimer = 0;
 
@@ -56,7 +59,7 @@ void AGAWaves::SetRemainingWaves(){
 
 void AGAWaves::SetSpawnActive(){
 	if (Role == ROLE_Authority){
-		if (SpawnTimer >= NextWaveTimer - 10 && !IsSpawnSetActive){
+		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive){
 			// Use a random Spawnlocation
 			RandIndex = FMath::RandRange(0, EnemySpawns.Num() - 1);
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetSpawnActivationStatusTo(true);
