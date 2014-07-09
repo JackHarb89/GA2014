@@ -11,7 +11,8 @@ AGAEnemySpawn::AGAEnemySpawn(const class FPostConstructInitializeProperties& PCI
 {
 	SpawnTimer = 0;
 	IsSpawnActive = false;
-
+	IsNewWave = false;
+	
 	// Replicate to Server / Clients
 	bReplicates = true;
 	bAlwaysRelevant = true;
@@ -33,7 +34,7 @@ void AGAEnemySpawn::IncreaseSpawnTimer(float DeltaTime){
 
 void AGAEnemySpawn::SpawnCurrentWave(){
 	if (Role == ROLE_Authority){
-		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive == true){
+		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive){
 			switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
 			case(EGAEnemy::GASmallEnemy) :
 				SpawnEnemy((&CurrentWave)->GetSmallEnemy());
@@ -48,8 +49,9 @@ void AGAEnemySpawn::SpawnCurrentWave(){
 			SpawnTimer = 0;
 			CurrentWave.EnemyIndex++;
 		}
-		else if (!CurrentWave.HasNoReferences() && CurrentWave.EnemyIndex > CurrentWave.Wave.Num() - 1 && IsSpawnActive == true){
+		else if (!CurrentWave.HasNoReferences() && CurrentWave.EnemyIndex > CurrentWave.Wave.Num() - 1 && IsSpawnActive&& IsNewWave){
 			SetSpawnActivationStatusTo(false);
+			IsNewWave = false;
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: WAVE SPAWN FINISHED ***"));
 		}
 	}
@@ -86,6 +88,7 @@ void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> EnemyClass){
 void AGAEnemySpawn::SetCurrentWave(FWave NewWave){
 	if (Role == ROLE_Authority){
 		CurrentWave = NewWave;
+		IsNewWave = true;
 	}
 }
 

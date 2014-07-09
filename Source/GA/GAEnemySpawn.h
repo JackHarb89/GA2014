@@ -28,6 +28,7 @@ public:
 private:
 
 	float SpawnTimer;
+	bool IsNewWave;
 
 	UPROPERTY()	FWave CurrentWave;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsSpawnActive)						bool IsSpawnActive;
