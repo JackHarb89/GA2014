@@ -376,7 +376,7 @@ void AGACharacter::IncreaseChargeTime(float Delta){
 
 // Calculation For The Special Attack (Depends on Times Charged and Base Damage)
 float AGACharacter::CalculateSpecialAttackDamage(){
-	return	SpecialAttackBaseDamage * SpecialAttackTimesCharged;;
+	return SpecialAttackBaseDamage * SpecialAttackTimesCharged;
 }
 
 // Reduces The Special Attack Cool Down  - Called by Tick
@@ -697,36 +697,10 @@ void AGACharacter::PickUpItem(AGAItem* item){
 		}
 		// If Item is Equipable Item
 		else{
+			inventory.registerElement(item);
 			InventoryItems.Add(item);
 			item->DestroyConstructedComponents();
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-
-			switch (item->Slot) {
-			case EGASlot::GAHead:
-				if (EquipItems.Head == nullptr)
-					EquipItem(item);
-				else
-					inventory.registerElement(item);
-				break;
-			case EGASlot::GAChest:
-				if (EquipItems.Chest == nullptr)
-					EquipItem(item);
-				else
-					inventory.registerElement(item);
-				break;
-			case EGASlot::GATrinket:
-				if (EquipItems.Trinket00 == nullptr)
-					EquipItem(item);
-				else
-					inventory.registerElement(item);
-				break;
-			case EGASlot::GAWeapon:
-				if (EquipItems.Weapon == nullptr)
-					EquipItem(item);
-				else
-					inventory.registerElement(item);
-				break;
-			}
 		}
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
