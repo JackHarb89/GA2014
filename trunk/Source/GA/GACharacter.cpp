@@ -29,7 +29,7 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	HasPickedUpItem = false;
 
 	// Inventory
-	InventorySlots = 10;
+	InventorySlots = 15;
 
 	// Attack Speed
 	AttackSpeed = 1;
@@ -685,36 +685,11 @@ void AGACharacter::PickUpItem(AGAItem* item){
 		}
 		// If Item is Equipable Item
 		else{
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
+
+			inventory.registerElement(item);
 			InventoryItems.Add(item);
 			item->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-			
-			switch (item->Slot) {
-				case EGASlot::GAHead:
-					if (EquipItems.Head == nullptr)
-						EquipItem(item);
-					else
-						inventory.registerElement(item);
-					break;
-				case EGASlot::GAChest:
-					if (EquipItems.Chest == nullptr)
-						EquipItem(item);
-					else
-						inventory.registerElement(item);
-					break;
-				case EGASlot::GATrinket:
-					if (EquipItems.Trinket00 == nullptr)
-						EquipItem(item);
-					else
-						inventory.registerElement(item);
-					break;
-				case EGASlot::GAWeapon:
-					if (EquipItems.Weapon == nullptr)
-						EquipItem(item);
-					else
-						inventory.registerElement(item);
-					break;
-			}
 		}
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
