@@ -1210,4 +1210,6 @@ void AGACharacter::SetWeaponActor(AGAWeapon* Weapon){
 }
 
 bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon* Weapon){return true;}
-void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon* Weapon){SetWeaponActor(Weapon);}
+void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon* Weapon){ SetWeaponActor(Weapon); }
+
+

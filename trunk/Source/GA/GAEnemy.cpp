@@ -12,7 +12,8 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 
-	isInit = false;
+	IsInit = false;
+	IsAlive = true;
 
 	Armor = 0;
 	HealthPoints = 100;
@@ -38,13 +39,13 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 
 void AGAEnemy::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
-	if (!isInit) InitPlayer();
+	if (!IsInit) InitPlayer();
 	if (AllowedToAttack) ReduceSimpleAttackCoolDown(DeltaTime);
 }
 
 void AGAEnemy::InitPlayer(){
 	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
-	isInit = true;
+	IsInit = true;
 }
 
 void AGAEnemy::SpawnAIController(){
@@ -222,6 +223,7 @@ void AGAEnemy::CheckDeath(){
 	}
 	else {
 		if (HealthPoints <= 0){
+			IsAlive = false;
 			CheckItemDrop();
 			CharacterDied();
 		}

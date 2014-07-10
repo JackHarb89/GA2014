@@ -83,7 +83,8 @@ public:
 
 	// Init
 	void InitPlayer();
-	bool isInit;
+	bool IsInit;
+	bool IsAlive;
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 	void SpawnAIController();
