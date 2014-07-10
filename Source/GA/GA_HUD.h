@@ -137,6 +137,7 @@ class AGA_HUD : public AHUD
 	// Input			- Manages incoming keypresses and currently active input areas
 	void ActivateTypingArea(AGA_UI_Area*);
 	void EndCurrentInput(bool sendContent);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TextAreas)
 	AGA_UI_Area* activeTypingArea;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = TextAreas)
