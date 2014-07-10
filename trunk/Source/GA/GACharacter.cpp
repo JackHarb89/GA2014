@@ -567,7 +567,7 @@ void AGACharacter::CalculateItems(){
 		}
 
 		// Damage Bonus
-		ItemDamage = (ItemStatsBonus.Attack) * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage)/ 100;
+		ItemDamage = ItemStatsBonus.Attack + ItemStatsBonus.Attack * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage)/ 100;
 
 		// Attack Speed
 		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
