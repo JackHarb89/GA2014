@@ -18,6 +18,7 @@ class AGAAIController : public AAIController
 	UPROPERTY(transient)	TSubobjectPtr<class UBehaviorTreeComponent> BehaviorComp;
 
 	UFUNCTION(BlueprintCallable, Category = Behavior)		void FindClosestPlayer();
+	UFUNCTION(BlueprintCallable, Category = Behavior)		void CheckPlayerDeath();
 	UFUNCTION(BlueprintCallable, Category = Behavior)		void RemoveTarget();
 
 	virtual void Possess(class APawn* InPawn) OVERRIDE;

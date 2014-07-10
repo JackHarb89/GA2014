@@ -5,6 +5,7 @@
 #include "GAAIController.h"
 #include "GAPlayerController.h"
 #include "GACharacter.h"
+#include "GAAudioManager.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -171,18 +172,33 @@ void AGAEnemy::DropItem(TSubclassOf<class AActor> item){
 		if (DropedItem != NULL) {
 			switch (DropedItem->Slot){
 				case(EGASlot::GAMoney) :
+					for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+						(*ActorItr)->EnemyDropedGold(this);
+					}
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED MONEY (%f) ***"), DropedItem->Value);
 					break;
 				case(EGASlot::GAHead) :
+					for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+						(*ActorItr)->EnemyDropedItem(this);
+					}
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED HEAD ***"));
 					break;
 				case(EGASlot::GAChest) :
+					for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+						(*ActorItr)->EnemyDropedItem(this);
+					}
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED CHEST ***"));
 					break;
 				case(EGASlot::GATrinket) :
+					for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+						(*ActorItr)->EnemyDropedItem(this);
+					}
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED TRINKET ***"));
 					break;
 				case(EGASlot::GAWeapon) :
+					for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+						(*ActorItr)->EnemyDropedItem(this);
+					}
 					UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DROPED WEAPON ***"));
 					break;
 			}
@@ -210,6 +226,11 @@ void AGAEnemy::ApplyDamage(float Damage) {
 	HealthPoints -= (Damage - (Armor*0.25*Damage) / 100);
 	HasTookDamage = true;
 	CharacterTookDamage();
+
+	for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		(*ActorItr)->EnemyTookDamage(this);
+	}
+
 	CheckDeath();
 }
 
@@ -223,6 +244,9 @@ void AGAEnemy::CheckDeath(){
 	}
 	else {
 		if (HealthPoints <= 0){
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				(*ActorItr)->EnemyDied(this);
+			}
 			IsAlive = false;
 			CheckItemDrop();
 			CharacterDied();
@@ -267,6 +291,11 @@ void AGAEnemy::ServerCheckItemDrop_Implementation(){CheckItemDrop();}
 void AGAEnemy::OnRep_HasTookDamage(){
 	if (HasTookDamage){
 		CharacterTookDamage();
+
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->EnemyTookDamage(this);
+		}
+
 		ServerResetHasTookDamage();
 	}
 }
