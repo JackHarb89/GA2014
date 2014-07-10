@@ -6,6 +6,7 @@
 #include "GAShop.h"
 #include "GAWeapon.h"
 #include "GAAttackableCharacter.h"
+#include "GAAudioManager.h"
 #include "GACharacter.generated.h"
 
 // actual inventory
@@ -106,7 +107,7 @@ class AGACharacter : public AGAAttackableCharacter
 
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
-
+	
 	// Chat
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")					FString UserName;
 	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")				TArray<FString> ChatLog;
@@ -373,5 +374,6 @@ protected:
 	void CheckDeath();
 	virtual void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
 	virtual void Tick(float Delta) OVERRIDE;
+
 };
 
