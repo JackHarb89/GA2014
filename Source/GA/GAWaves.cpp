@@ -59,7 +59,7 @@ void AGAWaves::SetRemainingWaves(){
 
 void AGAWaves::SetSpawnActive(){
 	if (Role == ROLE_Authority){
-		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive && SpawnWaveIndex <= Waves.Num() - 1){
+		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num()>0){
 			// Use a random Spawnlocation
 			RandIndex = FMath::RandRange(0, EnemySpawns.Num() - 1);
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetSpawnActivationStatusTo(true);
@@ -71,7 +71,7 @@ void AGAWaves::SetSpawnActive(){
 // Spawns the Next Wave  *** Only Server Can Spawn Waves ***
 void AGAWaves::SpawnNextWave(){
 	if (Role == ROLE_Authority){																		// Are we server?
-		if (SpawnTimer >= NextWaveTimer && SpawnWaveIndex <= Waves.Num() - 1){							// If we have a Wave left and are allowed to spawn
+		if (SpawnTimer >= NextWaveTimer && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num()>0){	// If we have a Wave left and are allowed to spawn
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"),SpawnWaveIndex+1);
 			
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetCurrentWave(Waves[SpawnWaveIndex]);

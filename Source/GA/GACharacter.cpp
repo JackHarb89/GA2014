@@ -10,7 +10,7 @@
 // AGACharacter
 
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
-	: Super(PCIP)
+: Super(PCIP)
 {
 	isInit = false;
 	WeaponActor = nullptr;
@@ -25,11 +25,11 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	Potions = 0;
 	PotionCoolDown = 10;
 
-	HasEquipedItem = false; 
+	HasEquipedItem = false;
 	HasPickedUpItem = false;
 
 	// Inventory
-	InventorySlots = 15;
+	InventorySlots = 10;
 
 	// Attack Speed
 	AttackSpeed = 1;
@@ -61,13 +61,13 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	HealthPoints = 100;
 	OutOfCombatTime = 5;
 	RegenerationRate = 1;
-	RegenerationAmount = 5;	
+	RegenerationAmount = 5;
 
 	ArmorReductionPercent = 0.25;
-	
+
 	HasTookDamage = false;
 	HasDied = false;
-	
+
 
 	// Set size for collision capsule
 	CapsuleComponent->InitCapsuleSize(42.f, 96.0f);
@@ -128,22 +128,22 @@ void AGACharacter::InitPlayer(){
 
 	FVector SpawnLocation = { 0, 0, 0 };
 	FRotator SpawnRotation = { 0, 0, 0 };
-	
-	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass,SpawnLocation,SpawnRotation,SpawnParams);
-	
+
+	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass, SpawnLocation, SpawnRotation, SpawnParams);
+
 	isInit = true;
 }
 
 void AGACharacter::Tick(float Delta){
 	Super::Tick(Delta);
-	if (!isInit){ InitPlayer();}
+	if (!isInit){ InitPlayer(); }
 	CheckPlayerInAuraRange();
 	ReduceSimpleAttackCoolDown(Delta);
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
 	RegenerateHealth(Delta);
 	ReducePotionCoolDown(Delta);
-	CheckDeath();
+	if (!HasDied) CheckDeath();
 }
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
@@ -273,6 +273,11 @@ void AGACharacter::AttackSimple(){
 		SimpleAttackOnCoolDown = true;
 
 		CharacterAttackedSimple();
+
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSimple(this);
+		}
+
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE ***"));
 	}
 }
@@ -326,6 +331,9 @@ void AGACharacter::AttackSpecial(){
 
 		CharacterAttackedSpecial();
 
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSpecial(this);
+		}
 		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SPECIAL ***"));
 	}
 }
@@ -435,7 +443,7 @@ void AGACharacter::RegenerateHealth(float Delta){
 			}
 			RegenerationTime += Delta;
 			// Regenerate Health
-			if(RegenerationTime >= RegenerationRate && HealthPoints < MaxHealth){
+			if (RegenerationTime >= RegenerationRate && HealthPoints < MaxHealth){
 				HealthPoints = (HealthPoints + RegenerationAmount > MaxHealth ? MaxHealth : HealthPoints + RegenerationAmount);
 				RegenerationTime = 0;
 			}
@@ -462,9 +470,9 @@ void AGACharacter::ApplyDamage(float Damage) {
 	RegenerationAnimationIsRunning = false;
 	RegenerationTimer = 0;
 	RegenerationTime = 0;
-	CharacterFinishedRegeneration();
 	HealthPoints -= (Damage - (Armor * ArmorReductionPercent * Damage) / 100);
-
+	CharacterFinishedRegeneration();
+	CharacterTookDamage();
 	HasTookDamage = true;
 	UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
 }
@@ -482,6 +490,10 @@ void AGACharacter::CheckDeath(){
 		if (HealthPoints <= 0){
 			HasDied = true;
 			CharacterDied();
+
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				(*ActorItr)->CharacterDied(this);
+			}
 			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
@@ -498,7 +510,7 @@ void AGACharacter::BuyItem(){
 		ServerBuyItem();
 	}
 	else{
-		if(Ressource >= Shop->ItemCost){
+		if (Ressource >= Shop->ItemCost){
 			AGAItem* ShopItem = Shop->BuyItem();
 			Ressource -= Shop->ItemCost;
 			PickUpItem(ShopItem);
@@ -508,7 +520,7 @@ void AGACharacter::BuyItem(){
 
 // *** TEMPORARY DUE TO NO UI ***
 void AGACharacter::SellLastItem(){
-	if (InventoryItems.Num()>0){
+	if (InventoryItems.Num() > 0){
 		SellItem(InventoryItems.Last());
 	}
 }
@@ -567,7 +579,7 @@ void AGACharacter::CalculateItems(){
 		}
 
 		// Damage Bonus
-		ItemDamage = ItemStatsBonus.Attack + ItemStatsBonus.Attack * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage)/ 100;
+		ItemDamage = ItemStatsBonus.Attack + ItemStatsBonus.Attack * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage) / 100;
 
 		// Attack Speed
 		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
@@ -577,17 +589,17 @@ void AGACharacter::CalculateItems(){
 		Critical = ItemStatsBonus.CriticalInPercent;
 
 		// Armor
-		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) * 
-			(PercentBonus.PercentArmor +  AuraBonus.PercentArmor + OtherPlayerAura.PercentArmor)/ 100;
+		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) *
+			(PercentBonus.PercentArmor + AuraBonus.PercentArmor + OtherPlayerAura.PercentArmor) / 100;
 		ArmorReduction = Armor * ArmorReductionPercent;
 
 		// Movement Speed
-		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed * 
+		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed *
 			(PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent + AuraBonus.PercentMovementSpeed + OtherPlayerAura.PercentMovementSpeed) / 100;
-		
+
 		// Health
-		ItemHealth = ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) * 
-			(PercentBonus.PercentHealth + AuraBonus.PercentHealth + OtherPlayerAura.PercentHealth)/ 100;
+		ItemHealth = ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) *
+			(PercentBonus.PercentHealth + AuraBonus.PercentHealth + OtherPlayerAura.PercentHealth) / 100;
 		MaxHealth = HealthResetValue + ItemHealth;
 		if (MaxHealth < HealthPoints) HealthPoints = MaxHealth;
 
@@ -605,18 +617,18 @@ bool AGACharacter::ClearItemSlot(int32 row, int32 col) {
 
 void AGACharacter::UnequipItem(EGASlot::Type itemType){
 	switch (itemType) {
-		case EGASlot::GAHead:
-			EquipItems.Head = nullptr;
-			break;
-		case EGASlot::GAChest:
-			EquipItems.Chest = nullptr;
-			break;
-		case EGASlot::GATrinket:
-			EquipItems.Trinket00 = nullptr;
-			break;
-		case EGASlot::GAWeapon:
-			EquipItems.Weapon = nullptr;
-			break;
+	case EGASlot::GAHead:
+		EquipItems.Head = nullptr;
+		break;
+	case EGASlot::GAChest:
+		EquipItems.Chest = nullptr;
+		break;
+	case EGASlot::GATrinket:
+		EquipItems.Trinket00 = nullptr;
+		break;
+	case EGASlot::GAWeapon:
+		EquipItems.Weapon = nullptr;
+		break;
 	}
 	CalculateAura();
 	CalculateItems();
@@ -674,7 +686,7 @@ void AGACharacter::PickUpItem(AGAItem* item){
 	if (Role < ROLE_Authority){
 		ServerPickUpItem(item);
 	}
-	if(InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
+	if (InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
 		TouchedItem = item;
 		HasPickedUpItem = true;
 		// If Item Is Money
@@ -685,11 +697,36 @@ void AGACharacter::PickUpItem(AGAItem* item){
 		}
 		// If Item is Equipable Item
 		else{
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-
-			inventory.registerElement(item);
 			InventoryItems.Add(item);
 			item->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
+
+			switch (item->Slot) {
+			case EGASlot::GAHead:
+				if (EquipItems.Head == nullptr)
+					EquipItem(item);
+				else
+					inventory.registerElement(item);
+				break;
+			case EGASlot::GAChest:
+				if (EquipItems.Chest == nullptr)
+					EquipItem(item);
+				else
+					inventory.registerElement(item);
+				break;
+			case EGASlot::GATrinket:
+				if (EquipItems.Trinket00 == nullptr)
+					EquipItem(item);
+				else
+					inventory.registerElement(item);
+				break;
+			case EGASlot::GAWeapon:
+				if (EquipItems.Weapon == nullptr)
+					EquipItem(item);
+				else
+					inventory.registerElement(item);
+				break;
+			}
 		}
 	}
 	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
@@ -722,6 +759,11 @@ void AGACharacter::UsePotion(){
 			HasUsedPotion = true;
 			if (HealthPoints > MaxHealth){ HealthPoints = MaxHealth; }
 			CharacterUsedPotion();
+
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				(*ActorItr)->CharacterUsedPotion(this);
+			}
+
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: USED POTION ***"));
 		}
 	}
@@ -891,13 +933,16 @@ void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){
 #pragma region Network - Simple Attack
 
 
-bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){return true;}
-void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){DealDamage(OtherActor);}
+bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){ return true; }
+void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){ DealDamage(OtherActor); }
 
 // Client Reaction On Replication Notification - Simple Event Call
 void AGACharacter::OnRep_SimpleAttackOnCoolDown(){
 	if (SimpleAttackOnCoolDown){
 		CharacterAttackedSimple();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSimple(this);
+		}
 		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SIMPLE (%f) ***"), SimpleAttackDamage + ItemDamage);
 	}
 	else {
@@ -905,11 +950,11 @@ void AGACharacter::OnRep_SimpleAttackOnCoolDown(){
 	}
 }
 
-bool AGACharacter::ServerAttackSimple_Validate(){return true;}
-void AGACharacter::ServerAttackSimple_Implementation(){AttackSimple();}
+bool AGACharacter::ServerAttackSimple_Validate(){ return true; }
+void AGACharacter::ServerAttackSimple_Implementation(){ AttackSimple(); }
 
-bool AGACharacter::ServerReduceSimpleAttackCoolDown_Validate(float DeltaTime){return true;}
-void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTime){ReduceSimpleAttackCoolDown(DeltaTime);}
+bool AGACharacter::ServerReduceSimpleAttackCoolDown_Validate(float DeltaTime){ return true; }
+void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTime){ ReduceSimpleAttackCoolDown(DeltaTime); }
 
 #pragma endregion
 
@@ -919,6 +964,9 @@ void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTi
 void AGACharacter::OnRep_SpecialAttackOnCoolDown(){
 	if (SpecialAttackOnCoolDown){
 		CharacterAttackedSpecial();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSpecial(this);
+		}
 		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SPECIAL ***"));
 	}
 	else{
@@ -942,20 +990,20 @@ void AGACharacter::OnRep_SpecialAttackTimesCharged(){
 	}
 }
 
-bool AGACharacter::ServerAttackSpecial_Validate(){return true;}
-void AGACharacter::ServerAttackSpecial_Implementation(){AttackSpecial();}
+bool AGACharacter::ServerAttackSpecial_Validate(){ return true; }
+void AGACharacter::ServerAttackSpecial_Implementation(){ AttackSpecial(); }
 
 
-bool AGACharacter::ServerReduceSpecialAttackCoolDown_Validate(float Delta){return true;}
-void AGACharacter::ServerReduceSpecialAttackCoolDown_Implementation(float Delta){ReduceSpecialAttackCoolDown(Delta);}
+bool AGACharacter::ServerReduceSpecialAttackCoolDown_Validate(float Delta){ return true; }
+void AGACharacter::ServerReduceSpecialAttackCoolDown_Implementation(float Delta){ ReduceSpecialAttackCoolDown(Delta); }
 
 
-bool AGACharacter::ServerChargeSpecial_Validate(){return true;}
-void AGACharacter::ServerChargeSpecial_Implementation(){ChargeSpecial();}
+bool AGACharacter::ServerChargeSpecial_Validate(){ return true; }
+void AGACharacter::ServerChargeSpecial_Implementation(){ ChargeSpecial(); }
 
 
-bool AGACharacter::ServerIncreaseChargeTime_Validate(float Delta){return true;}
-void AGACharacter::ServerIncreaseChargeTime_Implementation(float Delta){IncreaseChargeTime(Delta);}
+bool AGACharacter::ServerIncreaseChargeTime_Validate(float Delta){ return true; }
+void AGACharacter::ServerIncreaseChargeTime_Implementation(float Delta){ IncreaseChargeTime(Delta); }
 
 #pragma endregion
 
@@ -973,7 +1021,7 @@ void AGACharacter::OnRep_AllowedToRegenerate(){
 	}
 }
 
-bool AGACharacter::ServerRegenerateHealth_Validate(float Delta){return true;}
+bool AGACharacter::ServerRegenerateHealth_Validate(float Delta){ return true; }
 void AGACharacter::ServerRegenerateHealth_Implementation(float Delta){ RegenerateHealth(Delta); }
 
 #pragma endregion
@@ -984,13 +1032,14 @@ void AGACharacter::ServerRegenerateHealth_Implementation(float Delta){ Regenerat
 void AGACharacter::OnRep_HasTookDamage(){
 	if (HasTookDamage){
 		CharacterFinishedRegeneration();
+		CharacterTookDamage();
 		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: TOOK DAMAGE ***"));
 		HasTookDamage = false;
 	}
 }
 
-bool AGACharacter::ServerTakeDamageByEnemy_Validate(float Damage){return true;}
-void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){TakeDamageByEnemy(Damage);}
+bool AGACharacter::ServerTakeDamageByEnemy_Validate(float Damage){ return true; }
+void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){ TakeDamageByEnemy(Damage); }
 
 #pragma endregion
 
@@ -1000,6 +1049,9 @@ void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){TakeDama
 void AGACharacter::OnRep_HasDied(){
 	if (HasDied){
 		CharacterDied();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterDied(this);
+		}
 		UE_LOG(LogClass, Warning, TEXT("*** CLIENT :: DIED ***"));
 	}
 }
@@ -1015,6 +1067,9 @@ void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 void AGACharacter::OnRep_HasUsedPotion(){
 	if (HasUsedPotion){
 		CharacterUsedPotion();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterUsedPotion(this);
+		}
 		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: USED POTION ***"));
 	}
 	else
@@ -1023,11 +1078,11 @@ void AGACharacter::OnRep_HasUsedPotion(){
 	}
 }
 
-bool AGACharacter::ServerUsePotion_Validate(){return true;}
-void AGACharacter::ServerUsePotion_Implementation(){UsePotion();}
+bool AGACharacter::ServerUsePotion_Validate(){ return true; }
+void AGACharacter::ServerUsePotion_Implementation(){ UsePotion(); }
 
-bool AGACharacter::ServerReducePotionCoolDown_Validate(float Delta){return true;}
-void AGACharacter::ServerReducePotionCoolDown_Implementation(float Delta){ReducePotionCoolDown(Delta);}
+bool AGACharacter::ServerReducePotionCoolDown_Validate(float Delta){ return true; }
+void AGACharacter::ServerReducePotionCoolDown_Implementation(float Delta){ ReducePotionCoolDown(Delta); }
 
 #pragma endregion
 
@@ -1061,26 +1116,26 @@ void AGACharacter::OnRep_HasEquipedItem(){
 	}
 }
 
-bool AGACharacter::ServerBuyItem_Validate(){return true;}
-void AGACharacter::ServerBuyItem_Implementation(){BuyItem();}
+bool AGACharacter::ServerBuyItem_Validate(){ return true; }
+void AGACharacter::ServerBuyItem_Implementation(){ BuyItem(); }
 
-bool AGACharacter::ServerSellItem_Validate(AGAItem* item){return true;}
-void AGACharacter::ServerSellItem_Implementation(AGAItem* item){SellItem(item);}
+bool AGACharacter::ServerSellItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerSellItem_Implementation(AGAItem* item){ SellItem(item); }
 
-bool AGACharacter::ServerPickUpItem_Validate(AGAItem* item){return true;}
-void AGACharacter::ServerPickUpItem_Implementation(AGAItem* item){PickUpItem(item);}
+bool AGACharacter::ServerPickUpItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerPickUpItem_Implementation(AGAItem* item){ PickUpItem(item); }
 
-bool AGACharacter::ServerEquipItem_Validate(AGAItem* item){return true;}
-void AGACharacter::ServerEquipItem_Implementation(AGAItem* item){EquipItem(item);}
+bool AGACharacter::ServerEquipItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerEquipItem_Implementation(AGAItem* item){ EquipItem(item); }
 
-bool AGACharacter::ServerCalculateItems_Validate(){return true;}
-void AGACharacter::ServerCalculateItems_Implementation(){CalculateItems();}
+bool AGACharacter::ServerCalculateItems_Validate(){ return true; }
+void AGACharacter::ServerCalculateItems_Implementation(){ CalculateItems(); }
 
-bool AGACharacter::ServerResetHasPickedUpItem_Validate(){return true;}
-void AGACharacter::ServerResetHasPickedUpItem_Implementation(){HasPickedUpItem = false;}
+bool AGACharacter::ServerResetHasPickedUpItem_Validate(){ return true; }
+void AGACharacter::ServerResetHasPickedUpItem_Implementation(){ HasPickedUpItem = false; }
 
-bool AGACharacter::ServerResetHasEquipedItem_Validate(){return true;}
-void AGACharacter::ServerResetHasEquipedItem_Implementation(){HasEquipedItem = false;}
+bool AGACharacter::ServerResetHasEquipedItem_Validate(){ return true; }
+void AGACharacter::ServerResetHasEquipedItem_Implementation(){ HasEquipedItem = false; }
 
 #pragma endregion
 
@@ -1098,17 +1153,17 @@ void AGACharacter::OnRep_HasActivatedAura(){
 	}
 }
 
-bool AGACharacter::ServerCheckPlayerInAuraRange_Validate(){return true;}
-void AGACharacter::ServerCheckPlayerInAuraRange_Implementation(){CheckPlayerInAuraRange();}
+bool AGACharacter::ServerCheckPlayerInAuraRange_Validate(){ return true; }
+void AGACharacter::ServerCheckPlayerInAuraRange_Implementation(){ CheckPlayerInAuraRange(); }
 
-bool AGACharacter::ServerCalculateAura_Validate(){return true;}
-void AGACharacter::ServerCalculateAura_Implementation(){CalculateAura();}
+bool AGACharacter::ServerCalculateAura_Validate(){ return true; }
+void AGACharacter::ServerCalculateAura_Implementation(){ CalculateAura(); }
 
-bool AGACharacter::ServerActivateAura_Validate(){return true;}
-void AGACharacter::ServerActivateAura_Implementation(){ActivateAura();}
+bool AGACharacter::ServerActivateAura_Validate(){ return true; }
+void AGACharacter::ServerActivateAura_Implementation(){ ActivateAura(); }
 
-bool AGACharacter::ServerDeactivateAura_Validate(){return true;}
-void AGACharacter::ServerDeactivateAura_Implementation(){DeactivateAura();}
+bool AGACharacter::ServerDeactivateAura_Validate(){ return true; }
+void AGACharacter::ServerDeactivateAura_Implementation(){ DeactivateAura(); }
 
 #pragma endregion
 
@@ -1120,7 +1175,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, HasActivatedAura);
 
 	// Armor
-	DOREPLIFETIME(AGACharacter, Armor); 
+	DOREPLIFETIME(AGACharacter, Armor);
 	DOREPLIFETIME(AGACharacter, ArmorResetValue);
 
 	// Simple Attack
@@ -1168,7 +1223,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, EquipItems);
 	DOREPLIFETIME(AGACharacter, InventoryItems);
 	DOREPLIFETIME(AGACharacter, InventorySlots);
-	DOREPLIFETIME(AGACharacter, TouchedItem);	
+	DOREPLIFETIME(AGACharacter, TouchedItem);
 
 	// Ressource
 	DOREPLIFETIME(AGACharacter, Ressource);
@@ -1176,7 +1231,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 // Sets the Weapon Actor
 void AGACharacter::SetWeaponActor(AGAWeapon* Weapon){
-	if(Role < ROLE_Authority){
+	if (Role < ROLE_Authority){
 		ServerSetWeaponActor(Weapon);
 	}
 	else{
@@ -1184,7 +1239,7 @@ void AGACharacter::SetWeaponActor(AGAWeapon* Weapon){
 	}
 }
 
-bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon* Weapon){return true;}
+bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon* Weapon){ return true; }
 void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon* Weapon){ SetWeaponActor(Weapon); }
 
 

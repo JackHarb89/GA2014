@@ -25,15 +25,11 @@ void AGAAudioManager::CheckBattleMusicFade(){
 		}
 	}
 	if (EnemyOnMap && !BattleMusicIsActive){
-		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			(*ActorItr)->FadeInBattle();
-		}
+		FadeInBattle();
 		BattleMusicIsActive = true;
 	}
 	else if (!EnemyOnMap && BattleMusicIsActive){
-		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			(*ActorItr)->FadeInSilence();
-		}
+		FadeInSilence();
 		BattleMusicIsActive = false;
 	}
 }

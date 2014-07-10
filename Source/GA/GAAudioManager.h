@@ -11,13 +11,30 @@ class AGAAudioManager : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	bool BattleMusicIsActive;
+public:
 	// Music
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event") 				void FadeInSilence();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void FadeInBattle();
 
+	// Sounds
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void EnemyDied(AGAEnemy* Enemy);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void EnemyTookDamage(AGAEnemy* Enemy);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void EnemyDropedGold(AGAEnemy* Enemy);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void EnemyDropedItem(AGAEnemy* Enemy);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterDied(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterAttackedSimple(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterAttackedSpecial(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterUsedPotion(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterBoughtPotion(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterBoughtItem(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterPickedUpItem(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterDropedItem(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterEquipedItem(AGACharacter* Character);
+
+private:
+
+	bool BattleMusicIsActive;
 	void CheckBattleMusicFade();
-
-
 	virtual void Tick(float Delta) OVERRIDE;
 };
