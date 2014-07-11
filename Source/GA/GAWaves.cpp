@@ -1,5 +1,3 @@
-
-
 #include "GA.h"
 #include "GAEnemySpawn.h"
 #include "GAWaves.h"
@@ -24,14 +22,18 @@ AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 	bAlwaysRelevant = true;
 
 	PrimaryActorTick.bCanEverTick = true;
+
+	AllowedToTick = false;
 }
 
 void AGAWaves::Tick(float DeltaTime){
-	Super::Tick(DeltaTime);
-	InitReamingWaves();
-	IncreaseSpawnTimer(DeltaTime);
-	SetSpawnActive();
-	SpawnNextWave();
+	if (AllowedToTick){
+		Super::Tick(DeltaTime);
+		InitReamingWaves();
+		IncreaseSpawnTimer(DeltaTime);
+		SetSpawnActive();
+		SpawnNextWave();
+	}
 }
 
 // Initial Setting of Remaining Waves in Game State
@@ -71,11 +73,11 @@ void AGAWaves::SetSpawnActive(){
 // Spawns the Next Wave  *** Only Server Can Spawn Waves ***
 void AGAWaves::SpawnNextWave(){
 	if (Role == ROLE_Authority){																		// Are we server?
-		if (SpawnTimer >= NextWaveTimer && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num()>0){	// If we have a Wave left and are allowed to spawn
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"),SpawnWaveIndex+1);
-			
+		if (SpawnTimer >= NextWaveTimer && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num() > 0){	// If we have a Wave left and are allowed to spawn
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex + 1);
+
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetCurrentWave(Waves[SpawnWaveIndex]);
-			
+
 			SpawnWaveIndex++;
 			SpawnTimer = 0;
 			IsSpawnSetActive = false;
@@ -93,4 +95,9 @@ void AGAWaves::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 	// Wave Timer
 	DOREPLIFETIME(AGAWaves, NextWaveTimer);
 
+}
+
+
+void AGAWaves::ToggleTick(){
+	AllowedToTick = !AllowedToTick;
 }

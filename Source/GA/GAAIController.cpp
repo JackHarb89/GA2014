@@ -61,11 +61,11 @@ void AGAAIController::FindClosestPlayer(){
 void AGAAIController::CheckPlayerDeath(){
 	if (GetWorld()->GetFirstPlayerController() == NULL) return;
 	APawn* EnemyPawn = this->GetPawn();
-	if (this && EnemyPawn){
+	if (this && EnemyPawn ){
 		FName PlayerKeyID = "Player";
 		uint8 BlackboardKeyID = BehaviorComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
 		AGACharacter* Player = (AGACharacter*)BehaviorComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID);
-		if(Player->HasDied) BehaviorComp->GetBlackboardComponent()->SetValueAsObject(PlayerKeyID, NULL);
+		if (Player && Player->HasDied) BehaviorComp->GetBlackboardComponent()->SetValueAsObject(PlayerKeyID, NULL);
 	}
 }
 
