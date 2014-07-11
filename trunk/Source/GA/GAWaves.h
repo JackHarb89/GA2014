@@ -76,6 +76,10 @@ class AGAWaves : public AActor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<FWave> Waves;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<AActor*> EnemySpawns;
 
+	// ONLY MS2
+	bool AllowedToTick;
+	UFUNCTION(BlueprintCallable, Category = "Tick")									void ToggleTick();
+
 private:
 
 	int32 SpawnWaveIndex;

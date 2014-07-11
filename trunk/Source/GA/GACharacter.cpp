@@ -494,6 +494,7 @@ void AGACharacter::CheckDeath(){
 			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				(*ActorItr)->CharacterDied(this);
 			}
+
 			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
