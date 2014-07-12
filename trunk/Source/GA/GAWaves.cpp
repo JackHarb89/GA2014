@@ -23,7 +23,8 @@ AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 
 	PrimaryActorTick.bCanEverTick = true;
 
-	AllowedToTick = false;
+	// false = Q
+	AllowedToTick = true;
 }
 
 void AGAWaves::Tick(float DeltaTime){
