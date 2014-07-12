@@ -19,8 +19,14 @@ class AGAGameState : public AGameState
 
 	void ReduceBaseHealth();
 	void FinishGame();
+	UFUNCTION(BlueprintCallable, Category = Waves)
 	void SetRemainingWaves(int32 Remaining);
+	UFUNCTION(BlueprintCallable, Category = Waves)
 	int32 GetRemainingWaves();
+	UFUNCTION(BlueprintCallable, Category = Sections)
+	void SetBaseHealthPoints(int32 HealthPoints);
+	UFUNCTION(BlueprintCallable, Category = Sections)
+	int32 GetBaseHealthPoints();
 
 private:
 

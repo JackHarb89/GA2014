@@ -34,8 +34,17 @@ void AGAGameState::FinishGame(){
 
 void AGAGameState::SetRemainingWaves(int32 Remaining){
 	RemainingWaves = Remaining;
-	UE_LOG(LogClass, Log, TEXT("*** SERVER :: %d REMAINING WAVES ***"),RemainingWaves);
+	UE_LOG(LogClass, Log, TEXT("*** SERVER :: %d REMAINING WAVES ***"), RemainingWaves);
 }
 int32 AGAGameState::GetRemainingWaves(){
 	return RemainingWaves;
+}
+
+
+void AGAGameState::SetBaseHealthPoints(int32 Remaining){
+	BaseHealthPoints = Remaining;
+	UE_LOG(LogClass, Log, TEXT("*** SERVER :: %d BASE HEALTH POINTS ***"), BaseHealthPoints);
+}
+int32 AGAGameState::GetBaseHealthPoints(){
+	return BaseHealthPoints;
 }
