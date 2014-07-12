@@ -32,8 +32,6 @@ AGAEnemy::AGAEnemy(const class FPostConstructInitializeProperties& PCIP)
 	SimpleAttackRange = 200;
 
 
-	Tags.Add("Orc");
-
 	// Replicate to Server / Clients
 	bReplicates = true;
 }
@@ -47,6 +45,7 @@ void AGAEnemy::Tick(float DeltaTime){
 void AGAEnemy::InitPlayer(){
 	SimpleAttackCoolDownRestValue = SimpleAttackCoolDown;
 	IsInit = true;
+	Tags.Add("Orc");
 }
 
 void AGAEnemy::SpawnAIController(){
