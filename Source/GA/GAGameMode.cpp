@@ -13,7 +13,7 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 
 	//static ConstructorHelpers::FObjectFinder<UBlueprint> HUDOb(TEXT("/Game/UI/Classes/GA_HUD_BP"));
 	//HUDClass = (UClass*)HUDOb.Object->GeneratedClass;
-	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Vincent/PlayerCharacter_vincent"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Peddy/Characters/PlayerCharacter_Barbarian"));
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
