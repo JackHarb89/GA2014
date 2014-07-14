@@ -253,6 +253,12 @@ void AGAEnemy::CheckDeath(){
 	}
 }
 
+void AGAEnemy::OnRep_IsAlive(){
+	if (!IsAlive){
+		CharacterDied();
+	}
+}
+
 bool AGAEnemy::ServerCheckDeath_Validate(){return true;}
 void AGAEnemy::ServerCheckDeath_Implementation(){CheckDeath();}
 
@@ -316,6 +322,7 @@ void AGAEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 
 	DOREPLIFETIME(AGAEnemy, HealthPoints);
 	DOREPLIFETIME(AGAEnemy, HasTookDamage);
+	DOREPLIFETIME(AGAEnemy, IsAlive);
 	
 	DOREPLIFETIME(AGAEnemy, SimpleAttackOnCoolDown);
 	DOREPLIFETIME(AGAEnemy, SimpleAttackCoolDownRestValue);

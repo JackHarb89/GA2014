@@ -32,6 +32,10 @@ class AGAEnemy : public AGAAttackableCharacter
 public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Behavior)				class UBehaviorTree* EnemyBehavior;
 
+
+	// Status
+
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsAlive)										bool IsAlive;
 	// Loottable
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Items)					TArray<FGameItem> LootTable;
 
@@ -68,6 +72,7 @@ public:
 
 	UFUNCTION()																					void OnRep_HasTookDamage();
 	UFUNCTION()																					void OnRep_SimpleAttackOnCoolDown();
+	UFUNCTION()																					void OnRep_IsAlive();
 	
 	UFUNCTION(Category = "Damage", BlueprintCallable)											void ApplyDamage(float Damage);
 
@@ -84,7 +89,6 @@ public:
 	// Init
 	void InitPlayer();
 	bool IsInit;
-	bool IsAlive;
 
 	virtual void Tick(float DeltaTime) OVERRIDE;
 	void SpawnAIController();
