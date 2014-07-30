@@ -140,7 +140,6 @@ void AGACharacter::Tick(float Delta){
 	ReduceSimpleAttackCoolDown(Delta);
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
-	RegenerateHealth(Delta);
 	ReducePowerUpCoolDown(Delta);
 	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
@@ -1088,7 +1087,7 @@ void AGACharacter::HealPlayer(float HealAmount){
 		if (HealthPoints < MaxHealth){
 			HealthPoints += HealAmount;
 			HasBeenHealed = !HasBeenHealed;
-			if (HealthPoints > MaxHealth){ HealthPoints = MaxHealth; }
+			if (HealthPoints > MaxHealth){ HealthPoints = MaxHealth;}
 			CharacterStartedRegeneration();
 		}
 	}
