@@ -35,7 +35,6 @@ void AGAAIController::FindClosestPlayer(){
 
 	APawn* EnemyPawn = this->GetPawn();
 	if (this && EnemyPawn){
-		float AggroRange = 1500;
 		FName PlayerKeyID = "Player";
 		AGACharacter* ClosestPlayerPawn = (AGACharacter*)GetWorld()->GetFirstPlayerController()->GetPawn();
 		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
@@ -45,15 +44,12 @@ void AGAAIController::FindClosestPlayer(){
 				ClosestPlayerPawn = *ActorItr;
 			}
 		}
-		if (ClosestPlayerPawn != NULL && EnemyPawn != NULL)
-		if (FVector::Dist(EnemyPawn->GetActorLocation(), ClosestPlayerPawn->GetActorLocation()) > AggroRange || ClosestPlayerPawn->HasDied){
-				ClosestPlayerPawn = NULL;
-			}
-			else{
-				RemoveTarget();
-			}
-		else
-			UE_LOG(LogClass, Log, TEXT("!!!!! HOTFIX FOR PLAYER-DEATH! REMOVE LINE 55, 54, 47 AND FIND THE ACTUAL CRASH-REASON !!!!!"));
+		if (ClosestPlayerPawn && ClosestPlayerPawn->HasDied){
+			ClosestPlayerPawn = NULL;
+		}
+		else{
+			RemoveTarget();
+		}
 		BehaviorComp->GetBlackboardComponent()->SetValueAsObject(PlayerKeyID, ClosestPlayerPawn);
 	}
 }
