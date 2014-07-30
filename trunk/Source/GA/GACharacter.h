@@ -7,6 +7,7 @@
 #include "GAWeapon.h"
 #include "GAAttackableCharacter.h"
 #include "GAAudioManager.h"
+#include "GAPowerUp.h"
 #include "GACharacter.generated.h"
 
 // actual inventory
@@ -105,6 +106,9 @@ class AGACharacter : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Power Up
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_PowerUpCoolDown)							float PowerUpCoolDown;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
 	
@@ -199,6 +203,9 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasEquipedItem)							bool HasEquipedItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasUsedPotion)							bool HasUsedPotion;
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
+	UPROPERTY(Replicated)																	TEnumAsByte<EGAPowerUp::Type> ActivePowerUp;
+	UPROPERTY(Replicated)																	float PowerUpDuration;
 	
 	// EVENTS
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAppliedSimpleForce();
@@ -217,6 +224,8 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDied();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterTookDamage();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedPowerUp(EGAPowerUp::Type PowerUpType);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedPowerUp();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterLostGame();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterWonGame();
 	
@@ -274,6 +283,9 @@ class AGACharacter : public AGAAttackableCharacter
 	// Equip Weapon
 	UFUNCTION(reliable, server, WithValidation)												void ServerSetWeaponActor(AGAWeapon *Weapon);
 
+	// Power Ups
+	UFUNCTION(reliable, server, WithValidation)												void ServerActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
+	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivatePowerUp();
 	
 	// Replication Notify Functions
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
@@ -289,6 +301,8 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION()																				void OnRep_HasActivatedAura();
 	UFUNCTION()																				void OnRep_ChatMessages();
 	UFUNCTION()																				void OnRep_UserName();
+	UFUNCTION()																				void OnRep_IsPowerUpActive();
+	UFUNCTION()																				void OnRep_PowerUpCoolDown();
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage) OVERRIDE;
@@ -314,8 +328,13 @@ class AGACharacter : public AGAAttackableCharacter
 
 	void DealDamage(class AActor* OtherActor);
 	void SetWeaponActor(AGAWeapon *Weapon);
+	void ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 
 protected:
+
+	void ReducePowerUpCoolDown(float DeltaTime);
+	void DeactivatePowerUp();
+
 	// Chat
 	// made this function public, so the UI can launch them
 	void AddMessageToChatLog(const FString& Message);

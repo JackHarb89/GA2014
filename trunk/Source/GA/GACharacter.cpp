@@ -12,6 +12,8 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	IsPowerUpActive = false;
+
 	isInit = false;
 	WeaponActor = nullptr;
 	IsSimpleAttacking = false;
@@ -144,6 +146,7 @@ void AGACharacter::Tick(float Delta){
 	IncreaseChargeTime(Delta);
 	RegenerateHealth(Delta);
 	ReducePotionCoolDown(Delta);
+	ReducePowerUpCoolDown(Delta);
 	if (!HasDied) CheckDeath();
 }
 
@@ -1143,9 +1146,80 @@ void AGACharacter::ServerDeactivateAura_Implementation(){ DeactivateAura(); }
 
 #pragma endregion
 
+
+#pragma region Power Up
+
+void AGACharacter::ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration){
+	if (Role < ROLE_Authority){
+		ServerActivatePowerUp(PowerUpType, EffectDuration);
+	}
+	else {
+		IsPowerUpActive = true;
+		ActivePowerUp = PowerUpType;
+		PowerUpDuration = EffectDuration;
+		PowerUpCoolDown = PowerUpDuration;
+		CharacterActivatedPowerUp(PowerUpType);
+	}
+}
+
+void AGACharacter::DeactivatePowerUp(){
+	if (Role < ROLE_Authority){
+		ServerDeactivatePowerUp();
+	}
+	else {
+		IsPowerUpActive = false;
+		CharacterDeactivatedPowerUp();
+	}
+}
+
+void AGACharacter::ReducePowerUpCoolDown(float DeltaTime){
+	if (Role == ROLE_Authority){
+		if (IsPowerUpActive){
+			PowerUpCoolDown -= DeltaTime;
+
+			if (PowerUpCoolDown <= 0){
+				DeactivatePowerUp();
+			}
+		}
+	}
+}
+
+void AGACharacter::OnRep_PowerUpCoolDown(){
+	if (IsPowerUpActive){
+		if (PowerUpCoolDown <= 0){
+			DeactivatePowerUp();
+		}
+	}
+}
+
+void AGACharacter::OnRep_IsPowerUpActive(){
+	if (IsPowerUpActive){
+		ActivatePowerUp(ActivePowerUp, PowerUpDuration);
+	}
+	else {
+		DeactivatePowerUp();
+	}
+}
+
+
+bool AGACharacter::ServerActivatePowerUp_Validate(EGAPowerUp::Type PowerUpType, float EffectDuration){ return true; }
+void AGACharacter::ServerActivatePowerUp_Implementation(EGAPowerUp::Type PowerUpType, float EffectDuration){ ActivatePowerUp(PowerUpType, EffectDuration); }
+
+bool AGACharacter::ServerDeactivatePowerUp_Validate(){ return true; }
+void AGACharacter::ServerDeactivatePowerUp_Implementation(){ DeactivatePowerUp(); }
+
+
+#pragma endregion
+
 // Replicates All Replicated Properties
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// PowerUp
+	DOREPLIFETIME(AGACharacter, IsPowerUpActive);
+	DOREPLIFETIME(AGACharacter, ActivePowerUp);
+	DOREPLIFETIME(AGACharacter, PowerUpCoolDown);
+	DOREPLIFETIME(AGACharacter, PowerUpDuration);
 
 	// Aura
 	DOREPLIFETIME(AGACharacter, HasActivatedAura);

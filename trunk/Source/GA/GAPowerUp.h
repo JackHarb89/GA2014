@@ -32,6 +32,7 @@ public:
 
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float CoolDown;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float EffectDuration;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "State")							float CurrentCoolDown;
 
 	// EVENTS
@@ -45,7 +46,7 @@ protected:
 
 private:
 
-	UFUNCTION(server, reliable, WithValidation)												void ServerActivatePowerUpEffect();
-	void ActivePowerUpEffect();
+	UFUNCTION(server, reliable, WithValidation)												void ServerActivatePowerUpEffect(class AActor* OtherActor);
+	void ActivePowerUpEffect(class AActor* OtherActor);
 	void ReduceCoolDown(float DeltaTime);
 };
