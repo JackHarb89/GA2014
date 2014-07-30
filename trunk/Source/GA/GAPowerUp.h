@@ -28,6 +28,9 @@ public:
 	UPROPERTY(Replicated)																	bool IsPowerUpActive;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				TEnumAsByte<EGAPowerUp::Type> PowerUpType;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsRandomPowerUp;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsAffectingAll;
+
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float CoolDown;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "State")							float CurrentCoolDown;
 
