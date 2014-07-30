@@ -23,11 +23,7 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	// Equip
 	ItemDamage = 0;
 	ItemHealth = 0;
-
-	// Potion
-	Potions = 0;
-	PotionCoolDown = 10;
-
+	
 	HasEquipedItem = false;
 	HasPickedUpItem = false;
 
@@ -116,7 +112,6 @@ void AGACharacter::InitPlayer(){
 	// Set Reset Values
 	SimpleAttackCoolDownResetValue = SimpleAttackCoolDown;
 	SpecialAttackCoolDownResetValue = SpecialAttackCoolDown;
-	PotionCoolDownResetValue = PotionCoolDown;
 	HealthResetValue = HealthPoints;
 	MaxHealth = HealthResetValue + ItemHealth;
 	BaseMovementSpeed = CharacterMovement->MaxWalkSpeed;
@@ -146,7 +141,6 @@ void AGACharacter::Tick(float Delta){
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
 	RegenerateHealth(Delta);
-	ReducePotionCoolDown(Delta);
 	ReducePowerUpCoolDown(Delta);
 	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
@@ -163,7 +157,6 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
 	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
 	InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
-	InputComponent->BindAction("UsePotion", IE_Pressed, this, &AGACharacter::UsePotion);
 
 	// Shop
 	InputComponent->BindAction("BuyItem", IE_Pressed, this, &AGACharacter::BuyItem);
@@ -729,49 +722,7 @@ void AGACharacter::ReceiveActorBeginOverlap(class AActor* OtherActor){
 
 #pragma endregion
 
-#pragma region Potion
 
-// Function Regenerate Health If Potions Are Available
-void AGACharacter::UsePotion(){
-	if (Role < ROLE_Authority){
-		ServerUsePotion();
-	}
-	else{
-		if (Potions > 0 && HealthPoints < MaxHealth && !HasUsedPotion){
-			HealthPoints += 50;
-			Potions--;
-			HasUsedPotion = true;
-			if (HealthPoints > MaxHealth){ HealthPoints = MaxHealth; }
-			CharacterUsedPotion();
-
-			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-				(*ActorItr)->CharacterUsedPotion(this);
-			}
-
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: USED POTION ***"));
-		}
-	}
-}
-
-// Function Reduces The Potion Cool Down - Called By Tick
-void AGACharacter::ReducePotionCoolDown(float Delta){
-	if (Role < ROLE_Authority){
-		ServerReducePotionCoolDown(Delta);
-	}
-	else{
-		if (HasUsedPotion){
-			PotionCoolDown -= Delta;
-			if (PotionCoolDown <= 0){
-				PotionCoolDown = PotionCoolDownResetValue;
-				HasUsedPotion = false;
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: POTION OFF COOLDOWN ***"));
-			}
-		}
-	}
-
-}
-
-#pragma endregion
 
 #pragma region Aura
 
@@ -1045,31 +996,6 @@ void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
 #pragma endregion
 
-#pragma region Network - Potion
-
-// Client Reaction On Replication Notification - Differs 2 Event Calls Due To Stop And Start Potion Cool Down
-void AGACharacter::OnRep_HasUsedPotion(){
-	if (HasUsedPotion){
-		CharacterUsedPotion();
-		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			(*ActorItr)->CharacterUsedPotion(this);
-		}
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: USED POTION ***"));
-	}
-	else
-	{
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: POTION OFF COOLDOWN ***"));
-	}
-}
-
-bool AGACharacter::ServerUsePotion_Validate(){ return true; }
-void AGACharacter::ServerUsePotion_Implementation(){ UsePotion(); }
-
-bool AGACharacter::ServerReducePotionCoolDown_Validate(float Delta){ return true; }
-void AGACharacter::ServerReducePotionCoolDown_Implementation(float Delta){ ReducePotionCoolDown(Delta); }
-
-#pragma endregion
-
 #pragma region Network - Items
 
 // Client Reaction On Replication Notification - Only Reacts If True
@@ -1154,6 +1080,21 @@ void AGACharacter::ServerDeactivateAura_Implementation(){ DeactivateAura(); }
 
 #pragma region Power Up
 
+void AGACharacter::HealPlayer(float HealAmount){
+	if (Role < ROLE_Authority){
+		ServerHealPlayer(HealAmount);
+	}
+	else{
+		if (HealthPoints < MaxHealth){
+			HealthPoints += HealAmount;
+			HasBeenHealed = !HasBeenHealed;
+			if (HealthPoints > MaxHealth){ HealthPoints = MaxHealth; }
+			CharacterStartedRegeneration();
+		}
+	}
+}
+
+
 void AGACharacter::ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration){
 	if (Role < ROLE_Authority){
 		ServerActivatePowerUp(PowerUpType, EffectDuration);
@@ -1206,12 +1147,18 @@ void AGACharacter::OnRep_IsPowerUpActive(){
 	}
 }
 
+void AGACharacter::OnRep_HasBeenHealed(){
+	CharacterStartedRegeneration();
+}
 
-bool AGACharacter::ServerActivatePowerUp_Validate(EGAPowerUp::Type PowerUpType, float EffectDuration){ return true; }
-void AGACharacter::ServerActivatePowerUp_Implementation(EGAPowerUp::Type PowerUpType, float EffectDuration){ ActivatePowerUp(PowerUpType, EffectDuration); }
+bool AGACharacter::ServerHealPlayer_Validate(float HealAmount){return true;}
+void AGACharacter::ServerHealPlayer_Implementation(float HealAmount){HealPlayer(HealAmount);}
 
-bool AGACharacter::ServerDeactivatePowerUp_Validate(){ return true; }
-void AGACharacter::ServerDeactivatePowerUp_Implementation(){ DeactivatePowerUp(); }
+bool AGACharacter::ServerActivatePowerUp_Validate(EGAPowerUp::Type PowerUpType, float EffectDuration){return true;}
+void AGACharacter::ServerActivatePowerUp_Implementation(EGAPowerUp::Type PowerUpType, float EffectDuration){ActivatePowerUp(PowerUpType, EffectDuration);}
+
+bool AGACharacter::ServerDeactivatePowerUp_Validate(){return true;}
+void AGACharacter::ServerDeactivatePowerUp_Implementation(){DeactivatePowerUp();}
 
 
 #pragma endregion
@@ -1314,9 +1261,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Items
 	DOREPLIFETIME(AGACharacter, WeaponActor);
-	DOREPLIFETIME(AGACharacter, Potions);
-	DOREPLIFETIME(AGACharacter, PotionCoolDown);
-	DOREPLIFETIME(AGACharacter, HasUsedPotion);
+	DOREPLIFETIME(AGACharacter, HasBeenHealed);
 	DOREPLIFETIME(AGACharacter, HasPickedUpItem);
 	DOREPLIFETIME(AGACharacter, HasEquipedItem);
 	DOREPLIFETIME(AGACharacter, EquipItems);
