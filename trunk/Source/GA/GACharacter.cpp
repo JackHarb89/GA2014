@@ -12,6 +12,7 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	ShardAvailable = true;
 	IsPowerUpActive = false;
 
 	isInit = false;
@@ -147,6 +148,7 @@ void AGACharacter::Tick(float Delta){
 	RegenerateHealth(Delta);
 	ReducePotionCoolDown(Delta);
 	ReducePowerUpCoolDown(Delta);
+	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
 }
 
@@ -154,6 +156,9 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 {
 	// Set up gameplay key bindings
 	check(InputComponent);
+	// Shard
+	InputComponent->BindAction("ActivateShard", IE_Pressed, this, &AGACharacter::ActivateShard);
+
 	// Combat
 	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
 	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
@@ -1211,9 +1216,53 @@ void AGACharacter::ServerDeactivatePowerUp_Implementation(){ DeactivatePowerUp()
 
 #pragma endregion
 
+#pragma region Shard Usage
+
+void AGACharacter::ActivateShard(){
+	if (Role < ROLE_Authority){
+		ServerActivateShard();
+	}
+	else{
+		if (ShardAvailable){
+			ShardAvailable = false;
+			ShardCurrentCoolDown = ShardCoolDown;
+			CharacterActivatedShard();
+
+			for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				if (ActorItr->IsAlive){
+					ActorItr->IsAlive = false;
+					ActorItr->CharacterDied();
+				}
+			}
+		}
+	}
+}
+
+void AGACharacter::ReduceShardCoolDown(float DeltaTime){
+	if (Role == ROLE_Authority){
+		if (!ShardAvailable){
+			ShardCurrentCoolDown -= DeltaTime;
+			if (ShardCurrentCoolDown <= 0){
+				ShardAvailable = true;
+			}
+		}
+	}
+}
+
+bool AGACharacter::ServerActivateShard_Validate(){return true;}
+void AGACharacter::ServerActivateShard_Implementation(){ActivateShard();}
+
+
+#pragma endregion
+
 // Replicates All Replicated Properties
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Shard
+	DOREPLIFETIME(AGACharacter, ShardAvailable);
+	DOREPLIFETIME(AGACharacter, ShardCoolDown);
+	DOREPLIFETIME(AGACharacter, ShardCurrentCoolDown);
 
 	// PowerUp
 	DOREPLIFETIME(AGACharacter, IsPowerUpActive);
