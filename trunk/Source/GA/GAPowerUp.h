@@ -47,7 +47,7 @@ protected:
 private:
 
 	UFUNCTION(server, reliable, WithValidation)												void ServerActivatePowerUpEffect(class AActor* OtherActor);
-	void ActivePowerUpEffect(class AActor* OtherActor);
+	void ActivatePowerUpEffect(class AActor* OtherActor);
 	void ReduceCoolDown(float DeltaTime);
 	void InitPowerUp();
 

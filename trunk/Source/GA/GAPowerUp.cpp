@@ -45,12 +45,12 @@ void AGAPowerUp::ReduceCoolDown(float DeltaTime){
 
 void AGAPowerUp::ReceiveActorBeginOverlap(class AActor* OtherActor){
 	Super::ReceiveActorBeginOverlap(OtherActor);
-	if (OtherActor->ActorHasTag("Player")){
-		ActivePowerUpEffect(OtherActor);
+	if (OtherActor->ActorHasTag("Player") && IsPowerUpActive){
+		ActivatePowerUpEffect(OtherActor);
 	}
 }
 
-void AGAPowerUp::ActivePowerUpEffect(class AActor* OtherActor){
+void AGAPowerUp::ActivatePowerUpEffect(class AActor* OtherActor){
 	if (Role < ROLE_Authority){
 		ServerActivatePowerUpEffect(OtherActor);
 	}
@@ -85,7 +85,7 @@ void AGAPowerUp::ActivePowerUpEffect(class AActor* OtherActor){
 }
 
 bool AGAPowerUp::ServerActivatePowerUpEffect_Validate(class AActor* OtherActor){return true;}
-void AGAPowerUp::ServerActivatePowerUpEffect_Implementation(class AActor* OtherActor){ActivePowerUpEffect(OtherActor);}
+void AGAPowerUp::ServerActivatePowerUpEffect_Implementation(class AActor* OtherActor){ActivatePowerUpEffect(OtherActor);}
 
 // Replicates Replicated Attributes
 void AGAPowerUp::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
