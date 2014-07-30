@@ -106,7 +106,6 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 	// Shop
 	static ConstructorHelpers::FObjectFinder<UBlueprint> ShopBP(TEXT("/Game/UI/Classes/Shop.Shop"));
 	ShopClass = (UClass*)ShopBP.Object->GeneratedClass;
-
 }
 
 // Initalize Player - Setting Reset Values
@@ -130,6 +129,8 @@ void AGACharacter::InitPlayer(){
 	FRotator SpawnRotation = { 0, 0, 0 };
 
 	Shop = GetWorld()->SpawnActor<AGAShop>(ShopClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+	Tags.Add("Player");
 
 	isInit = true;
 }
