@@ -43,6 +43,15 @@ void AGAPowerUp::ReduceCoolDown(float DeltaTime){
 	}
 }
 
+void AGAPowerUp::OnRep_IsPowerUpActive(){
+	if (IsPowerUpActive){
+		PowerUpFinishedCoolDown();
+	}
+	else{
+		PowerUpTaken();
+	}
+}
+
 void AGAPowerUp::ReceiveActorBeginOverlap(class AActor* OtherActor){
 	Super::ReceiveActorBeginOverlap(OtherActor);
 	if (OtherActor->ActorHasTag("Player") && IsPowerUpActive){
