@@ -9,6 +9,7 @@
 AGAPowerUp::AGAPowerUp(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	IsInit = false;
 	IsPowerUpActive = false;
 
 	// Replicate to Server / Clients
@@ -19,7 +20,17 @@ AGAPowerUp::AGAPowerUp(const class FPostConstructInitializeProperties& PCIP)
 
 void AGAPowerUp::Tick(float DeltaTime){
 	Super::Tick(DeltaTime);
+	if(!IsInit) InitPowerUp();
 	ReduceCoolDown(DeltaTime);
+}
+
+void AGAPowerUp::InitPowerUp(){
+	if (Role == ROLE_Authority){
+		if (IsRandomPowerUp){
+			PowerUpType = (TEnumAsByte<EGAPowerUp::Type>) FMath::RandRange(1, 2);
+		}
+		IsInit = true;
+	}
 }
 
 void AGAPowerUp::ReduceCoolDown(float DeltaTime){
@@ -44,9 +55,6 @@ void AGAPowerUp::ActivePowerUpEffect(class AActor* OtherActor){
 		ServerActivatePowerUpEffect(OtherActor);
 	}
 	else{
-		CurrentCoolDown = CoolDown;
-		IsPowerUpActive = false;
-		PowerUpTaken();
 		if (IsAffectingAll){
 			for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				if (PowerUpType == EGAPowerUp::Type::GAHealthBoost){
@@ -64,6 +72,14 @@ void AGAPowerUp::ActivePowerUpEffect(class AActor* OtherActor){
 			else {
 				((AGACharacter*)OtherActor)->ActivatePowerUp(PowerUpType, EffectDuration);
 			}
+		}
+
+		CurrentCoolDown = CoolDown;
+		IsPowerUpActive = false;
+		PowerUpTaken();
+
+		if (IsRandomPowerUp){
+			PowerUpType = (TEnumAsByte<EGAPowerUp::Type>) FMath::RandRange(1, 2);
 		}
 	}
 }

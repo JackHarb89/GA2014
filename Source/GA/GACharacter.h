@@ -106,9 +106,15 @@ class AGACharacter : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Shard
+	UPROPERTY(Replicated)																	bool ShardAvailable;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shard")				float ShardCoolDown;
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Shard")							float ShardCurrentCoolDown;
+
 	// Power Up
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_PowerUpCoolDown)							float PowerUpCoolDown;
 
+	// Inventory
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
 	
@@ -226,6 +232,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedPowerUp(EGAPowerUp::Type PowerUpType);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedPowerUp();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterActivatedShard();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterLostGame();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterWonGame();
 	
@@ -286,6 +293,9 @@ class AGACharacter : public AGAAttackableCharacter
 	// Power Ups
 	UFUNCTION(reliable, server, WithValidation)												void ServerActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivatePowerUp();
+
+	// Shard Usage
+	UFUNCTION(reliable, server, WithValidation)												void ServerActivateShard();
 	
 	// Replication Notify Functions
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
@@ -332,8 +342,13 @@ class AGACharacter : public AGAAttackableCharacter
 
 protected:
 
+	// Power Up
 	void ReducePowerUpCoolDown(float DeltaTime);
 	void DeactivatePowerUp();
+
+	// Shard
+	void ActivateShard();
+	void ReduceShardCoolDown(float DeltaTime);
 
 	// Chat
 	// made this function public, so the UI can launch them
