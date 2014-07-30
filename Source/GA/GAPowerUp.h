@@ -25,7 +25,7 @@ class AGAPowerUp : public AActor
 
 public:
 
-	UPROPERTY(Replicated)																	bool IsPowerUpActive;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				TEnumAsByte<EGAPowerUp::Type> PowerUpType;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsRandomPowerUp;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsAffectingAll;
@@ -38,6 +38,8 @@ public:
 	// EVENTS
 	UFUNCTION(BlueprintImplementableEvent, Category = "PowerUp Event")						void PowerUpTaken();
 	UFUNCTION(BlueprintImplementableEvent, Category = "PowerUp Event")						void PowerUpFinishedCoolDown();
+
+	UFUNCTION()																				void OnRep_IsPowerUpActive();
 
 protected:
 
