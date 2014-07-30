@@ -55,10 +55,11 @@ void AGAPowerUp::ServerActivatePowerUpEffect_Implementation(){ ActivePowerUpEffe
 // Replicates Replicated Attributes
 void AGAPowerUp::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	
 	DOREPLIFETIME(AGAPowerUp, IsPowerUpActive);
 	DOREPLIFETIME(AGAPowerUp, PowerUpType);
 	DOREPLIFETIME(AGAPowerUp, IsRandomPowerUp);
+	DOREPLIFETIME(AGAPowerUp, IsAffectingAll);
 	DOREPLIFETIME(AGAPowerUp, CoolDown);
 	DOREPLIFETIME(AGAPowerUp, CurrentCoolDown);
 }
