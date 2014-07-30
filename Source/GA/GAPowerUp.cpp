@@ -58,7 +58,7 @@ void AGAPowerUp::ActivatePowerUpEffect(class AActor* OtherActor){
 		if (IsAffectingAll){
 			for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				if (PowerUpType == EGAPowerUp::Type::GAHealthBoost){
-					ActorItr->CharacterStartedRegeneration();
+					ActorItr->HealPlayer(HealAmount);
 				}
 				else {
 					ActorItr->ActivatePowerUp(PowerUpType, EffectDuration);
@@ -67,7 +67,7 @@ void AGAPowerUp::ActivatePowerUpEffect(class AActor* OtherActor){
 		}
 		else{
 			if (PowerUpType == EGAPowerUp::Type::GAHealthBoost){
-				((AGACharacter*)OtherActor)->CharacterStartedRegeneration();
+				((AGACharacter*)OtherActor)->HealPlayer(HealAmount);
 			}
 			else {
 				((AGACharacter*)OtherActor)->ActivatePowerUp(PowerUpType, EffectDuration);

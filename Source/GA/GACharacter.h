@@ -139,12 +139,7 @@ class AGACharacter : public AGAAttackableCharacter
 	// Items
 	UPROPERTY(Replicated)																	float ItemDamage;
 	UPROPERTY(Replicated)																	float ItemHealth;
-
-	// Potion
-	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "Potion")	int32 Potions;
-	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "Potion")	float PotionCoolDown;
-	UPROPERTY(Replicated)																	float PotionCoolDownResetValue;
-
+	
 	// Attack Speed
 	UPROPERTY(Replicated)																	float AttackSpeed;
 
@@ -207,7 +202,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasDied)									bool HasDied;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasPickedUpItem)							bool HasPickedUpItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasEquipedItem)							bool HasEquipedItem;
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasUsedPotion)							bool HasUsedPotion;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasBeenHealed)							bool HasBeenHealed;
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
 	UPROPERTY(Replicated)																	TEnumAsByte<EGAPowerUp::Type> ActivePowerUp;
@@ -224,7 +219,6 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterFinishedRegeneration();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterPickedUpItem();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterEquipedItem();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterUsedPotion();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedAura();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterChangedName();
@@ -269,10 +263,6 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasPickedUpItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerResetHasEquipedItem();
 
-	// Server Potions
-	UFUNCTION(reliable, server, WithValidation)												void ServerUsePotion();
-	UFUNCTION(reliable, server, WithValidation)												void ServerReducePotionCoolDown(float Delta);
-
 	// Server Shop
 	UFUNCTION(reliable, server, WithValidation)												void ServerBuyItem();
 	UFUNCTION(reliable, server, WithValidation)												void ServerSellItem(AGAItem* item);
@@ -293,6 +283,7 @@ class AGACharacter : public AGAAttackableCharacter
 	// Power Ups
 	UFUNCTION(reliable, server, WithValidation)												void ServerActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivatePowerUp();
+	UFUNCTION(reliable, server, WithValidation)												void ServerHealPlayer(float HealAmount);
 
 	// Shard Usage
 	UFUNCTION(reliable, server, WithValidation)												void ServerActivateShard();
@@ -307,7 +298,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION()																				void OnRep_HasDied();
 	UFUNCTION()																				void OnRep_HasPickedUpItem();
 	UFUNCTION()																				void OnRep_HasEquipedItem(); 
-	UFUNCTION()																				void OnRep_HasUsedPotion();
+	UFUNCTION()																				void OnRep_HasBeenHealed();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
 	UFUNCTION()																				void OnRep_ChatMessages();
 	UFUNCTION()																				void OnRep_UserName();
@@ -339,6 +330,7 @@ class AGACharacter : public AGAAttackableCharacter
 	void DealDamage(class AActor* OtherActor);
 	void SetWeaponActor(AGAWeapon *Weapon);
 	void ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
+	void HealPlayer(float HealAmount);
 
 protected:
 
@@ -366,11 +358,7 @@ protected:
 
 	// *** TEMPORARY DUE TO NO UI ***
 	void SellLastItem();
-
-	// Potion
-	void UsePotion();
-	void ReducePotionCoolDown(float Delta);
-
+	
 	// Input Settings
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) OVERRIDE;
 	
