@@ -222,7 +222,9 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 }
 
 void AGAEnemy::ApplyDamage(float Damage) {
-	HealthPoints -= (Damage - (Armor*0.25*Damage) / 100);
+	if (Damage == -1){HealthPoints = 0;}							// One Hit Kill
+	else { HealthPoints -= (Damage - (Armor*0.25*Damage) / 100); }
+
 	HasTookDamage = true;
 	CharacterTookDamage();
 

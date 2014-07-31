@@ -106,14 +106,15 @@ class AGACharacter : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Power UP
+	UPROPERTY(Replicated)																	bool IsInvulnerable;
+	UPROPERTY(Replicated)																	bool IsOneAttackKill;
+
 	// Shard
 	UPROPERTY(Replicated)																	bool ShardAvailable;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shard")				float ShardCoolDown;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Shard")							float ShardCurrentCoolDown;
-
-	// Power Up
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_PowerUpCoolDown)							float PowerUpCoolDown;
-
+	
 	// Inventory
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
@@ -206,7 +207,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
 	UPROPERTY(Replicated)																	TEnumAsByte<EGAPowerUp::Type> ActivePowerUp;
-	UPROPERTY(Replicated)																	float PowerUpDuration;
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_PowerUpDuration)							float PowerUpDuration;
 	
 	// EVENTS
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAppliedSimpleForce();
@@ -303,7 +304,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION()																				void OnRep_ChatMessages();
 	UFUNCTION()																				void OnRep_UserName();
 	UFUNCTION()																				void OnRep_IsPowerUpActive();
-	UFUNCTION()																				void OnRep_PowerUpCoolDown();
+	UFUNCTION()																				void OnRep_PowerUpDuration();
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage) OVERRIDE;
@@ -335,7 +336,7 @@ class AGACharacter : public AGAAttackableCharacter
 protected:
 
 	// Power Up
-	void ReducePowerUpCoolDown(float DeltaTime);
+	void ReducePowerUpDuration(float DeltaTime);
 	void DeactivatePowerUp();
 
 	// Shard
