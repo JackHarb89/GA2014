@@ -35,10 +35,12 @@ void AGAPowerUp::InitPowerUp(){
 
 void AGAPowerUp::ReduceCoolDown(float DeltaTime){
 	if (Role == ROLE_Authority){
-		CurrentCoolDown -= DeltaTime;
-		if (CurrentCoolDown <= 0){
-			PowerUpFinishedCoolDown();
-			IsPowerUpActive = true;
+		if (!IsPowerUpActive){
+			CurrentCoolDown -= DeltaTime;
+			if (CurrentCoolDown <= 0){
+				PowerUpFinishedCoolDown();
+				IsPowerUpActive = true;
+			}
 		}
 	}
 }
