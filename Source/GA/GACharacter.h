@@ -106,6 +106,10 @@ class AGACharacter : public AGAAttackableCharacter
 {
 	GENERATED_UCLASS_BODY()
 
+	// Spectating
+	UPROPERTY(Replicated)																	TArray<AGACharacter*> CurrentPlayers;
+																							int32 CurrenSpecatorPlayerIndex;
+
 	// Power UP
 	UPROPERTY(Replicated)																	bool IsInvulnerable;
 	UPROPERTY(Replicated)																	bool IsOneAttackKill;
@@ -334,6 +338,11 @@ class AGACharacter : public AGAAttackableCharacter
 	void HealPlayer(float HealAmount);
 
 protected:
+
+	// Spectating
+	void UnmapKeybindings();
+	void SpectateNextPlayer();
+	void SpectatePrevPlayer();
 
 	// Power Up
 	void ReducePowerUpDuration(float DeltaTime);
