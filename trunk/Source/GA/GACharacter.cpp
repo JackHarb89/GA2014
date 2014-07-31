@@ -12,6 +12,7 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	CurrenSpecatorPlayerIndex = 0;
 	ShardAvailable = true;
 	IsPowerUpActive = false;
 
@@ -156,11 +157,7 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
 	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
 	InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
-
-	// Shop
-	InputComponent->BindAction("BuyItem", IE_Pressed, this, &AGACharacter::BuyItem);
-	InputComponent->BindAction("SellItem", IE_Pressed, this, &AGACharacter::SellLastItem);
-
+	
 	// Movement & Camera
 	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AGACharacter::MoveRight);
@@ -186,7 +183,7 @@ void AGACharacter::LookUpAtRate(float Rate)
 
 void AGACharacter::MoveForward(float Value)
 {
-	if (Controller != NULL && (Value != 0.0f) && isAllowedToMove())
+	if (Controller != NULL && (Value != 0.0f) && isAllowedToMove() && !HasDied)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -200,7 +197,7 @@ void AGACharacter::MoveForward(float Value)
 
 void AGACharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f) && isAllowedToMove())
+	if ((Controller != NULL) && (Value != 0.0f) && isAllowedToMove() && !HasDied)
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -211,6 +208,45 @@ void AGACharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+#pragma endregion
+
+#pragma region Spectating
+void AGACharacter::UnmapKeybindings(){
+	if (!InputComponent) return;
+	for (int32 BindingIndex = InputComponent->GetNumActionBindings() - 1; BindingIndex >= 0; --BindingIndex){
+		InputComponent->RemoveActionBinding(BindingIndex);
+	}
+
+	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::SpectateNextPlayer);
+	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::SpectatePrevPlayer);
+}
+
+void AGACharacter::SpectateNextPlayer(){
+	CurrenSpecatorPlayerIndex++;
+	if (CurrenSpecatorPlayerIndex > CurrentPlayers.Num() - 1){
+		CurrenSpecatorPlayerIndex = 0;
+	}
+
+	// Create a camera boom (pulls in towards the player if there is a collision)
+	CameraBoom->DetachFromParent();
+	CameraBoom->AttachTo(CurrentPlayers[CurrenSpecatorPlayerIndex]->RootComponent);
+	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
+}
+
+void AGACharacter::SpectatePrevPlayer(){
+	CurrenSpecatorPlayerIndex--;
+	if (CurrenSpecatorPlayerIndex<0){
+		CurrenSpecatorPlayerIndex = CurrentPlayers.Num() - 1;
+	}
+
+	// Create a camera boom (pulls in towards the player if there is a collision)
+	CameraBoom->DetachFromParent();
+	CameraBoom->AttachTo(CurrentPlayers[CurrenSpecatorPlayerIndex]->RootComponent);
+	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 }
 
 #pragma endregion
@@ -266,19 +302,6 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 
 // Simple Attack - Call This Function If The Player Should Attack Normal
 void AGACharacter::AttackSimple(){
-	if (HasDied){
-		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			if (!ActorItr->HasDied){
-				// Create a camera boom (pulls in towards the player if there is a collision)
-				CameraBoom->DetachFromParent();
-				CameraBoom->AttachTo(ActorItr->RootComponent);
-				CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-				CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
-	
-				break;
-			}
-		}
-	}
 	if (Role < ROLE_Authority){
 		ServerAttackSimple();
 	}
@@ -508,6 +531,13 @@ void AGACharacter::CheckDeath(){
 	else{
 		if (HealthPoints <= 0){
 			HasDied = true;
+
+			for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				if (!ActorItr->HasDied){
+					CurrentPlayers.Add(*ActorItr);
+				}
+			}
+			UnmapKeybindings();
 			CharacterDied();
 
 			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
@@ -1000,6 +1030,7 @@ void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){ TakeDam
 // Client Reaction On Replication Notification - Only React If True
 void AGACharacter::OnRep_HasDied(){
 	if (HasDied){
+		UnmapKeybindings();
 		CharacterDied();
 		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			(*ActorItr)->CharacterDied(this);
@@ -1229,6 +1260,9 @@ void AGACharacter::ServerActivateShard_Implementation(){ActivateShard();}
 // Replicates All Replicated Properties
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Spectating
+	DOREPLIFETIME(AGACharacter, CurrentPlayers);
 
 	// Shard
 	DOREPLIFETIME(AGACharacter, ShardAvailable);
