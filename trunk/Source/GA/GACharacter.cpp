@@ -266,6 +266,19 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 
 // Simple Attack - Call This Function If The Player Should Attack Normal
 void AGACharacter::AttackSimple(){
+	if (HasDied){
+		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			if (!ActorItr->HasDied){
+				// Create a camera boom (pulls in towards the player if there is a collision)
+				CameraBoom->DetachFromParent();
+				CameraBoom->AttachTo(ActorItr->RootComponent);
+				CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+				CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
+	
+				break;
+			}
+		}
+	}
 	if (Role < ROLE_Authority){
 		ServerAttackSimple();
 	}
