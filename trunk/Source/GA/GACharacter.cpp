@@ -140,7 +140,7 @@ void AGACharacter::Tick(float Delta){
 	ReduceSimpleAttackCoolDown(Delta);
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
-	ReducePowerUpCoolDown(Delta);
+	ReducePowerUpDuration(Delta);
 	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
 }
@@ -254,6 +254,9 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 		float random = FMath::RandRange(0, 100);
 		if (FMath::Max3(float(0), random, Critical) == Critical) Damage *= 2;
 
+		if (IsOneAttackKill){
+			Damage = -1;					// One Hit Kill 
+		}
 		// Deal Damage
 		((AGAAttackableCharacter*)OtherActor)->TakeDamageByEnemy(Damage);
 
@@ -462,7 +465,9 @@ void AGACharacter::TakeDamageByEnemy(float Damage) {
 		ServerTakeDamageByEnemy(Damage);
 	}
 	else {
-		ApplyDamage(Damage);
+		if (!IsInvulnerable){
+			ApplyDamage(Damage);
+		}
 	}
 }
 
@@ -1102,7 +1107,13 @@ void AGACharacter::ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDur
 		IsPowerUpActive = true;
 		ActivePowerUp = PowerUpType;
 		PowerUpDuration = EffectDuration;
-		PowerUpCoolDown = PowerUpDuration;
+
+		if (ActivePowerUp == EGAPowerUp::GAInvulnerability){
+			IsInvulnerable = true;
+		}
+		else if (ActivePowerUp == EGAPowerUp::GAAttackBoost){
+			IsOneAttackKill = true;
+		}
 		CharacterActivatedPowerUp(PowerUpType);
 	}
 }
@@ -1113,25 +1124,26 @@ void AGACharacter::DeactivatePowerUp(){
 	}
 	else {
 		IsPowerUpActive = false;
+		IsInvulnerable = false;
+		IsOneAttackKill = false;
 		CharacterDeactivatedPowerUp();
 	}
 }
 
-void AGACharacter::ReducePowerUpCoolDown(float DeltaTime){
+void AGACharacter::ReducePowerUpDuration(float DeltaTime){
 	if (Role == ROLE_Authority){
 		if (IsPowerUpActive){
-			PowerUpCoolDown -= DeltaTime;
-
-			if (PowerUpCoolDown <= 0){
+			PowerUpDuration -= DeltaTime;
+			if (PowerUpDuration <= 0){
 				DeactivatePowerUp();
 			}
 		}
 	}
 }
 
-void AGACharacter::OnRep_PowerUpCoolDown(){
+void AGACharacter::OnRep_PowerUpDuration(){
 	if (IsPowerUpActive){
-		if (PowerUpCoolDown <= 0){
+		if (PowerUpDuration <= 0){
 			DeactivatePowerUp();
 		}
 	}
@@ -1211,9 +1223,11 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, ShardCurrentCoolDown);
 
 	// PowerUp
+	DOREPLIFETIME(AGACharacter, IsInvulnerable);
+	DOREPLIFETIME(AGACharacter, IsOneAttackKill);
+
 	DOREPLIFETIME(AGACharacter, IsPowerUpActive);
 	DOREPLIFETIME(AGACharacter, ActivePowerUp);
-	DOREPLIFETIME(AGACharacter, PowerUpCoolDown);
 	DOREPLIFETIME(AGACharacter, PowerUpDuration);
 
 	// Aura
