@@ -16,7 +16,8 @@ class AGAWeapon : public AActor
 	UFUNCTION(Category = "Owner", BlueprintCallable)			void SetNewOwner(AActor* NewOwner);
 	virtual														void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
 	void RemoveHitedActors();
+	UFUNCTION(reliable, server, WithValidation)					void ServerRemoveHitedActors();
 
-	TArray<AActor*> HitedActors;
+	UPROPERTY(Replicated)										TArray<AActor*> HitedActors;
 	UFUNCTION(reliable, server, WithValidation)					void ServerSetNewOwner(AActor* NewOwner);
 };

@@ -3,6 +3,8 @@
 #include "GA.h"
 #include "GAGameMode.h"
 #include "GAPlayerController.h"
+#include "GACharacter.h"
+#include "GAWeapon.h"
 #include "GAGameState.h"
 
 AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
@@ -10,6 +12,7 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 {	
 	playerCount = 0;
 
+	bUseSeamlessTravel = true;
 
 	//static ConstructorHelpers::FObjectFinder<UBlueprint> HUDOb(TEXT("/Game/UI/Classes/GA_HUD_BP"));
 	//HUDClass = (UClass*)HUDOb.Object->GeneratedClass;
@@ -28,4 +31,18 @@ AActor* AGAGameMode::ChoosePlayerStart(AController* Player)
 	playerCount++;
 	return BestStart;
 }
+
 #pragma endregion
+
+
+void AGAGameMode::PostSeamlessTravel(){
+	Super::PostSeamlessTravel();
+
+	for (TActorIterator<AGAWeapon> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		ActorItr->Destroy();
+	}
+	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		((AGAPlayerController*)(ActorItr->Controller))->GetHUD()->Destroy();
+		ActorItr->RemappedWeaponAfterTravel();
+	}
+}

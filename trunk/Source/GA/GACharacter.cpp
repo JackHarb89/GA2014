@@ -232,8 +232,6 @@ void AGACharacter::SpectateNextPlayer(){
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom->DetachFromParent();
 	CameraBoom->AttachTo(CurrentPlayers[CurrenSpecatorPlayerIndex]->RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 }
 
 void AGACharacter::SpectatePrevPlayer(){
@@ -245,8 +243,6 @@ void AGACharacter::SpectatePrevPlayer(){
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom->DetachFromParent();
 	CameraBoom->AttachTo(CurrentPlayers[CurrenSpecatorPlayerIndex]->RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUseControllerViewRotation = true; // Rotate the arm based on the controller
 }
 
 #pragma endregion
@@ -255,7 +251,7 @@ void AGACharacter::SpectatePrevPlayer(){
 
 void AGACharacter::SetIsSimpleAttackingTo(bool NewState){
 	IsSimpleAttacking = NewState;
-	WeaponActor->RemoveHitedActors();
+		WeaponActor->RemoveHitedActors();
 }
 
 void AGACharacter::SetIsSpecialAttackingTo(bool NewState){

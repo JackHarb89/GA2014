@@ -93,9 +93,11 @@ void AGA_HUD::PostInitializeComponents() {
 }
 
 void AGA_HUD::PostRender() {
-	UpdateValues();
+	if (!GetWorld()->IsInSeamlessTravel()){
+		UpdateValues();
 
-	Draw();
+		Draw();
+	}
 }
 
 void AGA_HUD::Spawn_CanvasItems() {

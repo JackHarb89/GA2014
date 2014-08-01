@@ -231,6 +231,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedPowerUp(EGAPowerUp::Type PowerUpType);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedPowerUp();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Network Event")						void RemappedWeaponAfterTravel();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterActivatedShard();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterLostGame();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterWonGame();
