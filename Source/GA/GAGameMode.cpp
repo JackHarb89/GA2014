@@ -5,7 +5,6 @@
 #include "GAPlayerController.h"
 #include "GACharacter.h"
 #include "GAWeapon.h"
-#include "GAGameSession.h"
 #include "GAGameState.h"
 
 AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
@@ -32,8 +31,3 @@ void AGAGameMode::GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& Act
 	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
 }
 
-/** Returns game session class to use */
-TSubclassOf<AGameSession> AGAGameMode::GetGameSessionClass() const
-{
-	return AGAGameSession::StaticClass();
-}
