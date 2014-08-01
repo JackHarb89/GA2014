@@ -4,6 +4,7 @@
 #include "GAGameMode.h"
 #include "GAPlayerController.h"
 #include "GACharacter.h"
+#include "GA_HUD.h"
 #include "GAWeapon.h"
 #include "GAGameState.h"
 
@@ -21,13 +22,3 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
 }
-
-void AGAGameMode::PostSeamlessTravel(){
-	Super::PostSeamlessTravel();
-}
-
-
-void AGAGameMode::GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList){
-	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
-}
-

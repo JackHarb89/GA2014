@@ -1155,6 +1155,7 @@ void AGACharacter::ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDur
 			IsOneAttackKill = true;
 		}
 		CharacterActivatedPowerUp(PowerUpType);
+		UE_LOG(LogClass, Log, TEXT("SERVER: *** ACTIVATED PLAYER POWERUP ***"));
 	}
 }
 
@@ -1167,6 +1168,7 @@ void AGACharacter::DeactivatePowerUp(){
 		IsInvulnerable = false;
 		IsOneAttackKill = false;
 		CharacterDeactivatedPowerUp();
+		UE_LOG(LogClass, Log, TEXT("SERVER: *** DEACTIVATED PLAYER POWERUP ***"));
 	}
 }
 
@@ -1181,20 +1183,14 @@ void AGACharacter::ReducePowerUpDuration(float DeltaTime){
 	}
 }
 
-void AGACharacter::OnRep_PowerUpDuration(){
-	if (IsPowerUpActive){
-		if (PowerUpDuration <= 0){
-			DeactivatePowerUp();
-		}
-	}
-}
-
 void AGACharacter::OnRep_IsPowerUpActive(){
 	if (IsPowerUpActive){
-		ActivatePowerUp(ActivePowerUp, PowerUpDuration);
+		CharacterActivatedPowerUp(ActivePowerUp);
+		UE_LOG(LogClass, Log, TEXT("SERVER: *** ACTIVATED PLAYER POWERUP ***"));
 	}
 	else {
-		DeactivatePowerUp();
+		CharacterDeactivatedPowerUp();
+		UE_LOG(LogClass, Log, TEXT("SERVER: *** DEACTIVATED PLAYER POWERUP ***"));
 	}
 }
 

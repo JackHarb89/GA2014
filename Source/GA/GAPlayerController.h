@@ -21,4 +21,7 @@ class AGAPlayerController : public APlayerController
 	UFUNCTION(exec) void ChangeMap(const FString& mapName);
 
 	UFUNCTION(exec) void HostGameWithPort(int32 Port);
+
+
+	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 };

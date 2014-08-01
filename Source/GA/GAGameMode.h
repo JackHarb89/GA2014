@@ -9,9 +9,6 @@ class AGAGameMode : public AGameMode
 	GENERATED_UCLASS_BODY()
 
 	TSubclassOf<AHUD> HUDClassSeamlessTravel;
-	
-	virtual void PostSeamlessTravel() OVERRIDE;
-	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 };
 
 

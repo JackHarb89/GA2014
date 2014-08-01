@@ -74,10 +74,6 @@ void AGA_HUD::PostInitializeComponents() {
 }
 
 void AGA_HUD::PostRender() {
-	if (GetWorld()->IsInSeamlessTravel()) {
-		IsInit = false;
-	}
-
 	if (!IsInit){
 		enabledSectionNames.Add("inventory");
 		enabledSectionStates.Add(false);
@@ -100,7 +96,9 @@ void AGA_HUD::PostRender() {
 		// get player controller
 		playerController = GetOwningPlayerController();
 
+		currentSpawnedAreas.Empty();
 		Spawn_CanvasItems();
+
 		IsInit = true;
 	}
 
