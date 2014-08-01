@@ -12,6 +12,7 @@ class AGAGameMode : public AGameMode
 
 	/** select best spawn point for player */
 	virtual AActor* ChoosePlayerStart(AController* Player) OVERRIDE;
+	virtual void PostSeamlessTravel() OVERRIDE;
 };
 
 

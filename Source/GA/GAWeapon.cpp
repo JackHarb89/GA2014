@@ -15,7 +15,7 @@ AGAWeapon::AGAWeapon(const class FPostConstructInitializeProperties& PCIP)
 
 // If Trigger Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "Orc" ***
 void AGAWeapon::ReceiveActorBeginOverlap(class AActor* OtherActor){
-	if (OtherActor->ActorHasTag("Orc") || OtherActor->ActorHasTag("Destructible")){
+	if (OtherActor->ActorHasTag("Orc")){
 		if (!HitedActors.Contains(OtherActor)){
 			((AGACharacter*)GetOwner())->DealDamage(OtherActor);
 			HitedActors.Add(OtherActor);
@@ -37,5 +37,22 @@ bool AGAWeapon::ServerSetNewOwner_Validate(AActor* NewOwner){return true;}
 void AGAWeapon::ServerSetNewOwner_Implementation(AActor* NewOwner){SetNewOwner(NewOwner);}
 
 void AGAWeapon::RemoveHitedActors(){
-	HitedActors.Empty();
+	if (Role < ROLE_Authority){
+		ServerRemoveHitedActors();
+	}
+	else{
+		HitedActors.Empty();
+	}
+}
+
+
+bool AGAWeapon::ServerRemoveHitedActors_Validate(){ return true; }
+void AGAWeapon::ServerRemoveHitedActors_Implementation(){ RemoveHitedActors(); }
+
+// Replicates All Replicated Properties
+void AGAWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Spectating
+	DOREPLIFETIME(AGAWeapon, HitedActors);
 }
