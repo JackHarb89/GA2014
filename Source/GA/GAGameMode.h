@@ -10,10 +10,6 @@ class AGAGameMode : public AGameMode
 
 	TSubclassOf<AHUD> HUDClassSeamlessTravel;
 	
-
-	/** Returns game session class to use */
-	virtual TSubclassOf<AGameSession> GetGameSessionClass() const OVERRIDE;
-
 	virtual void PostSeamlessTravel() OVERRIDE;
 	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 };
