@@ -211,7 +211,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(Replicated)																	AGAItem* TouchedItem;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
 	UPROPERTY(Replicated)																	TEnumAsByte<EGAPowerUp::Type> ActivePowerUp;
-	UPROPERTY(Replicated, ReplicatedUsing = OnRep_PowerUpDuration)							float PowerUpDuration;
+	UPROPERTY(Replicated)																	float PowerUpDuration;
 	
 	// EVENTS
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterAppliedSimpleForce();
@@ -309,7 +309,6 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION()																				void OnRep_ChatMessages();
 	UFUNCTION()																				void OnRep_UserName();
 	UFUNCTION()																				void OnRep_IsPowerUpActive();
-	UFUNCTION()																				void OnRep_PowerUpDuration();
 
 	// Public Function To Call To Take Damage
 	void TakeDamageByEnemy(float Damage) OVERRIDE;
