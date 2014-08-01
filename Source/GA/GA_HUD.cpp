@@ -74,6 +74,10 @@ void AGA_HUD::PostInitializeComponents() {
 }
 
 void AGA_HUD::PostRender() {
+	if (GetWorld()->IsInSeamlessTravel()) {
+		IsInit = false;
+	}
+
 	if (!IsInit){
 		enabledSectionNames.Add("inventory");
 		enabledSectionStates.Add(false);
@@ -95,6 +99,8 @@ void AGA_HUD::PostRender() {
 
 		// get player controller
 		playerController = GetOwningPlayerController();
+
+		Spawn_CanvasItems();
 		IsInit = true;
 	}
 
@@ -106,9 +112,6 @@ void AGA_HUD::PostRender() {
 }
 
 void AGA_HUD::Spawn_CanvasItems() {
-	if (currentSpawnedAreas.Num() != 0)
-		return;
-
 	// spawn all main-objects
 	for (UClass* area : currentAreas) {
 		RunSpawnLogic(area, UI_CAT_MAIN);
@@ -131,8 +134,6 @@ void AGA_HUD::Spawn_CanvasItems() {
 }
 
 void AGA_HUD::Draw_CanvasItems() {
-	Spawn_CanvasItems();
-
 	if (dropPhase == GA_UI_Dropphase::DROPPHASE_DROP_NEXT) {
 		dropPhase = GA_UI_Dropphase::DROPPHASE_SEARCH_AREAS;
 		dropArea = nullptr;
