@@ -8,6 +8,103 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	currentlyDragged = false;
+
+	initialized = false;
+
+	category = UI_CAT_MAIN;
+
+	mouseInButton = false;
+
+	Inactive = false;
+	dontRefresh = false;
+	dontUseParentPadding = false;
+	preventHover = false;
+	preventActive = false;
+	IsDraggable = false;
+	IsDropZone = false;
+	isTextArea = false;
+	SectionName = FString("");
+
+	type = AREA_COLOR;
+
+	activeOnMenuID = 0;
+	switchToMenuID = 0;
+
+	item_font = nullptr;
+	hover_font = nullptr;
+	active_font = nullptr;
+
+	current_font = nullptr;
+
+
+	item_text = FString("");
+	hover_text = FString("");
+	active_text = FString("");
+
+	current_text = nullptr;
+
+	zLayer = 0;
+	final_zLayer = 0;
+
+	item_position = FVector2D(0, 0);
+	fin_item_position = FVector2D(0, 0);
+
+	item_size = FVector2D(0, 0);
+	fin_item_size = FVector2D(0, 0);
+
+	text_position = FVector2D(0, 0);
+	fin_text_position = FVector2D(0, 0);
+
+	text_size = FVector2D(0, 0);
+	fin_text_size = FVector2D(0, 0);
+
+	parent_padding = FVector2D(0, 0);
+	fin_parent_padding = FVector2D(0, 0);
+
+	text_horizontalAlignment = GA_UI_Area_hTextAlign::TEXT_CENTER;
+
+	text_verticalAlignment = GA_UI_Area_vTextAlign::TEXT_MIDDLE;
+
+	letterSpacing = 0.0f;
+
+	item_textColor = FLinearColor(0, 0, 0, 1);
+	hover_textColor = FLinearColor(0, 0, 0, 1);
+	active_textColor = FLinearColor(0, 0, 0, 1);
+	current_textColor = nullptr;
+
+	item_backgroundColor = FLinearColor(0, 0, 0, 1);
+	hover_backgroundColor = FLinearColor(0, 0, 0, 1);
+	active_backgroundColor = FLinearColor(0, 0, 0, 1);
+	current_backgroundColor = nullptr;
+
+	item_backgroundImage = nullptr;
+	hover_backgroundImage = nullptr;
+	active_backgroundImage = nullptr;
+	current_backgroundImage = nullptr;
+
+	item_backgroundMaterial = nullptr;
+	hover_backgroundMaterial = nullptr;
+	active_backgroundMaterial = nullptr;
+	current_backgroundMaterial = nullptr;
+
+	old_buttonState = BUTTON_REGULAR;
+	buttonState = BUTTON_REGULAR;
+
+	childAreas = TArray<UClass*>();
+	spawnedChildAreas = TArray<AGA_UI_Area*>();
+
+	currentlyDragged = false;
+
+	prevMouseHeld = nullptr;
+	mouseHeld = nullptr;
+
+	originalSize = nullptr;
+	currentScreenSize = nullptr;
+
+	clickMouseLocation = nullptr;
+	prevMouseLocation = nullptr;
+	mouseLocation = nullptr;
+	currentScale = nullptr;
 }
 
 void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLocation, FVector2D* _prevMouseLocation, FVector2D* _mouseLocation, FVector2D* _currentScale, bool* _mouseHeld, bool* _prevMouseHeld, FVector2D _parent_padding, int32 parentZLayer) {
