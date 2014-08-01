@@ -147,4 +147,6 @@ class AGA_HUD : public AHUD
 
 	FString oldContent;
 	FString currentContent;
+
+	bool IsInit;
 };
