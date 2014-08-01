@@ -5,44 +5,35 @@
 #include "GAPlayerController.h"
 #include "GACharacter.h"
 #include "GAWeapon.h"
+#include "GAGameSession.h"
 #include "GAGameState.h"
 
 AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {	
-	playerCount = 0;
-
 	bUseSeamlessTravel = true;
 
-	//static ConstructorHelpers::FObjectFinder<UBlueprint> HUDOb(TEXT("/Game/UI/Classes/GA_HUD_BP"));
-	//HUDClass = (UClass*)HUDOb.Object->GeneratedClass;
+	static ConstructorHelpers::FObjectFinder<UBlueprint> HUDOb(TEXT("/Game/UI/Classes/GA_HUD_BP"));
 	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Peddy/Characters/PlayerCharacter_Barbarian"));
+
+	HUDClass  = (UClass*)HUDOb.Object->GeneratedClass;
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
+	HUDClassSeamlessTravel = AHUD::StaticClass();
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
 }
 
-#pragma region Player Spawn
-
-// Select Player Start Depending On Player Index
-AActor* AGAGameMode::ChoosePlayerStart(AController* Player)
-{
-	APlayerStart* BestStart = PlayerStarts[playerCount];
-	playerCount++;
-	return BestStart;
-}
-
-#pragma endregion
-
-
 void AGAGameMode::PostSeamlessTravel(){
 	Super::PostSeamlessTravel();
+}
 
-	for (TActorIterator<AGAWeapon> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-		ActorItr->Destroy();
-	}
-	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-		((AGAPlayerController*)(ActorItr->Controller))->GetHUD()->Destroy();
-		ActorItr->RemappedWeaponAfterTravel();
-	}
+
+void AGAGameMode::GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList){
+	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
+}
+
+/** Returns game session class to use */
+TSubclassOf<AGameSession> AGAGameMode::GetGameSessionClass() const
+{
+	return AGAGameSession::StaticClass();
 }

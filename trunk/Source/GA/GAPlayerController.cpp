@@ -8,7 +8,6 @@
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-	ListenPort = 7777;
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
@@ -24,15 +23,21 @@ void AGAPlayerController::PlayerTick(float DeltaTime) {
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
 void AGAPlayerController::ConnectToServer(const FString& ip){
-	ClientTravel(ip, TRAVEL_Relative, true);
+	UE_LOG(LogClass, Log, TEXT("*** TRYING TO START TRAVEL TO ***"));
+	UE_LOG(LogClass, Log, TEXT("*** TRYING TO START TRAVEL TO ***"));
+	UE_LOG(LogClass, Log, TEXT("*** TRYING TO START TRAVEL TO ***"));
+	UE_LOG(LogClass, Log, TEXT("*** TRYING TO START TRAVEL TO ***"));
+	UE_LOG(LogClass, Log, TEXT("*** TRYING TO START TRAVEL TO ***"));
+	ClientTravel(ip, TRAVEL_Absolute, true);
 }
 
-// Start Listening For Connections. Map Example: "Example_Map" *** CHANGE CURRENT MAP DID NOT WORK ATM ***
-void AGAPlayerController::HostGameWithMap(const FString& mapName){
+void AGAPlayerController::ChangeMap(const FString& mapName){
 	FString UrlString = TEXT("/Game/Maps/" + mapName);
 	GetWorld()->ServerTravel(UrlString);
 }
 
-void AGAPlayerController::SetListenPort(int32 newPort){
-	ListenPort = newPort;
+void AGAPlayerController::HostGameWithPort(int32 Port){
+	FURL url;
+	url.Port = Port;
+	GetWorld()->Listen(url);
 }
