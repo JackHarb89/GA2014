@@ -38,6 +38,7 @@ void AGAPlayerController::ChangeMap(const FString& mapName){
 
 void AGAPlayerController::HostGameWithPort(int32 Port){
 	FURL url;
+	url.Map = "/Game/Maps/SG_MainMenu";
 	url.Port = Port;
 	GetWorld()->Listen(url);
 }
