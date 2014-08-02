@@ -7,9 +7,5 @@ UCLASS(minimalapi)
 class AGAGameMode : public AGameMode
 {
 	GENERATED_UCLASS_BODY()
-
-	TSubclassOf<AHUD> HUDClassSeamlessTravel;
 };
-
-
 

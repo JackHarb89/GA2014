@@ -18,7 +18,6 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 
 	HUDClass  = (UClass*)HUDOb.Object->GeneratedClass;
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
-	HUDClassSeamlessTravel = AHUD::StaticClass();
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
 }

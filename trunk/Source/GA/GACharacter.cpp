@@ -4,6 +4,7 @@
 #include "GACharacter.h"
 #include "GAEnemy.h"
 #include "GAPlayerController.h"
+#include "GAGameState.h"
 #include "Net/UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -148,23 +149,25 @@ void AGACharacter::Tick(float Delta){
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
-	// Set up gameplay key bindings
-	check(InputComponent);
-	// Shard
-	InputComponent->BindAction("ActivateShard", IE_Pressed, this, &AGACharacter::ActivateShard);
+	if (((AGAPlayerController*)Controller)->IsGameActive){
+		// Set up gameplay key bindings
+		check(InputComponent);
+		// Shard
+		InputComponent->BindAction("ActivateShard", IE_Pressed, this, &AGACharacter::ActivateShard);
 
-	// Combat
-	InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
-	InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
-	InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
-	
-	// Movement & Camera
-	InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &AGACharacter::MoveRight);
-	InputComponent->BindAxis("Turn", this, &AGACharacter::AddControllerYawInput);
-	InputComponent->BindAxis("TurnRate", this, &AGACharacter::TurnAtRate);
-	InputComponent->BindAxis("LookUp", this, &AGACharacter::AddControllerPitchInput);
-	InputComponent->BindAxis("LookUpRate", this, &AGACharacter::LookUpAtRate);
+		// Combat
+		InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
+		InputComponent->BindAction("AttackSpecial", IE_Pressed, this, &AGACharacter::ChargeSpecial);
+		InputComponent->BindAction("AttackSpecial", IE_Released, this, &AGACharacter::AttackSpecial);
+
+		// Movement & Camera
+		InputComponent->BindAxis("MoveForward", this, &AGACharacter::MoveForward);
+		InputComponent->BindAxis("MoveRight", this, &AGACharacter::MoveRight);
+		InputComponent->BindAxis("Turn", this, &AGACharacter::AddControllerYawInput);
+		InputComponent->BindAxis("TurnRate", this, &AGACharacter::TurnAtRate);
+		InputComponent->BindAxis("LookUp", this, &AGACharacter::AddControllerPitchInput);
+		InputComponent->BindAxis("LookUpRate", this, &AGACharacter::LookUpAtRate);
+	}
 }
 
 #pragma region Movement
