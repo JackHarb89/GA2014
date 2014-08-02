@@ -20,4 +20,18 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
+
+
+}
+
+void AGAGameMode::PostSeamlessTravel(){
+	Super::PostSeamlessTravel();
+
+	for (TActorIterator<AGAWeapon> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		(*ActorItr)->Destroy();
+	}
+
+	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		(*ActorItr)->RemappedWeaponAfterTravel();
+	}
 }

@@ -7,5 +7,7 @@ UCLASS(minimalapi)
 class AGAGameMode : public AGameMode
 {
 	GENERATED_UCLASS_BODY()
+
+	virtual void PostSeamlessTravel() OVERRIDE;
 };
 
