@@ -22,8 +22,6 @@ class AGAPlayerController : public APlayerController
 
 	UFUNCTION(exec) void HostGameWithPort(int32 Port);
 
-	bool IsGameActive;
-
 	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 	virtual void PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) OVERRIDE;
 };

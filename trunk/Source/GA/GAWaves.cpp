@@ -55,7 +55,7 @@ void AGAWaves::IncreaseSpawnTimer(float DeltaTime){
 void AGAWaves::SetRemainingWaves(){
 	if (Role == ROLE_Authority){
 		if (GetWorld()->GetGameState<AGAGameState>()) {
-			GetWorld()->GetGameState<AGAGameState>()->SetRemainingWaves(Waves.Num() - SpawnWaveIndex);
+			GetWorld()->GetGameState<AGAGameState>()->IncreaseSpawnedWaves();
 		}
 	}
 }

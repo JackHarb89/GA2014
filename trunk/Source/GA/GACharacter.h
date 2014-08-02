@@ -119,7 +119,7 @@ class AGACharacter : public AGAAttackableCharacter
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shard")				float ShardCoolDown;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Shard")							float ShardCurrentCoolDown;
 	
-	// Inventory
+	// InventoryWeaponActor
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
 	

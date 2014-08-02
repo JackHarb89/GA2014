@@ -17,19 +17,14 @@ class AGAGameState : public AGameState
 	TWeakObjectPtr<class AStrategyMiniMapCapture> MiniMapCamera;
 	FBox WorldBounds;
 
-	void ReduceBaseHealth();
-	void FinishGame();
+	void CheckDeatchCondition();
+
 	UFUNCTION(BlueprintCallable, Category = "Waves")
-	void SetRemainingWaves(int32 Remaining);
+	void IncreaseSpawnedWaves();
 	UFUNCTION(BlueprintCallable, Category =" Waves")
-	int32 GetRemainingWaves();
-	UFUNCTION(BlueprintCallable, Category = "Sections")
-	void SetBaseHealthPoints(int32 HealthPoints);
-	UFUNCTION(BlueprintCallable, Category = "Sections")
-	int32 GetBaseHealthPoints();
-	
+	int32 GetSpawnedWaves();
+
 private:
 
-	int32 BaseHealthPoints;
-	int32 RemainingWaves;
+	int32 WavesSpawned;
 };

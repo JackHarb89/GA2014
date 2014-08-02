@@ -149,7 +149,8 @@ void AGACharacter::Tick(float Delta){
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
-	if (((AGAPlayerController*)Controller)->IsGameActive){
+	ULevel* level = GetLevel();
+	if (GetLevel()->OwningWorld->GetName().Contains("SG_Game")){
 		// Set up gameplay key bindings
 		check(InputComponent);
 		// Shard
