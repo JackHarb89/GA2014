@@ -25,10 +25,19 @@ class AGA_HUD : public AHUD
 {
 	GENERATED_UCLASS_BODY()
 
+private:
+	/** prepare the sections used for the interface */
+	void Setup_Sections();
+
+public:
+
 	// PlayerController bridge
 	APlayerController* playerController;
 
 	// General
+	/** prepare all variables - ran before all graphical calls happen */
+	void Setup();
+
 	/** ran, after all game elements are created */
 	virtual void PostInitializeComponents() OVERRIDE;
 

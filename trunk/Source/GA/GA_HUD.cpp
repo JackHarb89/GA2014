@@ -14,7 +14,7 @@ AGA_HUD::AGA_HUD(const class FPostConstructInitializeProperties& PCIP)
 	nextMenuID = 0;
 
 	blinkChar = FString("_");
-	}
+}
 
 void AGA_HUD::UpdateValues() {
 	prevMouseHeld = mouseHeld;
@@ -73,32 +73,39 @@ void AGA_HUD::PostInitializeComponents() {
 	Super::PostInitializeComponents();
 }
 
+void AGA_HUD::Setup_Sections() {
+	enabledSectionNames.Add("inventory");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("sessioninfo");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("escapemenu");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("storycontainer");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("worldmessages");
+	enabledSectionStates.Add(false);
+
+	enabledSectionNames.Add("iteminfo");
+	enabledSectionStates.Add(false);
+}
+
+void AGA_HUD::Setup() {
+	playerController = GetOwningPlayerController();
+
+	currentSpawnedAreas.Empty();
+
+	Setup_Sections();
+	Spawn_CanvasItems();
+}
+
 void AGA_HUD::PostRender() {
 	if (!IsInit){
-		enabledSectionNames.Add("inventory");
-		enabledSectionStates.Add(false);
-
-		enabledSectionNames.Add("sessioninfo");
-		enabledSectionStates.Add(false);
-
-		enabledSectionNames.Add("escapemenu");
-		enabledSectionStates.Add(false);
-
-		enabledSectionNames.Add("storycontainer");
-		enabledSectionStates.Add(false);
-
-		enabledSectionNames.Add("worldmessages");
-		enabledSectionStates.Add(false);
-
-		enabledSectionNames.Add("iteminfo");
-		enabledSectionStates.Add(false);
-
 		// get player controller
-		playerController = GetOwningPlayerController();
-
-		currentSpawnedAreas.Empty();
-		Spawn_CanvasItems();
-
+		Setup();
 		IsInit = true;
 	}
 
