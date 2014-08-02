@@ -45,6 +45,7 @@ void AGAGameState::SetBaseHealthPoints(int32 Remaining){
 	BaseHealthPoints = Remaining;
 	UE_LOG(LogClass, Log, TEXT("*** SERVER :: %d BASE HEALTH POINTS ***"), BaseHealthPoints);
 }
+
 int32 AGAGameState::GetBaseHealthPoints(){
 	return BaseHealthPoints;
 }

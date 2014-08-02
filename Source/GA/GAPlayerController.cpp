@@ -2,12 +2,15 @@
 
 #include "GA.h"
 #include "GA_HUD.h"
+#include "GACharacter.h"
+#include "GAWeapon.h"
 #include "GAPlayerController.h"
 
 
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	IsGameActive = false;
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
@@ -30,7 +33,22 @@ void AGAPlayerController::ConnectToServer(const FString& ip){
 void AGAPlayerController::ChangeMap(const FString& mapName){
 	UE_LOG(LogClass, Log, TEXT("*** CHANGING MAP ***"));
 	FString UrlString = TEXT("/Game/Maps/" + mapName);
+
+	for (TActorIterator<AGAWeapon> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		(*ActorItr)->Destroy();
+	}
+
 	GetWorld()->ServerTravel(UrlString);
+	if (mapName == "SG_MainMenu"){
+		IsGameActive = false;
+	}
+	else if (mapName == "SG_Game"){
+		IsGameActive = true;
+	}
+
+	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+		(*ActorItr)->RemappedWeaponAfterTravel();
+	}
 }
 
 void AGAPlayerController::HostGameWithPort(int32 Port){
@@ -46,5 +64,15 @@ void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActo
 	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
 	for (int32 i = 0 ; i < ((AGA_HUD*)MyHUD)->currentSpawnedAreas.Num() ; i++){
 		ActorList.Add(((AGA_HUD*)MyHUD)->currentSpawnedAreas[i]);
-	}	
+	}
+}
+
+void AGAPlayerController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel){
+	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
+	if (PendingURL.Contains("SG_MainMenu")){
+		IsGameActive = false;
+	}
+	else if(PendingURL.Contains("SG_Game")){
+		IsGameActive = true;
+	}
 }
