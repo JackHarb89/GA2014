@@ -8,6 +8,8 @@ class AGAGameMode : public AGameMode
 {
 	GENERATED_UCLASS_BODY()
 
+	UClass* GameHud;
+
 	virtual void PostSeamlessTravel() OVERRIDE;
 };
 

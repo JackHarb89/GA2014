@@ -13,10 +13,12 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 {	
 	bUseSeamlessTravel = true;
 
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUDOb(TEXT("/Game/UI/Classes/GA_HUD_BP"));
-	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Peddy/Characters/PlayerCharacter_Barbarian"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Game(TEXT("/Game/UI/Classes/GA_HUD_BP"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Niklas/PlayerCharakter_Niklas.PlayerCharakter_Niklas"));
 
-	HUDClass  = (UClass*)HUDOb.Object->GeneratedClass;
+	GameHud = (UClass*)HUD_Game.Object->GeneratedClass;
+
+	HUDClass = GameHud;
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
