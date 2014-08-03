@@ -34,16 +34,23 @@ void AGA_HUD::UpdateValues() {
 //////////////////////////////////////////////////////////////////////////
 // returns the new value 0/1(false/true) or -1 on failure
 int32 AGA_HUD::toggleSection(FString name, bool newValue) {
+	if (enabledSectionNames.Num() != enabledSectionStates.Num() || enabledSectionNames.Num() != enabledSectionStartTime.Num())
+		return -1;
+
 	int32 entryID;
+
 	if (!enabledSectionNames.Contains(name)) {
 		return -1;
 	}
 	else {
 		entryID = enabledSectionNames.Find(name);
-		
+
 		if (entryID == -1)
 			return -1;
 	}
+
+	if (enabledSectionStates[entryID] == newValue)
+		return newValue;
 
 	enabledSectionStates[entryID] = newValue;
 	enabledSectionStartTime[entryID] = GetWorld()->TimeSeconds;
@@ -52,9 +59,10 @@ int32 AGA_HUD::toggleSection(FString name, bool newValue) {
 }
 
 int32 AGA_HUD::getSection(FString name) {
-	int32 entryID = -2;
 	if (enabledSectionNames.Num() != enabledSectionStates.Num() || enabledSectionNames.Num() != enabledSectionStartTime.Num())
-		return 0;
+		return -1;
+
+	int32 entryID = -2;
 
 	if (!enabledSectionNames.Contains(name)) {
 		return -1;
@@ -357,8 +365,10 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			break;
 		case AREA_IMAGE:
 			// make sure, the correct alpha-value is set (used for section-fading)
-			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection)
-				Canvas->DrawColor.A = getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration);
+			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection) {
+				oldDrawColor = FLinearColor(Canvas->DrawColor);
+				Canvas->SetLinearDrawColor(FLinearColor(127, 127, 127, 127), getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration));
+			}
 
 			// actually draw the image
 			Canvas->DrawTile(
@@ -371,6 +381,11 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 				finalScale[1],  // don't scale the texture (would cause tiling)
 				BLEND_Translucent
 				);
+
+			// reset the old drawcolor
+			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection) {
+				Canvas->SetDrawColor(oldDrawColor);
+			}
 			break;
 		case AREA_COLOR:
 			// actual color (used for section-fading)

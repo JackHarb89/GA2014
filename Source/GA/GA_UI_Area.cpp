@@ -200,8 +200,8 @@ void AGA_UI_Area::runBlueprintEvents() {
 	if (mouseInButton)
 		OnMouseOver();
 
-	if (!*mouseHeld && mouseInButton && *prevMouseHeld)
-		OnClick();
+	if (!*mouseHeld && *prevMouseHeld)
+		OnClick(mouseInButton);
 
 	// Update buttonState
 	if (*mouseHeld) {
