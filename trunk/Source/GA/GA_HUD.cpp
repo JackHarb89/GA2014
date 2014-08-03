@@ -13,6 +13,8 @@ AGA_HUD::AGA_HUD(const class FPostConstructInitializeProperties& PCIP)
 	currentMenuID = 0;
 	nextMenuID = 0;
 
+	defaultFadeTime = 0.5f;
+
 	blinkChar = FString("_");
 }
 
@@ -44,15 +46,13 @@ int32 AGA_HUD::toggleSection(FString name, bool newValue) {
 	}
 
 	enabledSectionStates[entryID] = newValue;
+	enabledSectionStartTime[entryID] = GetWorld()->TimeSeconds;
 
 	return enabledSectionStates[entryID] ? 1 : 0;
 }
 
-/**
-	
-*/
 int32 AGA_HUD::getSection(FString name) {
-	int32 entryID;
+	int32 entryID = -2;
 	if (!enabledSectionNames.Contains(name)) {
 		return -1;
 	}
@@ -75,22 +75,50 @@ void AGA_HUD::PostInitializeComponents() {
 
 void AGA_HUD::Setup_Sections() {
 	enabledSectionNames.Add("inventory");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
 
 	enabledSectionNames.Add("sessioninfo");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
 
 	enabledSectionNames.Add("escapemenu");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
 
 	enabledSectionNames.Add("storycontainer");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
 
 	enabledSectionNames.Add("worldmessages");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
 
 	enabledSectionNames.Add("iteminfo");
+	enabledSectionStartTime.Add(-2);
 	enabledSectionStates.Add(false);
+}
+
+float AGA_HUD::getSectionOpacity(FString name, float fadeDuration) {
+	int32 entryID = -2;
+	fadeDuration = fadeDuration == -1 ? defaultFadeTime : fadeDuration;
+	if (!enabledSectionNames.Contains(name)) {
+		return 1;
+	}
+	else {
+		entryID = enabledSectionNames.Find(name);
+		if (entryID == -1)
+			return 1;
+	}
+
+	// contains a value between 0 (fading just started) and 1 (fading is done)
+	float currentDifference = FMath::Clamp<float>(GetWorld()->TimeSeconds - enabledSectionStartTime[entryID], 0, fadeDuration);
+
+	// normalize the value for opacity
+	currentDifference /= fadeDuration;
+
+	// the final value has to be 1-x, if we're fading out (corresponding enabledSectionState is false)
+	return enabledSectionStates[entryID] ? currentDifference : fadeDuration - currentDifference;
 }
 
 void AGA_HUD::Setup() {
@@ -288,7 +316,7 @@ void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category,
 }
 
 void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
-	suppliedArea->setButtonState(BUTTON_REGULAR);
+	//suppliedArea->setButtonState(BUTTON_REGULAR);
 	if (suppliedArea->initialized) {
 		if (suppliedArea->Inactive) {
 			suppliedArea->toggleChildren(false);
@@ -301,8 +329,10 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 					UE_LOG(LogClass, Log, TEXT("*** Area has section-name '%s', that isn't listed in the 'enabledSectionNames'. ***"), *suppliedArea->SectionName);
 					break;
 				case 0:
-					suppliedArea->toggleChildren(false);
-					return;
+					if ((!suppliedArea->FadesWithSection) || (suppliedArea->FadesWithSection && getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration) == 0)) {
+						suppliedArea->toggleChildren(false);
+						return;
+					}
 					break;
 				case 1:
 					break;
@@ -317,7 +347,8 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 
 		suppliedArea->toggleChildren(true);
 
-		suppliedArea->runBlueprintEvents();
+		if (getSection(suppliedArea->SectionName) != 0)
+			suppliedArea->runBlueprintEvents();
 
 		suppliedArea->OnBeingDrawn();
 
@@ -328,6 +359,8 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 
 		FVector2D finalScale = { suppliedArea->item_size.X, suppliedArea->item_size.Y };
 
+		FLinearColor oldDrawColor;
+
 		// draw the background
 		switch (suppliedArea->type) {
 		case AREA_MATERIAL:
@@ -336,10 +369,14 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 				finalPos[0] * currentScale[0], finalPos[1] * currentScale[1],
 				finalScale[0], finalScale[1],
 				1, false
-				);
+			);
 			break;
 		case AREA_IMAGE:
-			// removed ClipTile Argument *** finalScale[1] ***
+			// make sure, the correct alpha-value is set (used for section-fading)
+			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection)
+				Canvas->DrawColor.A = getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration);
+
+			// actually draw the image
 			Canvas->DrawTile(
 				suppliedArea->current_backgroundImage,
 				finalPos[0] * currentScale[0], finalPos[1] * currentScale[1], // z-position
@@ -352,10 +389,16 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 				);
 			break;
 		case AREA_COLOR:
+			// actual color (used for section-fading)
+			FLinearColor finalColor = FLinearColor(*suppliedArea->current_backgroundColor);
+			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection)
+				finalColor.A = getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration);
+			
+			// actually draw the color
 			FCanvasTileItem RectItem(
 				finalPos * currentScale,
 				finalScale * currentScale,
-				*suppliedArea->current_backgroundColor
+				finalColor
 			);
 
 			RectItem.BlendMode = SE_BLEND_Translucent;
@@ -369,12 +412,17 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 			// calculate the size for alignment
 			FVector2D realPositon = FVector2D::ZeroVector;
 
+			// actual color (used for section-fading)
+			FLinearColor finalFontColor = FLinearColor(*suppliedArea->current_textColor);
+			if (suppliedArea->SectionName != "" && suppliedArea->FadesWithSection)
+				finalFontColor.A = getSectionOpacity(suppliedArea->SectionName, suppliedArea->FadeDuration);
+
 			// text item that will be drawn
 			FCanvasTextItem TextItem(
 				realPositon,
 				FText::FromString(*suppliedArea->current_text),
 				suppliedArea->current_font,
-				*suppliedArea->current_textColor
+				finalFontColor
 			);
 
 			TextItem.HorizSpacingAdjust = suppliedArea->letterSpacing;
@@ -433,7 +481,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 				realPositon * currentScale,
 				textToDraw,
 				suppliedArea->current_font,
-				*suppliedArea->current_textColor
+				finalFontColor
 			);
 
 			if (suppliedArea->text_horizontalAlignment == GA_UI_Area_hTextAlign::TEXT_CENTER)

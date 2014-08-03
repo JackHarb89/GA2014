@@ -71,8 +71,16 @@ public:
 	bool					IsDropZone;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					isTextArea;
-	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "IDs")
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Section")
 	FString					SectionName;
+	// Determines, if the object should modify it's opacity according to the section specified above this checkbox
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Section")
+	bool					FadesWithSection;
+	// Time that needs to pass by, before the element is fully visible/invisible.
+	// 
+	// -1 for default value (0.5)
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Section")
+	float					FadeDuration;
 
 	GA_UI_Area_type	type;
 
