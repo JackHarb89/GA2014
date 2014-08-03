@@ -41,6 +41,8 @@ public:
 	/** ran, after all game elements are created */
 	virtual void PostInitializeComponents() OVERRIDE;
 
+	virtual void DrawHUD() OVERRIDE;
+
 	/** ran, after all graphical calls have happened */
 	void PostRender();
 
@@ -167,4 +169,5 @@ public:
 	FString currentContent;
 
 	bool IsInit;
+	void UpdateChatLog();
 };
