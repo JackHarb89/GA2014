@@ -11,6 +11,10 @@ AGAPowerUp::AGAPowerUp(const class FPostConstructInitializeProperties& PCIP)
 {
 	IsInit = false;
 	IsPowerUpActive = false;
+	EffectRadius = 1000;
+
+	IsAffectingAll = false;
+	IsAffectingOne = false;
 
 	// Replicate to Server / Clients
 	bReplicates = true;
@@ -76,12 +80,24 @@ void AGAPowerUp::ActivatePowerUpEffect(class AActor* OtherActor){
 				}
 			}
 		}
-		else{
+		else if (IsAffectingOne){
 			if (PowerUpType == EGAPowerUp::Type::GAHealthBoost){
 				((AGACharacter*)OtherActor)->HealPlayer(HealAmount);
 			}
 			else {
 				((AGACharacter*)OtherActor)->ActivatePowerUp(PowerUpType, EffectDuration);
+			}
+		}
+		else{
+			for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				if (FVector::Dist(ActorItr->GetActorLocation(), GetActorLocation()) <= EffectRadius){
+					if (PowerUpType == EGAPowerUp::Type::GAHealthBoost){
+						ActorItr->HealPlayer(HealAmount);
+					}
+					else {
+						ActorItr->ActivatePowerUp(PowerUpType, EffectDuration);
+					}
+				}
 			}
 		}
 
