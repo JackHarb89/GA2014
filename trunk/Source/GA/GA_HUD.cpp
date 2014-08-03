@@ -53,6 +53,9 @@ int32 AGA_HUD::toggleSection(FString name, bool newValue) {
 
 int32 AGA_HUD::getSection(FString name) {
 	int32 entryID = -2;
+	if (enabledSectionNames.Num() != enabledSectionStates.Num() || enabledSectionNames.Num() != enabledSectionStartTime.Num())
+		return 0;
+
 	if (!enabledSectionNames.Contains(name)) {
 		return -1;
 	}
@@ -74,29 +77,10 @@ void AGA_HUD::PostInitializeComponents() {
 }
 
 void AGA_HUD::Setup_Sections() {
-	enabledSectionNames.Add("inventory");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
-
-	enabledSectionNames.Add("sessioninfo");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
-
-	enabledSectionNames.Add("escapemenu");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
-
-	enabledSectionNames.Add("storycontainer");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
-
-	enabledSectionNames.Add("worldmessages");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
-
-	enabledSectionNames.Add("iteminfo");
-	enabledSectionStartTime.Add(-2);
-	enabledSectionStates.Add(false);
+	for (FString area : enabledSectionNames) {
+		enabledSectionStartTime.Add(-2);
+		enabledSectionStates.Add(false);
+	}
 }
 
 float AGA_HUD::getSectionOpacity(FString name, float fadeDuration) {
