@@ -25,14 +25,17 @@ class AGAPowerUp : public AActor
 
 public:
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "For Testing")		bool IsAffectingAll;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "For Testing")		bool IsAffectingOne;
+
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsPowerUpActive)							bool IsPowerUpActive;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				TEnumAsByte<EGAPowerUp::Type> PowerUpType;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsRandomPowerUp;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsAffectingAll;
 
 	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "State")	float HealAmount;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float CoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float EffectDuration;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float EffectRadius;
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "State")							float CurrentCoolDown;
 
 	// EVENTS
