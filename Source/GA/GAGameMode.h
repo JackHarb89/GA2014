@@ -8,8 +8,11 @@ class AGAGameMode : public AGameMode
 {
 	GENERATED_UCLASS_BODY()
 
-	UClass* GameHud;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD") UClass* MainMenuHud;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD") UClass* TransitionHud;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD") UClass* GameHud;
 
 	virtual void PostSeamlessTravel() OVERRIDE;
+	virtual void StartNewPlayer(APlayerController * NewPlayer) OVERRIDE;
 };
 
