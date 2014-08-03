@@ -87,6 +87,13 @@ public:
 	TArray<FString> enabledSectionNames;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Section)
 	TArray<bool> enabledSectionStates;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Section)
+	TArray<float> enabledSectionStartTime;			// Time used when fading the interface
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Section)
+	float defaultFadeTime;
+
+	UFUNCTION(BlueprintCallable, Category = Sections)
+	float getSectionOpacity(FString name, float fadeDuration);
 
 	UFUNCTION(BlueprintCallable, Category = Sections)
 	int32 toggleSection(FString name, bool newValue);
@@ -94,8 +101,10 @@ public:
 	/**
 	* Return state of interface-section
 	*
+	* Use "getSectionTime()" instead
+	* 
 	* @param Name of the section
-	* @return -1 = section doesn't exists | 0 = section turned off | 1 section turned on
+	* @return -1 = section doesn't exist | 0 = section turned off | 1 section turned on
 	*/
 	UFUNCTION(BlueprintCallable, Category = Sections)
 	int32 getSection(FString name);

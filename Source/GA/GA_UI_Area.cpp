@@ -24,6 +24,7 @@ AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 	IsDropZone = false;
 	isTextArea = false;
 	SectionName = FString("");
+	FadeDuration = -1;
 
 	type = AREA_COLOR;
 
