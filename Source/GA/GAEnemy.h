@@ -25,7 +25,7 @@ struct FGameItem
 
 
 UCLASS()
-class AGAEnemy : public AGAAttackableCharacter
+class AGAEnemy : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
@@ -77,7 +77,7 @@ public:
 	UFUNCTION(Category = "Damage", BlueprintCallable)											void ApplyDamage(float Damage);
 
 
-	void TakeDamageByEnemy(float Damage) OVERRIDE;
+	void TakeDamageByEnemy(float Damage);
 	bool DealDamage();
 	void AttackSimple();
 	void ReduceSimpleAttackCoolDown(float DeltaTime);

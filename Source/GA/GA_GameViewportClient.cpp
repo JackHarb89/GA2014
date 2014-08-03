@@ -1,5 +1,6 @@
 #include "GA.h"
 #include "GA_HUD.h"
+#include "GACharacter.h"
 #include "GA_GameViewportClient.h"
 
 UGA_GameViewportClient::UGA_GameViewportClient(const class FPostConstructInitializeProperties& PCIP)
@@ -17,7 +18,7 @@ bool UGA_GameViewportClient::InputChar(FViewport* InViewport, int32 ControllerId
 	/************************************************************************/
 	/* CUSTOM                                                               */
 	/************************************************************************/
-	//((AGA_HUD*)(GEngine->GetGamePlayer(GEngine->GameViewport, 0)->PlayerController->MyHUD))->ParseKeyInput(CharacterString);
+	((AGA_HUD*)(GEngine->GetGamePlayer(GEngine->GameViewport, 0)->PlayerController->MyHUD))->ParseKeyInput(CharacterString);
 
 	return result;
 }
