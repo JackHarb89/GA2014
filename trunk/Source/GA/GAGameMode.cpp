@@ -45,7 +45,7 @@ void AGAGameMode::StartNewPlayer(APlayerController* NewPlayer){
 		NewPlayer->ClientSetHUD(GameHud);
 	}
 	else if (GetLevel()->OwningWorld->GetName().Contains("SG_TransitionMap")){
-		NewPlayer->ClientSetHUD(MainMenuHud);
+		NewPlayer->ClientSetHUD(TransitionHud);
 	}
 	else if (GetLevel()->OwningWorld->GetName().Contains("SG_MainMenu")){
 		NewPlayer->ClientSetHUD(MainMenuHud);
