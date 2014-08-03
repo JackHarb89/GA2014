@@ -240,6 +240,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnConfirmInput();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void ChatInputReceived();
+
 	void toggleChildren(bool state);
 
 	friend bool AGA_UI_Area::operator< (const AGA_UI_Area& lArea, const AGA_UI_Area& rArea) {
