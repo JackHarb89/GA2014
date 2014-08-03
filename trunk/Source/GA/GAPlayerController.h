@@ -12,9 +12,6 @@ class AGAPlayerController : public APlayerController
 {
 	GENERATED_UCLASS_BODY()
 	
-	UClass* MainMenuHud;
-	UClass* TransitionHud;
-
 	virtual void AGAPlayerController::PlayerTick(float DeltaTime);
 
 	// Client
@@ -26,7 +23,4 @@ class AGAPlayerController : public APlayerController
 	UFUNCTION(exec) void HostGameWithPort(int32 Port);
 
 	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
-	virtual void PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) OVERRIDE;
-
-	virtual void ClientSetHUD_Implementation(TSubclassOf < class AHUD > NewHUDClass) OVERRIDE;
 };

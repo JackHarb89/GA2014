@@ -10,10 +10,6 @@
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Menu(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Transition(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
-	MainMenuHud = (UClass*)HUD_Menu.Object->GeneratedClass;
-	TransitionHud = (UClass*)HUD_Menu.Object->GeneratedClass;
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
@@ -53,31 +49,4 @@ void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActo
 	for (int32 i = 0; i < ((AGA_HUD*)MyHUD)->currentSpawnedAreas.Num(); i++){
 		ActorList.Add(((AGA_HUD*)MyHUD)->currentSpawnedAreas[i]);
 	}
-}
-
-void AGAPlayerController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel){
-	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
-}
-
-void AGAPlayerController::ClientSetHUD_Implementation(TSubclassOf<AHUD> NewHUDClass){
-	if (MyHUD != NULL)
-	{
-		MyHUD->Destroy();
-		MyHUD = NULL;
-	}
-	FActorSpawnParameters SpawnInfo;
-	SpawnInfo.Owner = this;
-	SpawnInfo.Instigator = Instigator;
-	MyHUD = GetWorld()->SpawnActor<AHUD>(NewHUDClass, SpawnInfo);
-
-	if (GetLevel()->OwningWorld->GetName().Contains("SG_Game")){
-		MyHUD = GetWorld()->SpawnActor<AHUD>(NewHUDClass, SpawnInfo);
-	}
-	else if (GetLevel()->OwningWorld->GetName().Contains("SG_TransitionMap")){
-		MyHUD = GetWorld()->SpawnActor<AHUD>(TransitionHud, SpawnInfo);
-	}
-	else if (GetLevel()->OwningWorld->GetName().Contains("SG_MainMenu")){
-		MyHUD = GetWorld()->SpawnActor<AHUD>(MainMenuHud, SpawnInfo);
-	}
-
 }
