@@ -15,12 +15,12 @@ class AGAPlayerController : public APlayerController
 	virtual void AGAPlayerController::PlayerTick(float DeltaTime);
 
 	// Client
-	UFUNCTION(exec) void ConnectToServer(const FString& ip);
+	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ConnectToServer(const FString& ip);
 
 	// Server
-	UFUNCTION(exec) void ChangeMap(const FString& mapName);
+	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ChangeMap(const FString& mapName);
 
-	UFUNCTION(exec) void HostGameWithPort(int32 Port);
+	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void HostGameWithPort(int32 Port);
 
 	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 };

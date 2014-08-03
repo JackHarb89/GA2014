@@ -133,11 +133,11 @@ void AGA_UI_Area::init(GA_UI_Area_Category _category, FVector2D* _clickMouseLoca
 	hover_text = hover_text != "" ? hover_text : item_text;
 	active_text = active_text != "" ? active_text : item_text;
 
-	hover_textColor = hover_textColor != FLinearColor(0, 0, 0, 0) ? hover_textColor : item_textColor;
-	active_textColor = active_textColor != FLinearColor(0, 0, 0, 0) ? active_textColor : item_textColor;
+	hover_textColor = hover_textColor != FLinearColor(0, 0, 0, 1) ? hover_textColor : item_textColor;
+	active_textColor = active_textColor != FLinearColor(0, 0, 0, 1) ? active_textColor : item_textColor;
 
-	hover_backgroundColor = hover_backgroundColor != FLinearColor(0, 0, 0, 0) ? hover_backgroundColor : item_backgroundColor;
-	active_backgroundColor = active_backgroundColor != FLinearColor(0, 0, 0, 0) ? active_backgroundColor : item_backgroundColor;
+	hover_backgroundColor = hover_backgroundColor != FLinearColor(0, 0, 0, 1) ? hover_backgroundColor : item_backgroundColor;
+	active_backgroundColor = active_backgroundColor != FLinearColor(0, 0, 0, 1) ? active_backgroundColor : item_backgroundColor;
 
 	hover_backgroundImage = hover_backgroundImage ? hover_backgroundImage : item_backgroundImage;
 	active_backgroundImage = active_backgroundImage ? active_backgroundImage : item_backgroundImage;
