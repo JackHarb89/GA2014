@@ -33,7 +33,7 @@ void AGA_HUD::UpdateValues() {
 //////////////////// TMap Interface-Hack /////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 // returns the new value 0/1(false/true) or -1 on failure
-int32 AGA_HUD::toggleSection(FString name, bool newValue) {
+int32 AGA_HUD::toggleSection(FString name,  bool newValue) {
 	if (enabledSectionNames.Num() != enabledSectionStates.Num() || enabledSectionNames.Num() != enabledSectionStartTime.Num())
 		return -1;
 
