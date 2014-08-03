@@ -224,7 +224,7 @@ public:
 	TArray<AGA_UI_Area*>	spawnedChildAreas;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	virtual void OnClick();
+	virtual void OnClick(bool mouseIsInButton);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	virtual void OnMouseOver();
