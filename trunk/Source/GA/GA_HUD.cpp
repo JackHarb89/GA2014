@@ -123,17 +123,20 @@ void AGA_HUD::Setup() {
 }
 
 void AGA_HUD::PostRender() {
+	Super::PostRender();
+}
+
+
+void AGA_HUD::DrawHUD(){
+	Super::DrawHUD();
+
 	if (!IsInit){
 		// get player controller
 		Setup();
 		IsInit = true;
 	}
-
-	if (!GetWorld()->IsInSeamlessTravel()){
-		UpdateValues();
-
-		Draw();
-	}
+	UpdateValues();
+	Draw();
 }
 
 void AGA_HUD::Spawn_CanvasItems() {
@@ -563,4 +566,14 @@ void AGA_HUD::ParseKeyInput(const FString& newChar) {
 	}
 
 	activeTypingArea->item_text = currentContent;
+}
+
+void AGA_HUD::UpdateChatLog(){
+	for (AGA_UI_Area* area : currentSpawnedAreas){
+		if (area->ActorHasTag("ChatLog")){
+			//area->ChatInputReceived();
+			UE_LOG(LogClass, Log, TEXT("*** Hud :: %s RECEIVED INPUT ***"), *PlayerOwner->GetName());
+			UE_LOG(LogClass, Log, TEXT("*** Hud :: %s UPDATE CHATLOG ***"), *PlayerOwner->GetName());
+		}
+	}
 }
