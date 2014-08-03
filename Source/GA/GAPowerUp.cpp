@@ -118,10 +118,16 @@ void AGAPowerUp::ServerActivatePowerUpEffect_Implementation(class AActor* OtherA
 void AGAPowerUp::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
+	
+		
+	DOREPLIFETIME(AGAPowerUp, IsAffectingOne);
+	DOREPLIFETIME(AGAPowerUp, IsAffectingAll);
 	DOREPLIFETIME(AGAPowerUp, IsPowerUpActive);
 	DOREPLIFETIME(AGAPowerUp, PowerUpType);
 	DOREPLIFETIME(AGAPowerUp, IsRandomPowerUp);
-	DOREPLIFETIME(AGAPowerUp, IsAffectingAll);
+	DOREPLIFETIME(AGAPowerUp, HealAmount);
 	DOREPLIFETIME(AGAPowerUp, CoolDown);
+	DOREPLIFETIME(AGAPowerUp, EffectDuration);
 	DOREPLIFETIME(AGAPowerUp, CurrentCoolDown);
+	DOREPLIFETIME(AGAPowerUp, EffectRadius);
 }
