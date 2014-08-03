@@ -22,7 +22,7 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 	GameHud = (UClass*)HUD_Game.Object->GeneratedClass;
 	TransitionHud = (UClass*)HUD_Menu.Object->GeneratedClass;
 
-	HUDClass = MainMenuHud;
+	HUDClass = AHUD::StaticClass();
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();
