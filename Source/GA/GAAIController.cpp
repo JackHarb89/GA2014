@@ -50,7 +50,12 @@ void AGAAIController::FindClosestPlayer(){
 		else{
 			RemoveTarget();
 		}
-		BehaviorComp->GetBlackboardComponent()->SetValueAsObject(PlayerKeyID, ClosestPlayerPawn);
+		uint8 BlackboardKeyID = BehaviorComp->GetBlackboardComponent()->GetKeyID(PlayerKeyID);
+		AGACharacter* Player = (AGACharacter*)BehaviorComp->GetBlackboardComponent()->GetValueAsObject(BlackboardKeyID);
+		if (Player == NULL || Player != ClosestPlayerPawn){
+			StopMovement();
+			BehaviorComp->GetBlackboardComponent()->SetValueAsObject(PlayerKeyID, ClosestPlayerPawn);
+		}
 	}
 }
 
