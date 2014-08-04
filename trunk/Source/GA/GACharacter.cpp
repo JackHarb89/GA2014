@@ -5,6 +5,7 @@
 #include "GAEnemy.h"
 #include "GAPlayerController.h"
 #include "GAGameState.h"
+#include "GA_HUD.h"
 #include "Net/UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,7 +102,7 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 
 	// Replicate to Server / Clients
 	bReplicates = true;
-	bAlwaysRelevant = true;
+	bAlwaysRelevant = true; 
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Shop
@@ -111,6 +112,9 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 
 // Initalize Player - Setting Reset Values
 void AGACharacter::InitPlayer(){
+	if (GetLevel()->OwningWorld->GetName().Contains("SG_Game")){
+		CharacterSpawned();
+	}
 	// Set Reset Values
 	SimpleAttackCoolDownResetValue = SimpleAttackCoolDown;
 	SpecialAttackCoolDownResetValue = SpecialAttackCoolDown;
@@ -149,7 +153,6 @@ void AGACharacter::Tick(float Delta){
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
-	ULevel* level = GetLevel();
 	if (GetLevel()->OwningWorld->GetName().Contains("SG_Game")){
 		// Set up gameplay key bindings
 		check(InputComponent);
@@ -228,6 +231,10 @@ void AGACharacter::UnmapKeybindings(){
 }
 
 void AGACharacter::SpectateNextPlayer(){
+	if (CurrentPlayers.Num() == 0)
+	{
+		return;
+	}
 	CurrenSpecatorPlayerIndex++;
 	if (CurrenSpecatorPlayerIndex > CurrentPlayers.Num() - 1){
 		CurrenSpecatorPlayerIndex = 0;
@@ -239,6 +246,10 @@ void AGACharacter::SpectateNextPlayer(){
 }
 
 void AGACharacter::SpectatePrevPlayer(){
+	if (CurrentPlayers.Num() == 0)
+	{
+		return;
+	}
 	CurrenSpecatorPlayerIndex--;
 	if (CurrenSpecatorPlayerIndex<0){
 		CurrenSpecatorPlayerIndex = CurrentPlayers.Num() - 1;
@@ -544,7 +555,6 @@ void AGACharacter::CheckDeath(){
 				(*ActorItr)->CharacterDied(this);
 			}
 
-			// *** CALL GAME OVER FUNCTION OR DO SOMETHING ELSE ***
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: DIED ***"));
 		}
 	}
@@ -862,30 +872,7 @@ void AGACharacter::CheckPlayerInAuraRange(){
 
 #pragma endregion
 
-#pragma region Textchat
-
-// Sends The Given Messagen To Server And All Clients
-void AGACharacter::SendChatMessage(const FString& Message){
-	if (Role < ROLE_Authority){
-		ServerSendChatMessage(*Message);
-	}
-	else{
-		AddMessageToChatLog(Message);
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: %s ***"), *ChatLog[0]);
-	}
-}
-
-// Adds The Given Message To ChatLog As First Position
-void AGACharacter::AddMessageToChatLog(const FString& Message){
-	ChatLog.Insert(Message, 0);
-}
-
-#pragma endregion
-
-#pragma region Network - Textchat
-void AGACharacter::OnRep_ChatMessages(){
-	UE_LOG(LogClass, Log, TEXT("*** CLIENT :: %s ***"), *ChatLog[0]);
-}
+#pragma region Network - Username
 
 // ****  TMP ****
 void AGACharacter::OnRep_UserName(){
@@ -906,10 +893,10 @@ void AGACharacter::ChangeUserName(const FString& Message){
 
 bool AGACharacter::ServerChangeUserName_Validate(const FString& Message){ return true; }
 void AGACharacter::ServerChangeUserName_Implementation(const FString& Message){ ChangeUserName(Message); }
-
+/*
 bool AGACharacter::ServerSendChatMessage_Validate(const FString& Message){ return true; }
 void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){ SendChatMessage(Message); }
-
+*/
 #pragma endregion
 
 #pragma region Network - Simple Attack
@@ -1312,7 +1299,6 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, Shop);
 
 	// Chat
-	DOREPLIFETIME(AGACharacter, ChatLog);
 	DOREPLIFETIME(AGACharacter, UserName);
 
 	// Items
