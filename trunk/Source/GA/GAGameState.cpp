@@ -10,6 +10,7 @@ AGAGameState::AGAGameState(const class FPostConstructInitializeProperties& PCIP)
 {
 	MiniMapCamera = NULL;
 	WavesSpawned = 0;
+	EarnedPoints = 0;
 }
 
 void AGAGameState::CheckDeatchCondition(){
@@ -26,11 +27,21 @@ void AGAGameState::CheckDeatchCondition(){
 	}
 }
 
-int32 AGAGameState::GetSpawnedWaves(){
-	return WavesSpawned;
+
+void AGAGameState::IncreasePoints(int32 NewPoints){
+	EarnedPoints += NewPoints;
 }
 
 
 void AGAGameState::IncreaseSpawnedWaves(){
 	WavesSpawned++;
 }
+
+int32 AGAGameState::GetEarnedPoints(){
+	return EarnedPoints;
+}
+
+int32 AGAGameState::GetSpawnedWaves(){
+	return WavesSpawned;
+}
+

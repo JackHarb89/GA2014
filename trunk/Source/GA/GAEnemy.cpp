@@ -6,6 +6,7 @@
 #include "GAPlayerController.h"
 #include "GACharacter.h"
 #include "GAAudioManager.h"
+#include "GAGameState.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -222,7 +223,7 @@ void AGAEnemy::TakeDamageByEnemy(float Damage){
 }
 
 void AGAEnemy::ApplyDamage(float Damage) {
-	if (Damage == -1){HealthPoints = 0;}							// One Hit Kill
+	if (Damage == -1){HealthPoints = 0;}							// One Hit Kill || Shard Kill
 	else { HealthPoints -= (Damage - (Armor*0.25*Damage) / 100); }
 
 	HasTookDamage = true;
@@ -245,6 +246,7 @@ void AGAEnemy::CheckDeath(){
 	}
 	else {
 		if (HealthPoints <= 0){
+			GetWorld()->GetGameState<AGAGameState>()->IncreasePoints(Points);
 			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				(*ActorItr)->EnemyDied(this);
 			}
@@ -321,7 +323,8 @@ void AGAEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 	// Replicate to everyone
 	DOREPLIFETIME(AGAEnemy, Armor);
 	DOREPLIFETIME(AGAEnemy, LootTable);
-
+	
+	DOREPLIFETIME(AGAEnemy, Points);
 	DOREPLIFETIME(AGAEnemy, HealthPoints);
 	DOREPLIFETIME(AGAEnemy, HasTookDamage);
 	DOREPLIFETIME(AGAEnemy, IsAlive);

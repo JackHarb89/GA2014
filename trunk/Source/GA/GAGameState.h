@@ -20,11 +20,19 @@ class AGAGameState : public AGameState
 	void CheckDeatchCondition();
 
 	UFUNCTION(BlueprintCallable, Category = "Waves")
-	void IncreaseSpawnedWaves();
-	UFUNCTION(BlueprintCallable, Category =" Waves")
-	int32 GetSpawnedWaves();
+		void IncreaseSpawnedWaves();
+
+	UFUNCTION(BlueprintCallable, Category = "Points")
+		void IncreasePoints(int32 NewPoints);
+
+	UFUNCTION(BlueprintCallable, Category = "Waves")
+		int32 GetSpawnedWaves();
+
+	UFUNCTION(BlueprintCallable, Category = "Points")
+		int32 GetEarnedPoints();
 
 private:
 
+	int32 EarnedPoints;
 	int32 WavesSpawned;
 };

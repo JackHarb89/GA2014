@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "GAEnemy.h"
 #include "GAWaves.generated.h"
 
 /**
@@ -25,28 +26,17 @@ struct FWave
 {
 	GENERATED_USTRUCT_BODY();
 
-	UPROPERTY()															int32 EnemyIndex;
+	TArray< TEnumAsByte<EGAEnemy::Type> > Wave;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")		UBlueprint* SmallEnemy;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")		UBlueprint* NormalEnemy;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")		UBlueprint* BigEnemy;
+	TSubclassOf<class AGAEnemy> SmallEnemy;
+	TSubclassOf<class AGAEnemy> NormalEnemy;
+	TSubclassOf<class AGAEnemy> BigEnemy;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")		float SpawnInterval;
+	int32 Points;
+	int32 EnemyIndex;
+	float SpawnInterval;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")		TArray< TEnumAsByte<EGAEnemy::Type> > Wave;
 
-
-	TSubclassOf<class AActor> GetSmallEnemy(){
-		return (UClass*)SmallEnemy->GeneratedClass;
-	}
-
-	TSubclassOf<class AActor> GetNormalEnemy(){
-		return (UClass*)NormalEnemy->GeneratedClass;
-	}
-
-	TSubclassOf<class AActor> GetBigEnemy(){
-		return (UClass*)BigEnemy->GeneratedClass;
-	}
 
 	bool HasNoReferences(){
 		if (SmallEnemy == NULL && NormalEnemy == NULL && BigEnemy == NULL) return true;
@@ -61,6 +51,7 @@ struct FWave
 
 	FWave(){
 		EnemyIndex = 0;
+		Points = 0;
 	}
 };
 
@@ -69,11 +60,14 @@ class AGAWaves : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	float SpawnTimer;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Class")		TSubclassOf<class AGAEnemy> SmallEnemy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Class")		TSubclassOf<class AGAEnemy> NormalEnemy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Class")		TSubclassOf<class AGAEnemy> BigEnemy;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float SpawnInterval;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextWaveTimer;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextSpawnActiveTimer;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<FWave> Waves;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waves")					TArray<AActor*> EnemySpawns;
 
 	// ONLY MS2
@@ -82,8 +76,10 @@ class AGAWaves : public AActor
 
 private:
 
+	float SpawnTimer;
 	int32 SpawnWaveIndex;
 	int32 RandIndex;
+	FWave CurrentWave;
 
 	bool IsFirstTick;
 	bool IsSpawnSetActive;

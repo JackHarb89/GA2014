@@ -40,6 +40,7 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Items)					TArray<FGameItem> LootTable;
 
 	// Enemy Stats
+	UPROPERTY(Replicated, EditAnywhere, Replicated, BlueprintReadWrite, Category = General)		int32 Points;
 	UPROPERTY(Replicated, EditAnywhere, Replicated, BlueprintReadWrite, Category = General)		int32 HealthPoints;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = General)					int32 Armor;
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_HasTookDamage)								bool HasTookDamage;
