@@ -15,14 +15,14 @@ AGAGameMode::AGAGameMode(const class FPostConstructInitializeProperties& PCIP)
 
 	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Game(TEXT("/Game/UI/Classes/GA_HUD_BP"));
 	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Menu(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Transition(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Transition(TEXT("/Game/UI/Classes/GA_TransitionHUD.GA_TransitionHUD"));
 	static ConstructorHelpers::FObjectFinder<UBlueprint> PlayerPawnOb(TEXT("/Game/Blueprints/Niklas/PlayerCharakter_Niklas.PlayerCharakter_Niklas"));
 
 	MainMenuHud = (UClass*)HUD_Menu.Object->GeneratedClass;
 	GameHud = (UClass*)HUD_Game.Object->GeneratedClass;
-	TransitionHud = (UClass*)HUD_Menu.Object->GeneratedClass;
+	TransitionHud = (UClass*)HUD_Transition.Object->GeneratedClass;
 
-	HUDClass = AHUD::StaticClass();
+	HUDClass = AGA_HUD::StaticClass();
 	DefaultPawnClass = (UClass*)PlayerPawnOb.Object->GeneratedClass;
 	PlayerControllerClass = AGAPlayerController::StaticClass();	
 	GameStateClass = AGAGameState::StaticClass();

@@ -102,7 +102,7 @@ struct FEquipment
 };
 
 UCLASS()
-class AGACharacter : public AGAAttackableCharacter
+class AGACharacter : public ACharacter
 {
 	GENERATED_UCLASS_BODY()
 
@@ -124,8 +124,7 @@ class AGACharacter : public AGAAttackableCharacter
 	FGA_Inventory inventory;
 	
 	// Chat
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")					FString UserName;
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_ChatMessages, Category = "Chat")				TArray<FString> ChatLog;
+	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")		FString UserName;
 
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
@@ -231,10 +230,12 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterTookDamage();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterActivatedPowerUp(EGAPowerUp::Type PowerUpType);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterDeactivatedPowerUp();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					void CharacterSpawned();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Network Event")						void RemappedWeaponAfterTravel();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterActivatedShard();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterLostGame();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Game Event")							void CharacterWonGame();
+
 	
 	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")						TSubobjectPtr<class USpringArmComponent> CameraBoom;
@@ -280,8 +281,9 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
 
 	// Server Chat
-	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerSendChatMessage(const FString& Message);
-	UFUNCTION(Category = "Chat", BlueprintCallable, reliable, server, WithValidation)		void ServerChangeUserName(const FString& Message);
+	//UFUNCTION(reliable, server, WithValidation)											void ServerSendChatMessage(const FString& Message);
+	UFUNCTION(reliable, server, WithValidation)												void ServerChangeUserName(const FString& Message);
+	
 
 	// Equip Weapon
 	UFUNCTION(reliable, server, WithValidation)												void ServerSetWeaponActor(AGAWeapon *Weapon);
@@ -306,20 +308,15 @@ class AGACharacter : public AGAAttackableCharacter
 	UFUNCTION()																				void OnRep_HasEquipedItem(); 
 	UFUNCTION()																				void OnRep_HasBeenHealed();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
-	UFUNCTION()																				void OnRep_ChatMessages();
 	UFUNCTION()																				void OnRep_UserName();
 	UFUNCTION()																				void OnRep_IsPowerUpActive();
 
 	// Public Function To Call To Take Damage
-	void TakeDamageByEnemy(float Damage) OVERRIDE;
+	void TakeDamageByEnemy(float Damage);
 
-	// Chat
-	UFUNCTION(exec)																			void SendChatMessage(const FString& Message);
-	
 	// have to be public to be called by blueprint classes
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void BuyItem();
 	UFUNCTION(Category = "Shop", BlueprintCallable)											void SellItem(AGAItem* item);
-	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
 
 	UFUNCTION(Category = "Combat", BlueprintCallable)										bool IsCharging();
 	
@@ -336,6 +333,9 @@ class AGACharacter : public AGAAttackableCharacter
 	void SetWeaponActor(AGAWeapon *Weapon);
 	void ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 	void HealPlayer(float HealAmount);
+
+	// Chat
+	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
 
 protected:
 
@@ -354,7 +354,7 @@ protected:
 
 	// Chat
 	// made this function public, so the UI can launch them
-	void AddMessageToChatLog(const FString& Message);
+	
 
 	// Aura
 	void ActivateAura();
