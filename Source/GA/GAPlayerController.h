@@ -13,18 +13,6 @@ class AGAPlayerController : public APlayerController
 	GENERATED_UCLASS_BODY()
 
 	/************************************************************************/
-	/* HUD                                                                  */
-	/************************************************************************/
-
-
-	UPROPERTY(EditAnywhere, noclear, BlueprintReadWrite, Category = "HUD Classes", meta = (DisplayName = "Main Menu HUD Class"))
-		TSubclassOf<class AGA_HUD> MainMenuHud;
-	UPROPERTY(EditAnywhere, noclear, BlueprintReadWrite, Category = "HUD Classes", meta = (DisplayName = "Transition HUD Class"))
-		TSubclassOf<class AGA_HUD> TransitionHud;
-	UPROPERTY(EditAnywhere, noclear, BlueprintReadWrite, Category = "HUD Classes", meta = (DisplayName = "Game HUD Class"))
-		TSubclassOf<class AGA_HUD> GameHud;
-
-	/************************************************************************/
 	/* Broadcasting Stuff                                                   */
 	/************************************************************************/
 

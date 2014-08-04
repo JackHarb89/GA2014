@@ -12,29 +12,21 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 : Super(PCIP)
 {
 
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Game(TEXT("/Game/UI/Classes/GA_HUD_BP"));
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Menu(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
-	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Transition(TEXT("/Game/UI/Classes/GA_TransitionHUD.GA_TransitionHUD"));
-
 	GAUserName = "Anonymous";
-
-	MainMenuHud = (UClass*)HUD_Menu.Object->GeneratedClass;
-	GameHud = (UClass*)HUD_Game.Object->GeneratedClass;
-	TransitionHud = (UClass*)HUD_Transition.Object->GeneratedClass;
-
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AGAPlayerController::PlayerTick(float DeltaTime) {
-	Super::PlayerTick(DeltaTime);/*
-	if (((AGA_HUD*)MyHUD)->activeTypingArea == nullptr && !((AGA_HUD*)MyHUD)->getSection("inventory") && !((AGA_HUD*)MyHUD)->getSection("escapemenu")) {
-		bShowMouseCursor = false;
-	}
-	else {
+	Super::PlayerTick(DeltaTime);
+	if (GetLevel()->OwningWorld->GetName().Contains("SG_MainMenu") && ((AGA_HUD*)MyHUD)->getSection("escapemenu")){
 		bShowMouseCursor = true;
 	}
-	*/
+	else{
+		bShowMouseCursor = false;
+	}
 }
+
+#pragma region Networking
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
 void AGAPlayerController::ConnectToServer(const FString& ip){
@@ -65,6 +57,9 @@ void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActo
 void AGAPlayerController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel){
 	MyHUD->Destroy();
 }
+
+
+#pragma endregion
 
 
 #pragma region Textchat

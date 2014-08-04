@@ -107,6 +107,9 @@ class AGACharacter : public ACharacter
 	GENERATED_UCLASS_BODY()
 
 	// Spectating
+	UPROPERTY(EditAnywhere, noclear, BlueprintReadWrite, Category = "HUD Classes", meta = (DisplayName = "Spectator HUD Class"))
+		TSubclassOf<class AGA_HUD> SpectatorHUD;
+
 	UPROPERTY(Replicated)																	TArray<AGACharacter*> CurrentPlayers;
 																							int32 CurrenSpecatorPlayerIndex;
 
@@ -350,7 +353,6 @@ protected:
 
 	// Shard
 	void ActivateShard();
-	void ReduceShardCoolDown(float DeltaTime);
 
 	// Chat
 	// made this function public, so the UI can launch them

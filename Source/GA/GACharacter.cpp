@@ -14,6 +14,11 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+
+
+	static ConstructorHelpers::FObjectFinder<UBlueprint> Spectator_HUD(TEXT("/Game/UI/Classes/GA_SpectatorHUD.GA_SpectatorHUD"));
+	SpectatorHUD = Spectator_HUD.Object ? (UClass*)Spectator_HUD.Object->GeneratedClass : AGA_HUD::StaticClass();
+
 	CurrenSpecatorPlayerIndex = 0;
 	ShardAvailable = true;
 	IsPowerUpActive = false;
@@ -147,7 +152,6 @@ void AGACharacter::Tick(float Delta){
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
 	ReducePowerUpDuration(Delta);
-	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
 	if (Role == ROLE_Authority){GetWorld()->GetGameState<AGAGameState>()->CheckDeatchCondition();}
 }
@@ -1218,17 +1222,6 @@ void AGACharacter::ActivateShard(){
 				if (ActorItr->IsAlive){
 					ActorItr->TakeDamageByEnemy(-1);
 				}
-			}
-		}
-	}
-}
-
-void AGACharacter::ReduceShardCoolDown(float DeltaTime){
-	if (Role == ROLE_Authority){
-		if (!ShardAvailable){
-			ShardCurrentCoolDown -= DeltaTime;
-			if (ShardCurrentCoolDown <= 0){
-				ShardAvailable = true;
 			}
 		}
 	}
