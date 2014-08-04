@@ -285,7 +285,8 @@ void AGA_HUD::Draw_Cursor() {
 void AGA_HUD::RunSpawnLogic(UClass* suppliedArea, GA_UI_Area_Category _category, FVector2D _parent_padding, TArray<AGA_UI_Area*>* spawnInfoList, int32 parent_zLayer) {
 	FActorSpawnParameters SpawnInfo;
 
-	SpawnInfo.Owner = this;
+	SpawnInfo.Owner = GetOwningPlayerController();
+	SpawnInfo.Instigator = Instigator;
 	//"spawn" interface area
 	AGA_UI_Area* area =
 		GetWorld()->SpawnActor<AGA_UI_Area>(
