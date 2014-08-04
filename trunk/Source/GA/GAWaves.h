@@ -32,7 +32,6 @@ struct FWave
 	TSubclassOf<class AGAEnemy> NormalEnemy;
 	TSubclassOf<class AGAEnemy> BigEnemy;
 
-	int32 EnemyIndex;
 	float SpawnInterval;
 
 
@@ -44,12 +43,11 @@ struct FWave
 
 
 	bool IsWaveFinished(){
-		if (EnemyIndex == Wave.Num()-1) return true;
+		if (Wave.Num() == 0) return true;
 		return false;
 	}
 
 	FWave(){
-		EnemyIndex = 0;
 	}
 };
 

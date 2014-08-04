@@ -27,6 +27,6 @@ bool UGA_GameViewportClient::InputChar(FViewport* InViewport, int32 ControllerId
 	if (LocalHUD){
 		LocalHUD->ParseKeyInput(CharacterString);
 	}
-
+	
 	return result;
 }
