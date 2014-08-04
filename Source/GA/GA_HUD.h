@@ -169,5 +169,5 @@ public:
 	FString currentContent;
 
 	bool IsInit;
-	void UpdateChatLog();
+	UFUNCTION(BlueprintCallable, Category = "Chat") void UpdateChatLog();
 };

@@ -34,8 +34,9 @@ void AGAEnemySpawn::IncreaseSpawnTimer(float DeltaTime){
 
 void AGAEnemySpawn::SpawnCurrentWave(){
 	if (Role == ROLE_Authority){
-		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive){
-			switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
+		int32 RandIndex = FMath::RandRange(0, (&CurrentWave)->Wave.Num()-1);
+		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && RandIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive){
+			switch (CurrentWave.Wave[RandIndex]){
 			case(EGAEnemy::GASmallEnemy) :
 				SpawnEnemy((&CurrentWave)->SmallEnemy);
 				break;
@@ -47,9 +48,9 @@ void AGAEnemySpawn::SpawnCurrentWave(){
 				break;
 			}
 			SpawnTimer = 0;
-			CurrentWave.EnemyIndex++;
+			CurrentWave.Wave.RemoveAt(RandIndex);
 		}
-		else if (!CurrentWave.HasNoReferences() && CurrentWave.EnemyIndex > CurrentWave.Wave.Num() - 1 && IsSpawnActive&& IsNewWave){
+		else if (!CurrentWave.HasNoReferences() && RandIndex > CurrentWave.Wave.Num() - 1 && IsSpawnActive&& IsNewWave){
 			SetSpawnActivationStatusTo(false);
 			IsNewWave = false;
 			UE_LOG(LogClass, Warning, TEXT("*** SERVER :: WAVE SPAWN FINISHED ***"));

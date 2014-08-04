@@ -25,31 +25,29 @@ class AGAPlayerController : public APlayerController
 		TSubclassOf<class AGA_HUD> GameHud;
 
 	/************************************************************************/
-	/* Replication Stuff                                                    */
+	/* Broadcasting Stuff                                                   */
 	/************************************************************************/
 
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
-		FString	UserName;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
+		FString	GAUserName;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Chat")
 		TArray<FString> ChatLog;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Replicated, ReplicatedUsing = OnRep_ChatMessage, Category = "Chat")
-		FString ChatMessage;
-
 	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
 		void SendChatMessage(const FString& Message);
 
-	UFUNCTION(Category = "Chat", BlueprintCallable)
-		void AddMessageToChatLog(const FString& Message);
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerSendChatMessage(const FString& Message);
 
-	// Server Function
-	UFUNCTION(reliable, server, WithValidation)	
-		void ServerAddMessageToChatLog(const FString& Message);
 
-	// RepNotification
-	UFUNCTION()	
-		void OnRep_ChatMessage();
+	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
+		void SetGAUsername(const FString& Username);
+
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerSetGAUsername(const FString& Username);
+
+	virtual void ClientTeamMessage_Implementation(class APlayerState * SenderPlayerState, const FString & S, FName Type, float MsgLifeTime) OVERRIDE;
 
 	/************************************************************************/
 	/* Network Stuff                                                        */

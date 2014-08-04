@@ -572,9 +572,7 @@ void AGA_HUD::ParseKeyInput(const FString& newChar) {
 void AGA_HUD::UpdateChatLog(){
 	for (AGA_UI_Area* area : currentSpawnedAreas){
 		if (area->ActorHasTag("ChatLog")){
-			//area->ChatInputReceived();
-			UE_LOG(LogClass, Log, TEXT("*** Hud :: %s RECEIVED INPUT ***"), *PlayerOwner->GetName());
-			UE_LOG(LogClass, Log, TEXT("*** Hud :: %s UPDATE CHATLOG ***"), *PlayerOwner->GetName());
+			area->ChatInputReceived();
 		}
 	}
 }

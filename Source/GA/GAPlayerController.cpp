@@ -6,7 +6,6 @@
 #include "GAWeapon.h"
 #include "GAGameMode.h"
 #include "GAPlayerController.h"
-#include "Net/UnrealNetwork.h"
 
 
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
@@ -17,13 +16,12 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Menu(TEXT("/Game/UI/Classes/GA_MainMenu.GA_MainMenu"));
 	static ConstructorHelpers::FObjectFinder<UBlueprint> HUD_Transition(TEXT("/Game/UI/Classes/GA_TransitionHUD.GA_TransitionHUD"));
 
+	GAUserName = "Anonymous";
+
 	MainMenuHud = (UClass*)HUD_Menu.Object->GeneratedClass;
 	GameHud = (UClass*)HUD_Game.Object->GeneratedClass;
 	TransitionHud = (UClass*)HUD_Transition.Object->GeneratedClass;
 
-	ChatMessage = "";
-	bReplicates = true;
-	bAlwaysRelevant = true;
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -63,66 +61,68 @@ bool AGAPlayerController::HostGameWithPort(int32 Port){
 
 void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList){
 	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
-	/*for (int32 i = 0; i < ((AGA_HUD*)MyHUD)->currentSpawnedAreas.Num(); i++){
-		ActorList.Add(((AGA_HUD*)MyHUD)->currentSpawnedAreas[i]);
-	}*/
 }
 void AGAPlayerController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel){
 	MyHUD->Destroy();
-	//ClientSetHUD(TransitionHud);
 }
 
 
 #pragma region Textchat
 
 void AGAPlayerController::SendChatMessage(const FString& Message){
-	AddMessageToChatLog(Message);
+	if (Role < ROLE_Authority){
+		ServerSendChatMessage(Message);
+	}
+	else{
+		GetWorld()->GetAuthGameMode()->Broadcast(this, Message, "Message");
+	}
+
+	ChatLog.Insert(Message, 0);
 	AGA_HUD* GAHUD = Cast<AGA_HUD>(GetHUD());
-	if (GAHUD)
-	{
+	if (GAHUD){
 		GAHUD->UpdateChatLog();
 	}
 }
 
-void AGAPlayerController::AddMessageToChatLog(const FString& Message){
-	if (Role < ROLE_Authority){
-		ServerAddMessageToChatLog(Message);
-		/*
-		UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT CALL ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** %s :: %s ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-		*/
-	}
-	else if (Role == ROLE_Authority){
-		ChatMessage = Message;
-		ChatLog.Insert(ChatMessage, 0);
-		UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** SERVER CALL ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** %s :: %s ***"), *GetName(), *ChatLog[0]);
-		UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-	}
-}
-
-
-void AGAPlayerController::OnRep_ChatMessage(){
-	ChatLog.Insert(ChatMessage, 0);
-	UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-	UE_LOG(LogClass, Log, TEXT("*** OnRepNotify ***"), *GetName(), *ChatLog[0]);
-	UE_LOG(LogClass, Log, TEXT("*** %s :: %s ***"), *GetName(), *ChatLog[0]);
-	UE_LOG(LogClass, Log, TEXT("*** *** *** *** ***"), *GetName(), *ChatLog[0]);
-}
-
-bool AGAPlayerController::ServerAddMessageToChatLog_Validate(const FString& Message){ return true; }
-void AGAPlayerController::ServerAddMessageToChatLog_Implementation(const FString& Message){ AddMessageToChatLog(Message); }
+bool AGAPlayerController::ServerSendChatMessage_Validate(const FString& Message){ return true; }
+void AGAPlayerController::ServerSendChatMessage_Implementation(const FString& Message){ SendChatMessage(Message); }
 
 #pragma endregion
 
-// Replicates All Replicated Properties
-void AGAPlayerController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+#pragma region Textchat
 
-	// Chat
-	//DOREPLIFETIME_CONDITION(AGAPlayerController, ChatMessage, COND_SimulatedOrPhysics);
-	DOREPLIFETIME(AGAPlayerController, ChatMessage);
+void AGAPlayerController::SetGAUsername(const FString& Username){
+	if (Role < ROLE_Authority){
+		ServerSetGAUsername(Username);
+	}
+	else{
+		GetWorld()->GetAuthGameMode()->Broadcast(this, Username, "Username");
+	}
+
+	GAUserName = Username;
+	AGA_HUD* GAHUD = Cast<AGA_HUD>(GetHUD());
+	if (GAHUD){
+		GAHUD->UpdateChatLog();
+	}
+}
+
+bool AGAPlayerController::ServerSetGAUsername_Validate(const FString& Username){ return true; }
+void AGAPlayerController::ServerSetGAUsername_Implementation(const FString& Username){ SetGAUsername(Username); }
+
+#pragma endregion
+
+void AGAPlayerController::ClientTeamMessage_Implementation(APlayerState* SenderPlayerState, const FString& S, FName Type, float MsgLifeTime){
+	Super::ClientTeamMessage_Implementation(SenderPlayerState, S, Type, MsgLifeTime);
+	AGA_HUD* GameHUD = Cast<AGA_HUD>(GetHUD());
+	if (GameHUD){
+		if (SenderPlayerState != PlayerState){
+			if (Type == "Message"){
+				ChatLog.Insert(S, 0);
+				GameHUD->UpdateChatLog();
+			}
+			else if (Type == "Username"){
+				GAUserName = S;
+			}
+		}
+	}
 }
