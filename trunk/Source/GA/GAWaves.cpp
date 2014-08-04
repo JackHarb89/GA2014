@@ -8,6 +8,19 @@
 AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
+	SmallEnemyValue = 1;
+	NormalEnemyValue = 3;
+	BigEnemyValue = 10;
+
+	ValueGrowth = 2.0;
+	ValueShift = 1.0;
+
+    MaxEnemyGrowth = 0.2;
+	MaxEnemyShift = 7.0;
+
+	MaxBigGrowth = 0.1;
+	MaxBigShift = 0.0;
+
 	IsFirstTick = true;
 	IsSpawnSetActive = false;
 
@@ -15,7 +28,7 @@ AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 	NextWaveTimer = 15;
 	NextSpawnActiveTimer = 10;
 
-	SpawnWaveIndex = 0;
+	SpawnWaveIndex = 1;
 	SpawnTimer = 0;
 
 	// Replicate to Server / Clients
@@ -76,26 +89,62 @@ void AGAWaves::SetSpawnActive(){
 void AGAWaves::SpawnNextWave(){
 	if (Role == ROLE_Authority){																		// Are we server?
 		if (SpawnTimer >= NextWaveTimer &&  EnemySpawns.Num() > 0){	// If we have a Wave left and are allowed to spawn
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex + 1);
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex);
 
 			TArray< TEnumAsByte<EGAEnemy::Type>> WaveOrder;
-			int32 MaxEnemy = (int32)(SpawnWaveIndex / 5) + 7;
-			int32 MaxBigEnemy = (int32)(SpawnWaveIndex / 10);
-			int32 Points = 2 * SpawnWaveIndex + 1;
+			int32 Value = (int32) (ValueGrowth * SpawnWaveIndex + ValueShift);
+			int32 MaxEnemy = (int32)(MaxEnemyGrowth * SpawnWaveIndex + MaxEnemyShift);
+			int32 MaxBigEnemy = (int32)(MaxBigGrowth * SpawnWaveIndex + MaxBigShift);
 
-			for (int32 i = 0; i < MaxEnemy-MaxBigEnemy; i++){
-				if (FMath::RandRange(0, 1) == 0){ WaveOrder.Add(EGAEnemy::GASmallEnemy); }
-				else WaveOrder.Add(EGAEnemy::GANormalEnemy);
-			}
-			for (int32 i = 0; i < MaxBigEnemy; i++){
-				WaveOrder.Add(EGAEnemy::GABigEnemy);
+			while (Value > 0){
+				bool SmallAllowed = false;
+				bool NoramlAllowed = false;
+				bool BigAllowed = false;
+				if (Value / SmallEnemyValue <= MaxEnemy){
+					SmallAllowed = true;
+				}
+				if (Value / NormalEnemyValue <= MaxEnemy && (int32) (Value / NormalEnemyValue) > 0){
+					NoramlAllowed = true;
+				}
+				if (MaxBigEnemy > 0 && Value / BigEnemyValue <= MaxEnemy && (int32)(Value / BigEnemyValue) > 0){
+					BigAllowed = true;
+				}
+
+				int32 Rand;
+				Rand = FMath::RandRange(0, 2);
+				if (Rand == 0 && SmallAllowed){
+					WaveOrder.Add(EGAEnemy::GASmallEnemy);
+					Value -= SmallEnemyValue;
+				}
+				else if (Rand == 0 && !SmallAllowed){
+					Rand = FMath::RandRange(1, 2);
+				}
+
+				if (Rand == 1 && NoramlAllowed){
+					WaveOrder.Add(EGAEnemy::GANormalEnemy);
+					Value -= NormalEnemyValue;
+				}
+				else if (Rand == 1 && !NoramlAllowed){
+					Rand = 2;
+				}
+
+				if (Rand == 2 && BigAllowed){
+					Value -= BigEnemyValue;
+					MaxBigEnemy--;
+					WaveOrder.Add(EGAEnemy::GABigEnemy);
+				}
+				if (!SmallAllowed && !NoramlAllowed && !BigAllowed && MaxEnemy > 0){
+					UE_LOG(LogClass, Error, TEXT("*** NOT ENOUGH ENEMIES FOR POINTS AVAILABLE ***"));
+					UE_LOG(LogClass, Error, TEXT("***        CHECK MAX ENEMY AND POINTS       ***"));
+					break;
+				}
+				MaxEnemy--;
 			}
 
 			FWave NewWave;
 			NewWave.SmallEnemy = SmallEnemy;
 			NewWave.NormalEnemy = NormalEnemy;
 			NewWave.BigEnemy = BigEnemy;
-			NewWave.Points = Points;
 			NewWave.SpawnInterval = SpawnInterval;
 			NewWave.Wave = WaveOrder;
 
