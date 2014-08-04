@@ -149,6 +149,7 @@ void AGACharacter::Tick(float Delta){
 	ReducePowerUpDuration(Delta);
 	ReduceShardCoolDown(Delta);
 	if (!HasDied) CheckDeath();
+	if (Role == ROLE_Authority){GetWorld()->GetGameState<AGAGameState>()->CheckDeatchCondition();}
 }
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
