@@ -246,7 +246,6 @@ void AGAEnemy::CheckDeath(){
 	}
 	else {
 		if (HealthPoints <= 0){
-			GetWorld()->GetGameState<AGAGameState>()->IncreasePoints(Points);
 			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				(*ActorItr)->EnemyDied(this);
 			}
@@ -324,7 +323,6 @@ void AGAEnemy::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 	DOREPLIFETIME(AGAEnemy, Armor);
 	DOREPLIFETIME(AGAEnemy, LootTable);
 	
-	DOREPLIFETIME(AGAEnemy, Points);
 	DOREPLIFETIME(AGAEnemy, HealthPoints);
 	DOREPLIFETIME(AGAEnemy, HasTookDamage);
 	DOREPLIFETIME(AGAEnemy, IsAlive);

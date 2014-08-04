@@ -37,6 +37,6 @@ private:
 
 	void IncreaseSpawnTimer(float DeltaTime);
 	void SpawnCurrentWave();
-	void SpawnEnemy(TSubclassOf<class AActor> EnemyClass, int32 Points);
+	void SpawnEnemy(TSubclassOf<class AActor> EnemyClass);
 	virtual void Tick(float Delta) OVERRIDE;
 };

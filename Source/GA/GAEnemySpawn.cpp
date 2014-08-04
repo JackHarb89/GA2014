@@ -37,13 +37,13 @@ void AGAEnemySpawn::SpawnCurrentWave(){
 		if (!CurrentWave.HasNoReferences() && SpawnTimer >= CurrentWave.SpawnInterval && CurrentWave.EnemyIndex <= CurrentWave.Wave.Num() - 1 && IsSpawnActive){
 			switch (CurrentWave.Wave[CurrentWave.EnemyIndex]){
 			case(EGAEnemy::GASmallEnemy) :
-				SpawnEnemy((&CurrentWave)->SmallEnemy, (&CurrentWave)->Points);
+				SpawnEnemy((&CurrentWave)->SmallEnemy);
 				break;
 			case(EGAEnemy::GANormalEnemy) :
-				SpawnEnemy((&CurrentWave)->NormalEnemy, (&CurrentWave)->Points);
+				SpawnEnemy((&CurrentWave)->NormalEnemy);
 				break;
 			case(EGAEnemy::GABigEnemy) :
-				SpawnEnemy((&CurrentWave)->BigEnemy, (&CurrentWave)->Points);
+				SpawnEnemy((&CurrentWave)->BigEnemy);
 				break;
 			}
 			SpawnTimer = 0;
@@ -57,7 +57,7 @@ void AGAEnemySpawn::SpawnCurrentWave(){
 	}
 }
 
-void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> EnemyClass, int32 Points){
+void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> EnemyClass){
 	if (Role == ROLE_Authority){
 		UWorld* const World = GetWorld();
 		if (World){
@@ -76,7 +76,6 @@ void AGAEnemySpawn::SpawnEnemy(TSubclassOf<class AActor> EnemyClass, int32 Point
 			if (Enemy != NULL) {
 				Enemy->SpawnAIController();
 				Enemy->BeginPlay();
-				Enemy->Points = Points;
 				UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNED ***"));
 			}
 			else {

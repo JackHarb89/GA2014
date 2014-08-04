@@ -32,7 +32,6 @@ struct FWave
 	TSubclassOf<class AGAEnemy> NormalEnemy;
 	TSubclassOf<class AGAEnemy> BigEnemy;
 
-	int32 Points;
 	int32 EnemyIndex;
 	float SpawnInterval;
 
@@ -51,7 +50,6 @@ struct FWave
 
 	FWave(){
 		EnemyIndex = 0;
-		Points = 0;
 	}
 };
 
@@ -65,6 +63,20 @@ class AGAWaves : public AActor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Class")		TSubclassOf<class AGAEnemy> NormalEnemy;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Class")		TSubclassOf<class AGAEnemy> BigEnemy;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Value")		int32 SmallEnemyValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Value")		int32 NormalEnemyValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enemey Value")		int32 BigEnemyValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Value Calculation")		float ValueGrowth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Value Calculation")		float ValueShift;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Max Enemy Calculation")		float MaxEnemyGrowth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Max Enemy Calculation")		float MaxEnemyShift;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Max Big Enemy Calculation")		float MaxBigGrowth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Max Big Enemy Calculation")		float MaxBigShift;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		int32 SpawnWaveIndex;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float SpawnInterval;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextWaveTimer;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Waves")		float NextSpawnActiveTimer;
@@ -77,7 +89,6 @@ class AGAWaves : public AActor
 private:
 
 	float SpawnTimer;
-	int32 SpawnWaveIndex;
 	int32 RandIndex;
 	FWave CurrentWave;
 
