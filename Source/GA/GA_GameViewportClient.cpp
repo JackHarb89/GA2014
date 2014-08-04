@@ -18,7 +18,7 @@ bool UGA_GameViewportClient::InputChar(FViewport* InViewport, int32 ControllerId
 	/************************************************************************/
 	/* CUSTOM                                                               */
 	/************************************************************************/
-	((AGA_HUD*)(GEngine->GetGamePlayer(GEngine->GameViewport, 0)->PlayerController->MyHUD))->ParseKeyInput(CharacterString);
+	//((AGA_HUD*)(GEngine->GetGamePlayer(GEngine->GameViewport, 0)->PlayerController->MyHUD))->ParseKeyInput(CharacterString);
 
 	return result;
 }
