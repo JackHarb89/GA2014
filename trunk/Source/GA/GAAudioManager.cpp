@@ -12,7 +12,7 @@ AGAAudioManager::AGAAudioManager(const class FPostConstructInitializeProperties&
 
 void AGAAudioManager::Tick(float Delta){
 	Super::Tick(Delta);
-	CheckBattleMusicFade();
+	//CheckBattleMusicFade();					Deactivated Fade due to not enough BGM
 }
 
 // Checks if Enemies are on Map and Alive. If so Fade Into Battle Music. If not Fade Into Silence Music
