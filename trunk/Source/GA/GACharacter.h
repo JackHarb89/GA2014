@@ -126,9 +126,6 @@ class AGACharacter : public ACharacter
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
 	FGA_Inventory inventory;
 	
-	// Chat
-	UPROPERTY(BlueprintReadWrite, Replicated, Transient, ReplicatedUsing = OnRep_UserName, Category = "Chat")		FString UserName;
-
 	// Movement
 	UPROPERTY(Replicated)																	float BaseMovementSpeed;
 
@@ -282,10 +279,6 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCalculateAura();
 	UFUNCTION(reliable, server, WithValidation)												void ServerCheckPlayerInAuraRange();
-
-	// Server Chat
-	//UFUNCTION(reliable, server, WithValidation)											void ServerSendChatMessage(const FString& Message);
-	UFUNCTION(reliable, server, WithValidation)												void ServerChangeUserName(const FString& Message);
 	
 
 	// Equip Weapon
@@ -311,7 +304,6 @@ class AGACharacter : public ACharacter
 	UFUNCTION()																				void OnRep_HasEquipedItem(); 
 	UFUNCTION()																				void OnRep_HasBeenHealed();
 	UFUNCTION()																				void OnRep_HasActivatedAura();
-	UFUNCTION()																				void OnRep_UserName();
 	UFUNCTION()																				void OnRep_IsPowerUpActive();
 
 	// Public Function To Call To Take Damage
@@ -336,10 +328,7 @@ class AGACharacter : public ACharacter
 	void SetWeaponActor(AGAWeapon *Weapon);
 	void ActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 	void HealPlayer(float HealAmount);
-
-	// Chat
-	UFUNCTION(Category = "Chat", BlueprintCallable)											void ChangeUserName(const FString& Message);
-
+	
 protected:
 
 	// Spectating
@@ -353,11 +342,7 @@ protected:
 
 	// Shard
 	void ActivateShard();
-
-	// Chat
-	// made this function public, so the UI can launch them
 	
-
 	// Aura
 	void ActivateAura();
 	void DeactivateAura();

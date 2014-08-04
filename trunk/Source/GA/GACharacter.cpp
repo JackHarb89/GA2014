@@ -14,10 +14,9 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-
-
-	static ConstructorHelpers::FObjectFinder<UBlueprint> Spectator_HUD(TEXT("/Game/UI/Classes/GA_SpectatorHUD.GA_SpectatorHUD"));
-	SpectatorHUD = Spectator_HUD.Object ? (UClass*)Spectator_HUD.Object->GeneratedClass : AGA_HUD::StaticClass();
+	
+	//static ConstructorHelpers::FObjectFinder<UBlueprint> Spectator_HUD(TEXT("/Game/UI/Classes/GA_SpectatorHUD"));
+	SpectatorHUD = AGA_HUD::StaticClass();// UClass*)Spectator_HUD.Object->GeneratedClass;
 
 	CurrenSpecatorPlayerIndex = 0;
 	ShardAvailable = true;
@@ -877,35 +876,7 @@ void AGACharacter::CheckPlayerInAuraRange(){
 
 #pragma endregion
 
-#pragma region Network - Username
-
-// ****  TMP ****
-void AGACharacter::OnRep_UserName(){
-	CharacterChangedName();
-	UE_LOG(LogClass, Log, TEXT("*** CLIENT :: CHANGED USER NAME ***"));
-}
-
-void AGACharacter::ChangeUserName(const FString& Message){
-	if (Role < ROLE_Authority){
-		ServerChangeUserName(Message);
-	}
-	else{
-		UserName = Message;
-		CharacterChangedName();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CHANGED USER NAME ***"));
-	}
-}
-
-bool AGACharacter::ServerChangeUserName_Validate(const FString& Message){ return true; }
-void AGACharacter::ServerChangeUserName_Implementation(const FString& Message){ ChangeUserName(Message); }
-/*
-bool AGACharacter::ServerSendChatMessage_Validate(const FString& Message){ return true; }
-void AGACharacter::ServerSendChatMessage_Implementation(const FString& Message){ SendChatMessage(Message); }
-*/
-#pragma endregion
-
 #pragma region Network - Simple Attack
-
 
 bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){ return true; }
 void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){ DealDamage(OtherActor); }
@@ -1290,10 +1261,7 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 
 	// Shop
 	DOREPLIFETIME(AGACharacter, Shop);
-
-	// Chat
-	DOREPLIFETIME(AGACharacter, UserName);
-
+	
 	// Items
 	DOREPLIFETIME(AGACharacter, WeaponActor);
 	DOREPLIFETIME(AGACharacter, HasBeenHealed);
