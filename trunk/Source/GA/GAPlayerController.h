@@ -57,7 +57,7 @@ class AGAPlayerController : public APlayerController
 
 	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ConnectToServer(const FString& ip);
 	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ChangeMap(const FString& mapName);
-	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void HostGameWithPort(int32 Port);
+	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) bool HostGameWithPort(int32 Port);
 	
 	virtual void PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel);
 

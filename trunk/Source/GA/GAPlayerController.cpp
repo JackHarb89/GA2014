@@ -50,13 +50,15 @@ void AGAPlayerController::ChangeMap(const FString& mapName){
 	GetWorld()->ServerTravel(UrlString);
 }
 
-void AGAPlayerController::HostGameWithPort(int32 Port){
+bool AGAPlayerController::HostGameWithPort(int32 Port){
+	bool IsHosting = false;
 	UE_LOG(LogClass, Log, TEXT("*** START LISTENING ***"));
 	FURL url;
 	url.bDefaultsInitialized = true;
 	url.Map = "/Game/Maps/SG_MainMenu";
 	url.Port = Port;
-	GetWorld()->Listen(url);
+	IsHosting = GetWorld()->Listen(url);
+	return IsHosting;
 }
 
 void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList){
