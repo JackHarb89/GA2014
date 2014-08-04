@@ -1215,8 +1215,7 @@ void AGACharacter::ActivateShard(){
 
 			for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 				if (ActorItr->IsAlive){
-					ActorItr->IsAlive = false;
-					ActorItr->CharacterDied();
+					ActorItr->TakeDamageByEnemy(-1);
 				}
 			}
 		}

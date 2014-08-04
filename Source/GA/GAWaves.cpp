@@ -11,6 +11,7 @@ AGAWaves::AGAWaves(const class FPostConstructInitializeProperties& PCIP)
 	IsFirstTick = true;
 	IsSpawnSetActive = false;
 
+	SpawnInterval = 1;
 	NextWaveTimer = 15;
 	NextSpawnActiveTimer = 10;
 
@@ -62,7 +63,7 @@ void AGAWaves::SetRemainingWaves(){
 
 void AGAWaves::SetSpawnActive(){
 	if (Role == ROLE_Authority){
-		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num()>0){
+		if (SpawnTimer >= NextSpawnActiveTimer && !IsSpawnSetActive && EnemySpawns.Num()>0){
 			// Use a random Spawnlocation
 			RandIndex = FMath::RandRange(0, EnemySpawns.Num() - 1);
 			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetSpawnActivationStatusTo(true);
@@ -74,10 +75,31 @@ void AGAWaves::SetSpawnActive(){
 // Spawns the Next Wave  *** Only Server Can Spawn Waves ***
 void AGAWaves::SpawnNextWave(){
 	if (Role == ROLE_Authority){																		// Are we server?
-		if (SpawnTimer >= NextWaveTimer && SpawnWaveIndex <= Waves.Num() - 1 && EnemySpawns.Num() > 0){	// If we have a Wave left and are allowed to spawn
+		if (SpawnTimer >= NextWaveTimer &&  EnemySpawns.Num() > 0){	// If we have a Wave left and are allowed to spawn
 			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex + 1);
 
-			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetCurrentWave(Waves[SpawnWaveIndex]);
+			TArray< TEnumAsByte<EGAEnemy::Type>> WaveOrder;
+			int32 MaxEnemy = (int32)(SpawnWaveIndex / 5) + 7;
+			int32 MaxBigEnemy = (int32)(SpawnWaveIndex / 10);
+			int32 Points = 2 * SpawnWaveIndex + 1;
+
+			for (int32 i = 0; i < MaxEnemy-MaxBigEnemy; i++){
+				if (FMath::RandRange(0, 1) == 0){ WaveOrder.Add(EGAEnemy::GASmallEnemy); }
+				else WaveOrder.Add(EGAEnemy::GANormalEnemy);
+			}
+			for (int32 i = 0; i < MaxBigEnemy; i++){
+				WaveOrder.Add(EGAEnemy::GABigEnemy);
+			}
+
+			FWave NewWave;
+			NewWave.SmallEnemy = SmallEnemy;
+			NewWave.NormalEnemy = NormalEnemy;
+			NewWave.BigEnemy = BigEnemy;
+			NewWave.Points = Points;
+			NewWave.SpawnInterval = SpawnInterval;
+			NewWave.Wave = WaveOrder;
+
+			((AGAEnemySpawn*)EnemySpawns[RandIndex])->SetCurrentWave(NewWave);
 
 			SpawnWaveIndex++;
 			SpawnTimer = 0;
@@ -94,8 +116,9 @@ void AGAWaves::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// Wave Timer
+	DOREPLIFETIME(AGAWaves, SpawnInterval);
 	DOREPLIFETIME(AGAWaves, NextWaveTimer);
-
+	DOREPLIFETIME(AGAWaves, NextSpawnActiveTimer);
 }
 
 
