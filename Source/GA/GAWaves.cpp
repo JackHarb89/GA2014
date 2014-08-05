@@ -97,46 +97,41 @@ void AGAWaves::SpawnNextWave(){
 			int32 MaxBigEnemy = (int32)(MaxBigGrowth * SpawnWaveIndex + MaxBigShift);
 
 			while (Value > 0){
-				bool SmallAllowed = false;
-				bool NoramlAllowed = false;
-				bool BigAllowed = false;
+				UE_LOG(LogClass, Log, TEXT("*** Value: %d, MaxEnemy: %d, MaxBigEnemy %d ***"), Value, MaxEnemy, MaxBigEnemy);
+				TArray<TEnumAsByte<EGAEnemy::Type>> AllowedTypes;
 				if (Value / SmallEnemyValue <= MaxEnemy){
-					SmallAllowed = true;
+					AllowedTypes.Add(EGAEnemy::GASmallEnemy);
 				}
-				if (Value / NormalEnemyValue <= MaxEnemy && (int32) (Value / NormalEnemyValue) > 0){
-					NoramlAllowed = true;
+				if (Value / NormalEnemyValue <= MaxEnemy && (int32)(Value / NormalEnemyValue) > 0){
+					AllowedTypes.Add(EGAEnemy::GANormalEnemy);
 				}
 				if (MaxBigEnemy > 0 && Value / BigEnemyValue <= MaxEnemy && (int32)(Value / BigEnemyValue) > 0){
-					BigAllowed = true;
+					AllowedTypes.Add(EGAEnemy::GABigEnemy);
 				}
 
-				int32 Rand;
-				Rand = FMath::RandRange(0, 2);
-				if (Rand == 0 && SmallAllowed){
-					WaveOrder.Add(EGAEnemy::GASmallEnemy);
-					Value -= SmallEnemyValue;
-				}
-				else if (Rand == 0 && !SmallAllowed){
-					Rand = FMath::RandRange(1, 2);
-				}
-
-				if (Rand == 1 && NoramlAllowed){
-					WaveOrder.Add(EGAEnemy::GANormalEnemy);
-					Value -= NormalEnemyValue;
-				}
-				else if (Rand == 1 && !NoramlAllowed){
-					Rand = 2;
-				}
-
-				if (Rand == 2 && BigAllowed){
-					Value -= BigEnemyValue;
-					MaxBigEnemy--;
-					WaveOrder.Add(EGAEnemy::GABigEnemy);
-				}
-				if (!SmallAllowed && !NoramlAllowed && !BigAllowed && MaxEnemy > 0){
+				if (AllowedTypes.Num() == 0 && MaxEnemy > 0){
 					UE_LOG(LogClass, Error, TEXT("*** NOT ENOUGH ENEMIES FOR POINTS AVAILABLE ***"));
 					UE_LOG(LogClass, Error, TEXT("***        CHECK MAX ENEMY AND POINTS       ***"));
 					break;
+				}
+				int32 Rand = FMath::RandRange(0, AllowedTypes.Num()-1);
+
+				switch (AllowedTypes[Rand]){
+					case(EGAEnemy::GASmallEnemy):
+						WaveOrder.Add(EGAEnemy::GASmallEnemy);
+						Value -= SmallEnemyValue;
+						break;
+
+					case(EGAEnemy::GANormalEnemy) :
+						WaveOrder.Add(EGAEnemy::GANormalEnemy);
+						Value -= NormalEnemyValue;
+						break;
+
+					case(EGAEnemy::GABigEnemy) :
+						Value -= BigEnemyValue;
+						MaxBigEnemy--;
+						WaveOrder.Add(EGAEnemy::GABigEnemy);
+						break;
 				}
 				MaxEnemy--;
 			}
