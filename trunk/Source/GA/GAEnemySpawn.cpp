@@ -12,7 +12,7 @@ AGAEnemySpawn::AGAEnemySpawn(const class FPostConstructInitializeProperties& PCI
 	SpawnTimer = 0;
 	IsSpawnActive = false;
 	IsNewWave = false;
-	
+		
 	// Replicate to Server / Clients
 	bReplicates = true;
 	bAlwaysRelevant = true;

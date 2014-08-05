@@ -14,7 +14,8 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-	
+		GAUserName = "Anonymous";
+
 	//static ConstructorHelpers::FObjectFinder<UBlueprint> Spectator_HUD(TEXT("/Game/UI/Classes/GA_SpectatorHUD"));
 	SpectatorHUD = AGA_HUD::StaticClass();// UClass*)Spectator_HUD.Object->GeneratedClass;
 
@@ -119,6 +120,7 @@ void AGACharacter::InitPlayer(){
 	if (GetLevel()->OwningWorld->GetName().Contains("SG_Game")){
 		CharacterSpawned();
 	}
+	
 	// Set Reset Values
 	SimpleAttackCoolDownResetValue = SimpleAttackCoolDown;
 	SpecialAttackCoolDownResetValue = SpecialAttackCoolDown;
@@ -1204,9 +1206,56 @@ void AGACharacter::ServerActivateShard_Implementation(){ActivateShard();}
 
 #pragma endregion
 
+#pragma region Username
+
+void AGACharacter::LoadUserNameFromData(){
+	FString tmpName;
+	bool IsRead = false;
+	IsRead = FFileHelper::LoadFileToString(tmpName, TEXT("UserData.txt"));
+	if (IsRead){
+		UE_LOG(LogClass, Log, TEXT("USERNAME WAS LOADED FROM FILE UserData"));
+	}
+	SetGAUsername(tmpName);
+}
+
+void AGACharacter::SaveUserNameFromData(){
+	bool IsWritten = false;
+	IsWritten = FFileHelper::SaveStringToFile(GAUserName, TEXT("UserData.txt"));
+	if (IsWritten){
+		UE_LOG(LogClass, Log, TEXT("USERNAME SAVED TO FILE UserData"));
+	}
+}
+
+void AGACharacter::SetLocalGAUsername(const FString& Username){
+	if (Role < ROLE_Authority){
+		ServerSetLocalGAUsername(Username);
+	}
+	else {
+		GAUserName = Username;
+	}
+}
+
+bool AGACharacter::ServerSetLocalGAUsername_Validate(const FString& Username){ return true; }
+void AGACharacter::ServerSetLocalGAUsername_Implementation(const FString& Username){ SetLocalGAUsername(Username); }
+
+void AGACharacter::SetGAUsername(const FString& Username){
+	SaveUserNameFromData();
+	SetLocalGAUsername(Username);
+	ServerSetGAUsername(Username);
+}
+
+bool AGACharacter::ServerSetGAUsername_Validate(const FString& Username){ return true; }
+void AGACharacter::ServerSetGAUsername_Implementation(const FString& Username){
+	GetWorld()->GetAuthGameMode()->Broadcast(this, Username, "Username");
+}
+
+#pragma endregion
+
 // Replicates All Replicated Properties
 void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGACharacter, GAUserName);
 
 	// Spectating
 	DOREPLIFETIME(AGACharacter, CurrentPlayers);

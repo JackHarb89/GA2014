@@ -9,10 +9,7 @@ AGAGameState::AGAGameState(const class FPostConstructInitializeProperties& PCIP)
 	: Super(PCIP)
 {
 	MiniMapCamera = NULL;
-	WavesSpawned = 0;
-	EarnedPoints = 0;
-
-	
+	WavesSpawned = 0;	
 }
 
 void AGAGameState::CheckDeatchCondition(){

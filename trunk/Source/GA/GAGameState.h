@@ -27,6 +27,5 @@ class AGAGameState : public AGameState
 	
 private:
 
-	int32 EarnedPoints;
 	int32 WavesSpawned;
 };
