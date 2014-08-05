@@ -144,7 +144,6 @@ void AGA_HUD::Spawn_CanvasItems() {
 	for (UClass* area : currentAreas) {
 		RunSpawnLogic(area, UI_CAT_MAIN);
 	}
-
 	// spawn all children
 	for (AGA_UI_Area* area : currentSpawnedAreas) {
 		if (area != NULL) {
@@ -538,8 +537,7 @@ void AGA_HUD::ParseKeyInput(const FString& newChar) {
 	// jump to the chat, if we're ingame and enter is pressed
 	if (activeTypingArea == nullptr) {
 		// TODO: implement "is ingame" check here
-
-		if (newChar[0] == 13)
+		if (newChar[0] == 13 && GetLevel()->OwningWorld->GetName().Contains("SG_Game"))
 			for (AGA_UI_Area* area : currentSpawnedAreas) {
 				if (area->isTextArea) {
 					activeTypingArea = area;
