@@ -179,9 +179,6 @@ void AGA_UI_Area::setButtonState(GA_UI_Area_buttonState new_buttonState) {
 		return;
 	}
 
-	if (old_buttonState == new_buttonState)
-		return;
-
 	old_buttonState = buttonState;
 	buttonState = new_buttonState;
 
