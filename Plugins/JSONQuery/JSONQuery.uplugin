@@ -1,0 +1,22 @@
+{
+	"PluginFileVersion" : 1,
+
+	"FriendlyName" : "JSON Query",
+	"Version" : 1,
+	"VersionName" : "0.1",
+	"CreatedBy" : "Stefander",
+	"CreatedByURL" : "http://stefander.nl/",
+	"MinEngineVersion" : 1579795,
+	"Description" : "Adds extra nodes and classes to the Blueprint system that allow you to easily post and request pages on webservers, through the JSON protocol.",
+	"Category" : "Web",
+	
+	"Modules" :
+	[
+		{
+			"Name" : "JSONQuery",
+			"Type" : "Developer",
+			"LoadingPhase" : "PreDefault"
+		},
+		
+	]
+}
