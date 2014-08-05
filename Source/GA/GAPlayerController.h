@@ -13,11 +13,24 @@ class AGAPlayerController : public APlayerController
 	GENERATED_UCLASS_BODY()
 
 	/************************************************************************/
+	/* Replication Stuff                                                    */
+	/************************************************************************/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, ReplicatedUsing = OnRep_GAUserName, Category = "Player Stats")
+		FString	GAUserName;
+
+	void SetLocalGAUsername(const FString& Username);
+
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerSetLocalGAUsername(const FString& Username);
+
+	UFUNCTION()
+		void OnRep_GAUserName();
+
+	/************************************************************************/
 	/* Broadcasting Stuff                                                   */
 	/************************************************************************/
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Stats")
-		FString	GAUserName;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Chat")
 		TArray<FString> ChatLog;
@@ -27,8 +40,7 @@ class AGAPlayerController : public APlayerController
 
 	UFUNCTION(server, reliable, WithValidation)
 		void ServerSendChatMessage(const FString& Message);
-
-
+	
 	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
 		void SetGAUsername(const FString& Username);
 

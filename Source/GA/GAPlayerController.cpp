@@ -6,11 +6,14 @@
 #include "GAWeapon.h"
 #include "GAGameMode.h"
 #include "GAPlayerController.h"
+#include "Net/UnrealNetwork.h"
 
 
 AGAPlayerController::AGAPlayerController(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+	bReplicates = true;
+	bAlwaysRelevant = true;
 
 	GAUserName = "Anonymous";
 	PrimaryActorTick.bCanEverTick = true;
@@ -86,25 +89,41 @@ void AGAPlayerController::ServerSendChatMessage_Implementation(const FString& Me
 
 #pragma region Textchat
 
-void AGAPlayerController::SetGAUsername(const FString& Username){
+void AGAPlayerController::SetLocalGAUsername(const FString& Username){
 	if (Role < ROLE_Authority){
-		ServerSetGAUsername(Username);
+		ServerSetLocalGAUsername(Username);
 	}
-	else{
-		GetWorld()->GetAuthGameMode()->Broadcast(this, Username, "Username");
-	}
-
-	GAUserName = Username;
-	AGA_HUD* GAHUD = Cast<AGA_HUD>(GetHUD());
-	if (GAHUD){
-		GAHUD->UpdateChatLog();
+	else {
+		GAUserName = Username;
 	}
 }
 
+bool AGAPlayerController::ServerSetLocalGAUsername_Validate(const FString& Username){ return true; }
+void AGAPlayerController::ServerSetLocalGAUsername_Implementation(const FString& Username){ SetLocalGAUsername(Username); }
+
+void AGAPlayerController::OnRep_GAUserName(){
+
+}
+
+void AGAPlayerController::SetGAUsername(const FString& Username){
+	ServerSetLocalGAUsername(Username);
+	ServerSetGAUsername(Username);
+}
+
 bool AGAPlayerController::ServerSetGAUsername_Validate(const FString& Username){ return true; }
-void AGAPlayerController::ServerSetGAUsername_Implementation(const FString& Username){ SetGAUsername(Username); }
+void AGAPlayerController::ServerSetGAUsername_Implementation(const FString& Username){
+	GetWorld()->GetAuthGameMode()->Broadcast(this, Username, "Username");
+}
 
 #pragma endregion
+
+
+void AGAPlayerController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Spectating
+	DOREPLIFETIME(AGAPlayerController, GAUserName);
+}
 
 void AGAPlayerController::ClientTeamMessage_Implementation(APlayerState* SenderPlayerState, const FString& S, FName Type, float MsgLifeTime){
 	Super::ClientTeamMessage_Implementation(SenderPlayerState, S, Type, MsgLifeTime);
@@ -115,8 +134,10 @@ void AGAPlayerController::ClientTeamMessage_Implementation(APlayerState* SenderP
 				ChatLog.Insert(S, 0);
 				GameHUD->UpdateChatLog();
 			}
-			else if (Type == "Username"){
-				GAUserName = S;
+		}
+		else{
+			if (Type == "Username"){
+				SetLocalGAUsername(S);
 			}
 		}
 	}
