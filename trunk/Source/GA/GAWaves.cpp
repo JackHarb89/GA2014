@@ -89,7 +89,7 @@ void AGAWaves::SetSpawnActive(){
 void AGAWaves::SpawnNextWave(){
 	if (Role == ROLE_Authority){																		// Are we server?
 		if (SpawnTimer >= NextWaveTimer &&  EnemySpawns.Num() > 0){	// If we have a Wave left and are allowed to spawn
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex);
+			//UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPAWNING WAVE %d ***"), SpawnWaveIndex);
 
 			TArray< TEnumAsByte<EGAEnemy::Type>> WaveOrder;
 			int32 Value = (int32) (ValueGrowth * SpawnWaveIndex + ValueShift);
