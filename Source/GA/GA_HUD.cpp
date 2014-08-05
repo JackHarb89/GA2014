@@ -468,7 +468,7 @@ void AGA_HUD::RunDrawLogic(AGA_UI_Area* suppliedArea) {
 
 			// handle text-area and regular input
 			FText textToDraw = FText::GetEmpty();
-			if (!suppliedArea->isTextArea)
+			if (!suppliedArea->isTextArea || suppliedArea->isTextArea && suppliedArea != activeTypingArea)
 				textToDraw = FText::FromString(*suppliedArea->current_text);
 			else if (suppliedArea == activeTypingArea)
 				textToDraw = FText::FromString(
