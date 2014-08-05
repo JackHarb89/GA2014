@@ -32,7 +32,7 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				TEnumAsByte<EGAPowerUp::Type> PowerUpType;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Type")				bool IsRandomPowerUp;
 
-	UPROPERTY(Replicated, Transient, EditAnywhere, BlueprintReadWrite, Category = "State")	float HealAmount;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")	float HealAmount;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float CoolDown;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float EffectDuration;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")				float EffectRadius;

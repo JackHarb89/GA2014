@@ -5,6 +5,7 @@
 #include "GACharacter.h"
 #include "GAWeapon.h"
 #include "GAGameMode.h"
+#include "GAGameState.h"
 #include "GAPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
@@ -15,7 +16,8 @@ AGAPlayerController::AGAPlayerController(const class FPostConstructInitializePro
 	bReplicates = true;
 	bAlwaysRelevant = true;
 
-	GAUserName = "Anonymous";
+	bNetLoadOnClient = true;
+
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -33,14 +35,17 @@ void AGAPlayerController::PlayerTick(float DeltaTime) {
 
 // Connecting To Given Server IP. IP Example: "127.0.0.1:7777"
 void AGAPlayerController::ConnectToServer(const FString& ip){
+	const FString usernameip = ip;
 	UE_LOG(LogClass, Log, TEXT("*** TRYING TO CONNECT TO SERVER ***"));
-	ClientTravel(ip, TRAVEL_Absolute, false);
+	ClientTravel(usernameip, TRAVEL_Absolute, false);
+	
 }
 
 void AGAPlayerController::ChangeMap(const FString& mapName){
 	UE_LOG(LogClass, Log, TEXT("*** CHANGING MAP ***"));
 	FString UrlString = TEXT("/Game/Maps/" + mapName);
 	GetWorld()->ServerTravel(UrlString);
+
 }
 
 bool AGAPlayerController::HostGameWithPort(int32 Port){
@@ -50,6 +55,7 @@ bool AGAPlayerController::HostGameWithPort(int32 Port){
 	url.bDefaultsInitialized = true;
 	url.Map = "/Game/Maps/SG_MainMenu";
 	url.Port = Port;
+	url.Protocol = "unreal";
 	IsHosting = GetWorld()->Listen(url);
 	return IsHosting;
 }
@@ -58,9 +64,11 @@ void AGAPlayerController::GetSeamlessTravelActorList(bool bToEntry, TArray<AActo
 	Super::GetSeamlessTravelActorList(bToEntry, ActorList);
 }
 void AGAPlayerController::PreClientTravel(const FString& PendingURL, ETravelType TravelType, bool bIsSeamlessTravel){
+	if (GetCharacter()){
+		((AGACharacter*)GetCharacter())->SaveUserNameFromData();
+	}
 	MyHUD->Destroy();
 }
-
 
 #pragma endregion
 
@@ -87,44 +95,6 @@ void AGAPlayerController::ServerSendChatMessage_Implementation(const FString& Me
 
 #pragma endregion
 
-#pragma region Textchat
-
-void AGAPlayerController::SetLocalGAUsername(const FString& Username){
-	if (Role < ROLE_Authority){
-		ServerSetLocalGAUsername(Username);
-	}
-	else {
-		GAUserName = Username;
-	}
-}
-
-bool AGAPlayerController::ServerSetLocalGAUsername_Validate(const FString& Username){ return true; }
-void AGAPlayerController::ServerSetLocalGAUsername_Implementation(const FString& Username){ SetLocalGAUsername(Username); }
-
-void AGAPlayerController::OnRep_GAUserName(){
-
-}
-
-void AGAPlayerController::SetGAUsername(const FString& Username){
-	ServerSetLocalGAUsername(Username);
-	ServerSetGAUsername(Username);
-}
-
-bool AGAPlayerController::ServerSetGAUsername_Validate(const FString& Username){ return true; }
-void AGAPlayerController::ServerSetGAUsername_Implementation(const FString& Username){
-	GetWorld()->GetAuthGameMode()->Broadcast(this, Username, "Username");
-}
-
-#pragma endregion
-
-
-void AGAPlayerController::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// Spectating
-	DOREPLIFETIME(AGAPlayerController, GAUserName);
-}
-
 void AGAPlayerController::ClientTeamMessage_Implementation(APlayerState* SenderPlayerState, const FString& S, FName Type, float MsgLifeTime){
 	Super::ClientTeamMessage_Implementation(SenderPlayerState, S, Type, MsgLifeTime);
 	AGA_HUD* GameHUD = Cast<AGA_HUD>(GetHUD());
@@ -137,8 +107,57 @@ void AGAPlayerController::ClientTeamMessage_Implementation(APlayerState* SenderP
 		}
 		else{
 			if (Type == "Username"){
-				SetLocalGAUsername(S);
+				if (GetCharacter()){
+					((AGACharacter*)GetCharacter())->SetLocalGAUsername(S);
+				}
 			}
 		}
+	}
+}
+
+
+
+void AGAPlayerController::OnActorChannelOpen(FInBunch& InBunch, UNetConnection* Connection){
+	Super::OnActorChannelOpen(InBunch, Connection);
+}
+
+void AGAPlayerController::ClientRestart_Implementation(APawn* NewPawn)
+{
+	UE_LOG(LogClass, Log, TEXT("ClientRestart_Implementation %s"), *GetNameSafe(NewPawn));
+
+	ResetIgnoreInputFlags();
+	AcknowledgedPawn = NULL;
+
+	SetPawn(NewPawn);
+	if ((GetPawn() != NULL) && GetPawn()->bTearOff)
+	{
+		UnPossess();
+		SetPawn(NULL);
+		AcknowledgePossession(GetPawn());
+		((AGACharacter*)GetCharacter())->LoadUserNameFromData();
+		return;
+	}
+
+	if (GetPawn() == NULL)
+	{
+		return;
+	}
+
+	// Only acknowledge non-null Pawns here. ClientRestart is only ever called by the Server for valid pawns,
+	// but we may receive the function call before Pawn is replicated over, so it will resolve to NULL.
+	AcknowledgePossession(GetPawn());
+
+	GetPawn()->Controller = this;
+	GetPawn()->PawnClientRestart();
+
+	if (Role < ROLE_Authority)
+	{
+		if (bAutoManageActiveCameraTarget)
+		{
+			SetViewTarget(GetPawn());
+			ResetCameraMode();
+		}
+
+		ChangeState(NAME_Playing);
 	}
 }

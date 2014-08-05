@@ -394,5 +394,26 @@ protected:
 	virtual void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
 	virtual void Tick(float Delta) OVERRIDE;
 
+public:
+	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
+		void LoadUserNameFromData();
+
+
+	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
+		void SaveUserNameFromData();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Replicated, Category = "Player Stats")
+		FString	GAUserName;
+
+	void SetLocalGAUsername(const FString& Username);
+
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerSetLocalGAUsername(const FString& Username);
+
+	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
+		void SetGAUsername(const FString& Username);
+
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerSetGAUsername(const FString& Username);
 };
 

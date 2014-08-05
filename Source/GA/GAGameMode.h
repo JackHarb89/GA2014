@@ -17,5 +17,6 @@ class AGAGameMode : public AGameMode
 
 	virtual void PostSeamlessTravel() OVERRIDE;
 	virtual void StartNewPlayer(APlayerController * NewPlayer) OVERRIDE;
+
 };
 
