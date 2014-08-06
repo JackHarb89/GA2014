@@ -49,7 +49,8 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 
 	// Special Attack
 	SpecialAttackChargeTimer = 0;
-	SpecialAttackTimesCharged = 1;
+	SpecialAttackTimesCharged = 1; 
+	StoredCharges = 1;
 	SpecialAttackIsCharging = false;
 	SpecialAttackOnCoolDown = false;
 
@@ -302,8 +303,10 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 			Range = SpecialAttackRange;
 			CharacterAppliedSpecialForce();
 
-			SpecialAttackTimesCharged = 1;
+			StoredCharges = 1;
+
 			SpecialAttackChargeTimer = 0;
+			SpecialAttackTimesCharged = 1;
 		}
 		else return;
 
@@ -411,6 +414,8 @@ void AGACharacter::AttackSpecial(){
 
 		SpecialAttackOnCoolDown = true;
 		SpecialAttackIsCharging = false;
+
+		StoredCharges = SpecialAttackTimesCharged;
 		SpecialAttackChargeTimer = 0;
 		SpecialAttackTimesCharged = 1;
 
@@ -459,7 +464,7 @@ void AGACharacter::IncreaseChargeTime(float Delta){
 
 // Calculation For The Special Attack (Depends on Times Charged and Base Damage)
 float AGACharacter::CalculateSpecialAttackDamage(){
-	return SpecialAttackBaseDamage * SpecialAttackTimesCharged;
+	return SpecialAttackBaseDamage * StoredCharges;
 }
 
 // Reduces The Special Attack Cool Down  - Called by Tick

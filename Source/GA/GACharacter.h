@@ -395,6 +395,9 @@ protected:
 	virtual void Tick(float Delta) OVERRIDE;
 
 public:
+	UPROPERTY(Replicated)
+		int32 StoredCharges;
+
 	UFUNCTION(exec, Category = "Chat", BlueprintCallable)
 		void LoadUserNameFromData();
 
