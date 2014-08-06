@@ -13,11 +13,17 @@ class AGAWeapon : public AActor
 {
 	GENERATED_UCLASS_BODY()
 
-	UFUNCTION(Category = "Owner", BlueprintCallable)			void SetNewOwner(AActor* NewOwner);
 	virtual														void ReceiveActorBeginOverlap(class AActor* OtherActor) OVERRIDE;
-	void RemoveHitedActors();
-	UFUNCTION(reliable, server, WithValidation)					void ServerRemoveHitedActors();
 
 	UPROPERTY(Replicated)										TArray<AActor*> HitedActors;
-	UFUNCTION(reliable, server, WithValidation)					void ServerSetNewOwner(AActor* NewOwner);
+	
+	void RemoveHitedActors();
+	
+	UFUNCTION(reliable, server, WithValidation)					
+		void ServerRemoveHitedActors();
+
+	UFUNCTION(reliable, server, WithValidation)					
+		void ServerSetNewOwner(AActor* NewOwner);
+	UFUNCTION(Category = "Owner", BlueprintCallable)			
+		void SetNewOwner(AActor* NewOwner);
 };
