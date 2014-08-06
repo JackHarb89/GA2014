@@ -346,6 +346,9 @@ void AGACharacter::AttackSimple(){
 // Reduces The Simple Attack Cool Down  - Called by Tick
 void AGACharacter::ReduceSimpleAttackCoolDown(float Delta){
 	if (Role == ROLE_Authority){
+		if (IsSimpleAttacking){
+			WeaponActor->UpdateOverlaps(false);
+		}
 		// Reduce Cool Down
 		if (!SimpleAttackOnCoolDown) return;
 
@@ -462,6 +465,9 @@ float AGACharacter::CalculateSpecialAttackDamage(){
 // Reduces The Special Attack Cool Down  - Called by Tick
 void AGACharacter::ReduceSpecialAttackCoolDown(float Delta){
 	if (Role == ROLE_Authority){
+		if (IsSpecialAttacking){
+			WeaponActor->UpdateOverlaps(true);
+		}
 		if (SpecialAttackOnCoolDown){
 			// Reduce Cool Down
 			SpecialAttackCoolDown -= Delta;
