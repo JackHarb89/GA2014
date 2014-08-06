@@ -49,14 +49,14 @@ AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 
 	// Special Attack
 	SpecialAttackChargeTimer = 0;
-	SpecialAttackTimesCharged = 0;
+	SpecialAttackTimesCharged = 1;
 	SpecialAttackIsCharging = false;
 	SpecialAttackOnCoolDown = false;
 
-	SpecialAttackBaseDamage = 25;
+	SpecialAttackBaseDamage = 10;
 	SpecialAttackMaxCharges = 5;
 	SpecialAttackChargeInterval = 0.2;
-	SpecialAttackCoolDown = 2;
+	SpecialAttackCoolDown = 10;
 
 	// Regeneration
 	MaxHealth = 100;
@@ -148,7 +148,6 @@ void AGACharacter::InitPlayer(){
 void AGACharacter::Tick(float Delta){
 	Super::Tick(Delta);
 	if (!isInit){ InitPlayer(); }
-	CheckPlayerInAuraRange();
 	ReduceSimpleAttackCoolDown(Delta);
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
@@ -226,6 +225,7 @@ void AGACharacter::MoveRight(float Value)
 #pragma endregion
 
 #pragma region Spectating
+
 void AGACharacter::UnmapKeybindings(){
 	if (!InputComponent) return;
 	for (int32 BindingIndex = InputComponent->GetNumActionBindings() - 1; BindingIndex >= 0; --BindingIndex){
@@ -271,13 +271,17 @@ void AGACharacter::SpectatePrevPlayer(){
 #pragma region Simple Attack
 
 void AGACharacter::SetIsSimpleAttackingTo(bool NewState){
-	IsSimpleAttacking = NewState;
+	IsSimpleAttacking = NewState;	
+	if (!IsSimpleAttacking){
 		WeaponActor->RemoveHitedActors();
+	}
 }
 
 void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 	IsSpecialAttacking = NewState;
-	WeaponActor->RemoveHitedActors();
+	if (!IsSpecialAttacking){
+		WeaponActor->RemoveHitedActors();
+	}
 }
 
 void AGACharacter::DealDamage(class AActor* OtherActor){
@@ -298,7 +302,7 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 			Range = SpecialAttackRange;
 			CharacterAppliedSpecialForce();
 
-			SpecialAttackTimesCharged = 0;
+			SpecialAttackTimesCharged = 1;
 			SpecialAttackChargeTimer = 0;
 		}
 		else return;
@@ -313,7 +317,7 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 		// Deal Damage
 		((AGAAttackableCharacter*)OtherActor)->TakeDamageByEnemy(Damage);
 
-		UE_LOG(LogClass, Log, TEXT("*** WEAPON :: DEALT DAMAGE (%.1f)***"), Damage);
+		UE_LOG(LogClass, Log, TEXT("*** WEAPON :: DEALT DAMAGE (%.1f)  (ServerCall) ***"), Damage);
 	}
 }
 
@@ -335,16 +339,13 @@ void AGACharacter::AttackSimple(){
 			(*ActorItr)->CharacterAttackedSimple(this);
 		}
 
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE ***"));
+		UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACKED SIMPLE (ServerCall) ***"),*GetName());
 	}
 }
 
 // Reduces The Simple Attack Cool Down  - Called by Tick
 void AGACharacter::ReduceSimpleAttackCoolDown(float Delta){
-	if (Role < ROLE_Authority){
-		ServerReduceSimpleAttackCoolDown(Delta);
-	}
-	else {
+	if (Role == ROLE_Authority){
 		// Reduce Cool Down
 		if (!SimpleAttackOnCoolDown) return;
 
@@ -355,7 +356,7 @@ void AGACharacter::ReduceSimpleAttackCoolDown(float Delta){
 			SimpleAttackOnCoolDown = false;
 			SimpleAttackCoolDown = SimpleAttackCoolDownResetValue / AttackSpeed;
 
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACK OFF COOLDOWN ***"));
+			UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACK OFF COOLDOWN (ServerCall) ***"), *GetName());
 		}
 	}
 }
@@ -369,6 +370,29 @@ bool AGACharacter::IsInRange(AActor* target, float attackRange){
 	return false;
 }
 
+bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){ return true; }
+void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){ DealDamage(OtherActor); }
+
+// Client Reaction On Replication Notification - Simple Event Call
+void AGACharacter::OnRep_SimpleAttackOnCoolDown(){
+	if (SimpleAttackOnCoolDown){
+		CharacterAttackedSimple();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSimple(this);
+		}
+		UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACKED SIMPLE (Client RepNotify) ***"), *GetName());
+	}
+	else {
+		UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACK OFF COOLDOWN (Client RepNotify) ***"), *GetName());
+	}
+}
+
+bool AGACharacter::ServerAttackSimple_Validate(){ return true; }
+void AGACharacter::ServerAttackSimple_Implementation(){ AttackSimple(); }
+
+bool AGACharacter::ServerReduceSimpleAttackCoolDown_Validate(float DeltaTime){ return true; }
+void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTime){ ReduceSimpleAttackCoolDown(DeltaTime); }
+
 #pragma endregion
 
 #pragma region Special Attack
@@ -379,19 +403,20 @@ void AGACharacter::AttackSpecial(){
 		ServerAttackSpecial();
 	}
 	else {
-		// Check If Attack Is On Cool Down
-		if (SpecialAttackOnCoolDown) return;
-
 		// Set Cool Down
+		if (!SpecialAttackIsCharging) return;
+
 		SpecialAttackOnCoolDown = true;
 		SpecialAttackIsCharging = false;
+		SpecialAttackChargeTimer = 0;
+		SpecialAttackTimesCharged = 1;
 
 		CharacterAttackedSpecial();
 
 		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			(*ActorItr)->CharacterAttackedSpecial(this);
 		}
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SPECIAL ***"));
+		UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACKED SPECIAL (ServerCall) ***") ,*GetName());
 	}
 }
 
@@ -401,22 +426,20 @@ void AGACharacter::ChargeSpecial(){
 		ServerChargeSpecial();
 	}
 	else{
-		// Check If Attack Is On Cool Down
-		if (SpecialAttackOnCoolDown) return;
+		if (!SpecialAttackOnCoolDown && !SpecialAttackIsCharging){
+			SpecialAttackOnCoolDown = true;
+			SpecialAttackIsCharging = true;
+			CharacterStartedCharging();
+			UE_LOG(LogClass, Log, TEXT("*** %s :: START CHARGING SPECIAL (ServerCall) ***"), *GetName());
+			UE_LOG(LogClass, Log, TEXT("*** %s :: CHARGED  %d (ServerCall) ***"), *GetName(), SpecialAttackTimesCharged);
+		}
 
-		SpecialAttackIsCharging = true;
-		CharacterStartedCharging();
-
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: START CHARGING SPECIAL ***"));
 	}
 }
 
 //  Function Increases The Special Attack Charge Timer - Called By Tick 
 void AGACharacter::IncreaseChargeTime(float Delta){
-	if (Role < ROLE_Authority){
-		ServerIncreaseChargeTime(Delta);
-	}
-	else{
+	if (Role == ROLE_Authority){
 		// Check If Character Is Charging
 		if (!SpecialAttackIsCharging) return;
 
@@ -426,7 +449,7 @@ void AGACharacter::IncreaseChargeTime(float Delta){
 			SpecialAttackTimesCharged++;
 			SpecialAttackChargeTimer = 0;
 			CharacterIsCharging();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: CHARGED  %d ***"), SpecialAttackTimesCharged);
+			UE_LOG(LogClass, Log, TEXT("*** %s :: CHARGED  %d (ServerCall) ***"), *GetName(), SpecialAttackTimesCharged);
 		}
 	}
 }
@@ -438,10 +461,7 @@ float AGACharacter::CalculateSpecialAttackDamage(){
 
 // Reduces The Special Attack Cool Down  - Called by Tick
 void AGACharacter::ReduceSpecialAttackCoolDown(float Delta){
-	if (Role < ROLE_Authority){
-		ServerReduceSimpleAttackCoolDown(Delta);
-	}
-	else {
+	if (Role == ROLE_Authority){
 		if (SpecialAttackOnCoolDown){
 			// Reduce Cool Down
 			SpecialAttackCoolDown -= Delta;
@@ -450,7 +470,7 @@ void AGACharacter::ReduceSpecialAttackCoolDown(float Delta){
 			if (SpecialAttackCoolDown <= 0){
 				SpecialAttackOnCoolDown = false;
 				SpecialAttackCoolDown = SpecialAttackCoolDownResetValue;
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: SPECIAL OFF COOLDOWN ***"));
+				UE_LOG(LogClass, Log, TEXT("*** %s :: SPECIAL OFF COOLDOWN (ServerCall) ***"), *GetName());
 			}
 		}
 	}
@@ -465,48 +485,50 @@ bool AGACharacter::IsCharging(){
 	return SpecialAttackIsCharging;
 }
 
-#pragma endregion
-
-#pragma region Regeneration
-
-// Function Will Regenerate Health - Called By Tick
-void AGACharacter::RegenerateHealth(float Delta){
-	if (Role < ROLE_Authority){
-		ServerRegenerateHealth(Delta);
-	}
-	else{
-		// Check If Out Of Combat
-		if (!AllowedToRegenerate && HealthPoints != MaxHealth){
-			RegenerationTimer += Delta;
-			// Start Regeneration
-			if (RegenerationTimer >= OutOfCombatTime) {
-				AllowedToRegenerate = true;
-				CharacterStartedRegeneration();
-				RegenerationAnimationIsRunning = true;
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: STARTED REGENERATION ***"));
-			}
-			else return;
-		}
-		else {
-			// Stop Regen If Max Health
-			if (HealthPoints == MaxHealth && RegenerationAnimationIsRunning){
-				AllowedToRegenerate = false;
-				RegenerationTime = 0;
-				RegenerationTimer = 0;
-				CharacterFinishedRegeneration();
-				RegenerationAnimationIsRunning = false;
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: STOPED REGENERATION ***"));
-				return;
-			}
-			RegenerationTime += Delta;
-			// Regenerate Health
-			if (RegenerationTime >= RegenerationRate && HealthPoints < MaxHealth){
-				HealthPoints = (HealthPoints + RegenerationAmount > MaxHealth ? MaxHealth : HealthPoints + RegenerationAmount);
-				RegenerationTime = 0;
-			}
-		}
+// Client Reaction On Replication Notification - Simple Event Call
+void AGACharacter::OnRep_SpecialAttackOnCoolDown(){
+	if (!SpecialAttackOnCoolDown){
+		UE_LOG(LogClass, Log, TEXT("*** %s :: SPECIAL OFF COOLDOWN (ClientCall) ***"), *GetName());
 	}
 }
+
+// Client Reaction On Replication Notification - Simple Event Call
+void AGACharacter::OnRep_SpecialAttackIsCharging(){
+	if (SpecialAttackIsCharging){
+		CharacterStartedCharging();
+		UE_LOG(LogClass, Log, TEXT("*** %s :: START CHARGING SPECIAL (ClientCall) ***"), *GetName());
+	}
+	else{
+		CharacterAttackedSpecial();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->CharacterAttackedSpecial(this);
+		}
+		UE_LOG(LogClass, Log, TEXT("*** %s :: ATTACKED SPECIAL (ClientCall) ***"), *GetName());
+	}
+}
+
+// Client Reaction On Replication Notification - Simple Event Call
+void AGACharacter::OnRep_SpecialAttackTimesCharged(){
+	if (SpecialAttackTimesCharged > 0){
+		CharacterIsCharging();
+		UE_LOG(LogClass, Log, TEXT("*** %s :: CHARGED  %d (ClientCall) ***"), *GetName(), SpecialAttackTimesCharged);
+	}
+}
+
+bool AGACharacter::ServerAttackSpecial_Validate(){ return true; }
+void AGACharacter::ServerAttackSpecial_Implementation(){ AttackSpecial(); }
+
+
+bool AGACharacter::ServerReduceSpecialAttackCoolDown_Validate(float Delta){ return true; }
+void AGACharacter::ServerReduceSpecialAttackCoolDown_Implementation(float Delta){ ReduceSpecialAttackCoolDown(Delta); }
+
+
+bool AGACharacter::ServerChargeSpecial_Validate(){ return true; }
+void AGACharacter::ServerChargeSpecial_Implementation(){ ChargeSpecial(); }
+
+
+bool AGACharacter::ServerIncreaseChargeTime_Validate(float Delta){ return true; }
+void AGACharacter::ServerIncreaseChargeTime_Implementation(float Delta){ IncreaseChargeTime(Delta); }
 
 #pragma endregion
 
@@ -535,6 +557,20 @@ void AGACharacter::ApplyDamage(float Damage) {
 	HasTookDamage = true;
 	UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOOK DAMAGE ***"));
 }
+
+
+// Client Reaction On Replication Notification - Only React If True
+void AGACharacter::OnRep_HasTookDamage(){
+	if (HasTookDamage){
+		CharacterFinishedRegeneration();
+		CharacterTookDamage();
+		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: TOOK DAMAGE ***"));
+		HasTookDamage = false;
+	}
+}
+
+bool AGACharacter::ServerTakeDamageByEnemy_Validate(float Damage){ return true; }
+void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){ TakeDamageByEnemy(Damage); }
 
 #pragma endregion
 
@@ -566,431 +602,7 @@ void AGACharacter::CheckDeath(){
 	}
 }
 
-#pragma endregion
 
-#pragma region Items
-
-// Function Will Buy A Randomed Item From The Shop
-void AGACharacter::BuyItem(){
-	if (Role < ROLE_Authority){
-		ServerBuyItem();
-	}
-	else{
-		if (Ressource >= Shop->ItemCost){
-			AGAItem* ShopItem = Shop->BuyItem();
-			Ressource -= Shop->ItemCost;
-			PickUpItem(ShopItem);
-		}
-	}
-}
-
-// *** TEMPORARY DUE TO NO UI ***
-void AGACharacter::SellLastItem(){
-	if (InventoryItems.Num() > 0){
-		SellItem(InventoryItems.Last());
-	}
-}
-
-// Function Will Sell The Given Item
-void AGACharacter::SellItem(AGAItem* item){
-	if (Role < ROLE_Authority){
-		ServerSellItem(item);
-	}
-	else{
-		Ressource += item->Value;
-
-		// Safe Remove
-		if (item == EquipItems.Chest) EquipItems.Chest = nullptr;
-		else if (item == EquipItems.Trinket00) EquipItems.Trinket00 = nullptr;
-		else if (item == EquipItems.Trinket01) EquipItems.Trinket01 = nullptr;
-		else if (item == EquipItems.Weapon) EquipItems.Weapon = nullptr;
-		if (InventoryItems.Contains(item)) InventoryItems.Remove(item);
-
-		item->Destroy();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: SOLD ITEM ***"));
-	}
-}
-
-// Function Will Calculate All Equiped Items And Given Stats
-void AGACharacter::CalculateItems(){
-	if (Role < ROLE_Authority){
-		ServerCalculateItems();
-	}
-	else {
-		FPlayerAura PercentBonus;
-		FStats		ItemStatsBonus;
-		TArray <AGAItem*> EquipedItems;
-		if (EquipItems.Head) EquipedItems.Add(EquipItems.Head);
-		if (EquipItems.Chest) EquipedItems.Add(EquipItems.Chest);
-		if (EquipItems.Weapon) EquipedItems.Add(EquipItems.Weapon);
-		if (EquipItems.Trinket00) EquipedItems.Add(EquipItems.Trinket00);
-		if (EquipItems.Trinket01) EquipedItems.Add(EquipItems.Trinket01);
-
-		// Gather All Bonus
-		for (int i = 0; i < EquipedItems.Num(); i++){
-			// Gather Player Percentages
-			PercentBonus.PercentDamage += EquipedItems[i]->AuraPlayer.PercentDamage;
-			PercentBonus.PercentArmor += EquipedItems[i]->AuraPlayer.PercentArmor;
-			PercentBonus.PercentAttackSpeed += EquipedItems[i]->AuraPlayer.PercentAttackSpeed;
-			PercentBonus.PercentMovementSpeed += EquipedItems[i]->AuraPlayer.PercentMovementSpeed;
-			PercentBonus.PercentHealth += EquipedItems[i]->AuraPlayer.PercentHealth;
-
-			// Gather Stats
-			ItemStatsBonus.Attack += EquipedItems[i]->ItemStats.Attack;
-			ItemStatsBonus.Armor += EquipedItems[i]->ItemStats.Armor;
-			ItemStatsBonus.Health += EquipedItems[i]->ItemStats.Health;
-			ItemStatsBonus.CriticalInPercent += EquipedItems[i]->ItemStats.CriticalInPercent;
-			ItemStatsBonus.AttackSpeedInPercent += EquipedItems[i]->ItemStats.AttackSpeedInPercent;
-			ItemStatsBonus.MovementInPercent += EquipedItems[i]->ItemStats.MovementInPercent;
-		}
-
-		// Damage Bonus
-		ItemDamage = ItemStatsBonus.Attack + ItemStatsBonus.Attack * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage) / 100;
-
-		// Attack Speed
-		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
-		SimpleAttackCoolDown = SimpleAttackCoolDownResetValue / AttackSpeed;
-
-		// Critical Chance
-		Critical = ItemStatsBonus.CriticalInPercent;
-
-		// Armor
-		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) *
-			(PercentBonus.PercentArmor + AuraBonus.PercentArmor + OtherPlayerAura.PercentArmor) / 100;
-		ArmorReduction = Armor * ArmorReductionPercent;
-
-		// Movement Speed
-		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed *
-			(PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent + AuraBonus.PercentMovementSpeed + OtherPlayerAura.PercentMovementSpeed) / 100;
-
-		// Health
-		ItemHealth = ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) *
-			(PercentBonus.PercentHealth + AuraBonus.PercentHealth + OtherPlayerAura.PercentHealth) / 100;
-		MaxHealth = HealthResetValue + ItemHealth;
-		if (MaxHealth < HealthPoints) HealthPoints = MaxHealth;
-
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CALCULATED EQUIPED ITEMS ***"));
-	}
-}
-
-void AGACharacter::SetItemSlot(int32 row, int32 col, AGAItem* item) {
-	inventory.setItem(row, col, item);
-}
-
-bool AGACharacter::ClearItemSlot(int32 row, int32 col) {
-	return inventory.clearElement(row, col);
-}
-
-void AGACharacter::UnequipItem(EGASlot::Type itemType){
-	switch (itemType) {
-	case EGASlot::GAHead:
-		EquipItems.Head = nullptr;
-		break;
-	case EGASlot::GAChest:
-		EquipItems.Chest = nullptr;
-		break;
-	case EGASlot::GATrinket:
-		EquipItems.Trinket00 = nullptr;
-		break;
-	case EGASlot::GAWeapon:
-		EquipItems.Weapon = nullptr;
-		break;
-	}
-	CalculateAura();
-	CalculateItems();
-}
-
-
-// Function Will Equip The Given Item And Unequip If Slot Is Not Empty
-void AGACharacter::EquipItem(AGAItem* item){
-	if (Role < ROLE_Authority){
-		ServerEquipItem(item);
-	}
-	else {
-		switch (item->Slot){
-		case(EGASlot::GAHead) :
-			if (EquipItems.Head != NULL) InventoryItems.Add(EquipItems.Head);
-			InventoryItems.Remove(item);
-			EquipItems.Head = item;
-			break;
-		case(EGASlot::GAChest) :
-			if (EquipItems.Chest != NULL) InventoryItems.Add(EquipItems.Chest);
-			InventoryItems.Remove(item);
-			EquipItems.Chest = item;
-			break;
-		case(EGASlot::GAWeapon) :
-			if (EquipItems.Weapon != NULL) InventoryItems.Add(EquipItems.Weapon);
-			InventoryItems.Remove(item);
-			EquipItems.Weapon = item;
-			break;
-		case(EGASlot::GATrinket) :
-			if (EquipItems.Trinket00 != NULL && EquipItems.Trinket01 != NULL) {
-				InventoryItems.Add(EquipItems.Trinket00);
-				InventoryItems.Remove(item);
-				EquipItems.Trinket00 = item;
-			}
-			else if (EquipItems.Trinket00 == NULL) {
-				InventoryItems.Remove(item);
-				EquipItems.Trinket00 = item;
-			}
-			if (EquipItems.Trinket00 != NULL && EquipItems.Trinket01 == NULL) {
-				InventoryItems.Remove(item);
-				EquipItems.Trinket01 = item;
-			}
-			break;
-		}
-		CalculateAura();
-		CalculateItems();
-		HasEquipedItem = true;
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: EQUIPED ITEM ***"));
-	}
-}
-
-
-// Function Will Place The Given Item In Inventory If Possible
-void AGACharacter::PickUpItem(AGAItem* item){
-	if (Role < ROLE_Authority){
-		ServerPickUpItem(item);
-	}
-	if (InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
-		TouchedItem = item;
-		HasPickedUpItem = true;
-		// If Item Is Money
-		if (item->Slot == EGASlot::GAMoney){
-			Ressource += item->Value;
-			item->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP %f Money (%f) ***"), item->Value, Ressource);
-		}
-		// If Item is Equipable Item
-		else{
-			inventory.registerElement(item);
-			InventoryItems.Add(item);
-			item->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
-		}
-	}
-	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
-}
-
-// If Player Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "Item" ***
-void AGACharacter::ReceiveActorBeginOverlap(class AActor* OtherActor){
-	Super::ReceiveActorBeginOverlap(OtherActor);
-	if (OtherActor->ActorHasTag("Item")){
-		TouchedItem = (AGAItem*)OtherActor;
-		HasPickedUpItem = false;
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOUCHED ITEM ***"));
-		PickUpItem((AGAItem*)OtherActor);
-	}
-}
-
-#pragma endregion
-
-
-
-#pragma region Aura
-
-// Function Activates Aura Effect
-void AGACharacter::ActivateAura(){
-	if (Role < ROLE_Authority){
-		ServerActivateAura();
-	}
-	else{
-		HasActivatedAura = true;
-		CharacterActivatedAura();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ACTIVATED AURA ***"));
-	}
-}
-
-// Function Deactivates Aura Effect
-void AGACharacter::DeactivateAura(){
-	if (Role < ROLE_Authority){
-		ServerDeactivateAura();
-	}
-	else{
-		HasActivatedAura = false;
-		CharacterDeactivatedAura();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: DECTIVATED AURA ***"));
-	}
-}
-
-// Function Calculates Equiped Item Aura
-void AGACharacter::CalculateAura(){
-	if (Role < ROLE_Authority){
-		ServerCalculateAura();
-	}
-	else {
-		if (EquipItems.Head){
-			AuraBonus.PercentDamage = EquipItems.Head->AuraGroup.PercentDamage;
-			AuraBonus.PercentArmor = EquipItems.Head->AuraGroup.PercentArmor;
-			AuraBonus.PercentAttackSpeed = EquipItems.Head->AuraGroup.PercentAttackSpeed;
-			AuraBonus.PercentMovementSpeed = EquipItems.Head->AuraGroup.PercentMovementSpeed;
-			AuraBonus.PercentHealth = EquipItems.Head->AuraGroup.PercentHealth;
-			AuraBonus.EffectRadius = EquipItems.Head->AuraGroup.EffectRadius;
-		}
-
-		// Check if Aura Already Active Or Not
-		if (AuraBonus.hasAura() && !HasActivatedAura){
-			ActivateAura();
-		}
-		else{
-			DeactivateAura();
-		}
-	}
-}
-
-// Function Checks If Player Are In Range To Receive Their Aura
-void AGACharacter::CheckPlayerInAuraRange(){
-	if (Role < ROLE_Authority){
-		ServerCheckPlayerInAuraRange();
-	}
-	else {
-		// Find Player Near By
-		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			// If In Range Add All Aura Effects
-			if (IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && *ActorItr != this && !AuraPlayer.Contains(*ActorItr)){
-				OtherPlayerAura.PercentDamage += ActorItr->AuraBonus.PercentDamage;
-				OtherPlayerAura.PercentArmor += ActorItr->AuraBonus.PercentArmor;
-				OtherPlayerAura.PercentHealth += ActorItr->AuraBonus.PercentHealth;
-				OtherPlayerAura.PercentMovementSpeed += ActorItr->AuraBonus.PercentMovementSpeed;
-				OtherPlayerAura.PercentAttackSpeed += ActorItr->AuraBonus.PercentAttackSpeed;
-
-				AuraPlayer.Add(*ActorItr);								// AuraPlayer Contains Every Player In Aura Range
-				if (!HasActivatedAura && OtherPlayerAura.hasAura()) ActivateAura();
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER JOINED AURA RANGE ***"));
-				if (OtherPlayerAura.hasAura()) CalculateItems();		// Calculate The New Attributes With The new Given Aura
-			}
-			// If Not In Range But Was In Range Before Remove Aura
-			else if (!IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && AuraPlayer.Contains(*ActorItr)){
-				OtherPlayerAura.PercentDamage -= ActorItr->AuraBonus.PercentDamage;
-				OtherPlayerAura.PercentArmor -= ActorItr->AuraBonus.PercentArmor;
-				OtherPlayerAura.PercentHealth -= ActorItr->AuraBonus.PercentHealth;
-				OtherPlayerAura.PercentMovementSpeed -= ActorItr->AuraBonus.PercentMovementSpeed;
-				OtherPlayerAura.PercentAttackSpeed -= ActorItr->AuraBonus.PercentAttackSpeed;
-
-				AuraPlayer.Remove(*ActorItr);							// AuraPlayer Contains Every Player In Aura Range
-				if (HasActivatedAura && !AuraBonus.hasAura() && !OtherPlayerAura.hasAura()) DeactivateAura();
-				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER LEFT AURA RANGE ***"));
-				if (OtherPlayerAura.hasAura()) CalculateItems();		// Calculate The New Attributes With The new Given Aura
-			}
-		}
-	}
-}
-
-#pragma endregion
-
-#pragma region Network - Simple Attack
-
-bool AGACharacter::ServerDealDamage_Validate(class AActor* OtherActor){ return true; }
-void AGACharacter::ServerDealDamage_Implementation(class AActor* OtherActor){ DealDamage(OtherActor); }
-
-// Client Reaction On Replication Notification - Simple Event Call
-void AGACharacter::OnRep_SimpleAttackOnCoolDown(){
-	if (SimpleAttackOnCoolDown){
-		CharacterAttackedSimple();
-		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			(*ActorItr)->CharacterAttackedSimple(this);
-		}
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SIMPLE (%f) ***"), SimpleAttackDamage + ItemDamage);
-	}
-	else {
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACK OFF COOLDOWN ***"));
-	}
-}
-
-bool AGACharacter::ServerAttackSimple_Validate(){ return true; }
-void AGACharacter::ServerAttackSimple_Implementation(){ AttackSimple(); }
-
-bool AGACharacter::ServerReduceSimpleAttackCoolDown_Validate(float DeltaTime){ return true; }
-void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTime){ ReduceSimpleAttackCoolDown(DeltaTime); }
-
-#pragma endregion
-
-#pragma region Network - Special Attack
-
-// Client Reaction On Replication Notification - Simple Event Call
-void AGACharacter::OnRep_SpecialAttackOnCoolDown(){
-	if (SpecialAttackOnCoolDown){
-		CharacterAttackedSpecial();
-		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-			(*ActorItr)->CharacterAttackedSpecial(this);
-		}
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SPECIAL ***"));
-	}
-	else{
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: SPECIAL OFF COOLDOWN ***"));
-	}
-}
-
-// Client Reaction On Replication Notification - Simple Event Call
-void AGACharacter::OnRep_SpecialAttackIsCharging(){
-	if (SpecialAttackIsCharging){
-		CharacterStartedCharging();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: START CHARGING SPECIAL ***"));
-	}
-}
-
-// Client Reaction On Replication Notification - Simple Event Call
-void AGACharacter::OnRep_SpecialAttackTimesCharged(){
-	if (SpecialAttackTimesCharged > 0){
-		CharacterIsCharging();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: CHARGED  %d ***"), SpecialAttackTimesCharged);
-	}
-}
-
-bool AGACharacter::ServerAttackSpecial_Validate(){ return true; }
-void AGACharacter::ServerAttackSpecial_Implementation(){ AttackSpecial(); }
-
-
-bool AGACharacter::ServerReduceSpecialAttackCoolDown_Validate(float Delta){ return true; }
-void AGACharacter::ServerReduceSpecialAttackCoolDown_Implementation(float Delta){ ReduceSpecialAttackCoolDown(Delta); }
-
-
-bool AGACharacter::ServerChargeSpecial_Validate(){ return true; }
-void AGACharacter::ServerChargeSpecial_Implementation(){ ChargeSpecial(); }
-
-
-bool AGACharacter::ServerIncreaseChargeTime_Validate(float Delta){ return true; }
-void AGACharacter::ServerIncreaseChargeTime_Implementation(float Delta){ IncreaseChargeTime(Delta); }
-
-#pragma endregion
-
-#pragma  region Network - Regeneration
-
-// Client Reaction On Replication Notification - Differs 2 Event Calls Due To Stop And Start Regeneration
-void AGACharacter::OnRep_AllowedToRegenerate(){
-	if (AllowedToRegenerate){
-		CharacterStartedRegeneration();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: STARTED REGENERATION ***"));
-	}
-	else{
-		CharacterFinishedRegeneration();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: STOPED REGENERATION ***"));
-	}
-}
-
-bool AGACharacter::ServerRegenerateHealth_Validate(float Delta){ return true; }
-void AGACharacter::ServerRegenerateHealth_Implementation(float Delta){ RegenerateHealth(Delta); }
-
-#pragma endregion
-
-#pragma region Network - Take Damage
-
-// Client Reaction On Replication Notification - Only React If True
-void AGACharacter::OnRep_HasTookDamage(){
-	if (HasTookDamage){
-		CharacterFinishedRegeneration();
-		CharacterTookDamage();
-		UE_LOG(LogClass, Log, TEXT("*** PLAYER :: TOOK DAMAGE ***"));
-		HasTookDamage = false;
-	}
-}
-
-bool AGACharacter::ServerTakeDamageByEnemy_Validate(float Damage){ return true; }
-void AGACharacter::ServerTakeDamageByEnemy_Implementation(float Damage){ TakeDamageByEnemy(Damage); }
-
-#pragma endregion
-
-#pragma region Network - Check Death
 
 // Client Reaction On Replication Notification - Only React If True
 void AGACharacter::OnRep_HasDied(){
@@ -1007,89 +619,8 @@ void AGACharacter::OnRep_HasDied(){
 bool AGACharacter::ServerCheckDeath_Validate(){ return true; }
 void AGACharacter::ServerCheckDeath_Implementation(){ CheckDeath(); }
 
-#pragma endregion
-
-#pragma region Network - Items
-
-// Client Reaction On Replication Notification - Only Reacts If True
-void AGACharacter::OnRep_HasPickedUpItem(){
-	if (HasPickedUpItem){
-		// If Money
-		if (TouchedItem->Slot = EGASlot::GAMoney){
-			Ressource += TouchedItem->Value;
-			TouchedItem->DestroyConstructedComponents();
-			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP %f Money (%f) ***"), TouchedItem->Value, Ressource);
-		}
-		// If Equipable Item
-		else{
-			TouchedItem->DestroyConstructedComponents();
-			CharacterPickedUpItem();
-			ServerResetHasPickedUpItem();
-			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP ITEM ***"));
-		}
-	}
-}
-
-// Client Reaction On Replication Notification - Only Reacts If True
-void AGACharacter::OnRep_HasEquipedItem(){
-	if (HasEquipedItem){
-		CharacterEquipedItem();
-		ServerResetHasEquipedItem();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: EQUIPED ITEM ***"));
-	}
-}
-
-bool AGACharacter::ServerBuyItem_Validate(){ return true; }
-void AGACharacter::ServerBuyItem_Implementation(){ BuyItem(); }
-
-bool AGACharacter::ServerSellItem_Validate(AGAItem* item){ return true; }
-void AGACharacter::ServerSellItem_Implementation(AGAItem* item){ SellItem(item); }
-
-bool AGACharacter::ServerPickUpItem_Validate(AGAItem* item){ return true; }
-void AGACharacter::ServerPickUpItem_Implementation(AGAItem* item){ PickUpItem(item); }
-
-bool AGACharacter::ServerEquipItem_Validate(AGAItem* item){ return true; }
-void AGACharacter::ServerEquipItem_Implementation(AGAItem* item){ EquipItem(item); }
-
-bool AGACharacter::ServerCalculateItems_Validate(){ return true; }
-void AGACharacter::ServerCalculateItems_Implementation(){ CalculateItems(); }
-
-bool AGACharacter::ServerResetHasPickedUpItem_Validate(){ return true; }
-void AGACharacter::ServerResetHasPickedUpItem_Implementation(){ HasPickedUpItem = false; }
-
-bool AGACharacter::ServerResetHasEquipedItem_Validate(){ return true; }
-void AGACharacter::ServerResetHasEquipedItem_Implementation(){ HasEquipedItem = false; }
 
 #pragma endregion
-
-#pragma region Network - Aura
-
-// Client Reaction On Replication Notification - Differs 2 Event Calls Due To Activation And Deactivation Of Aura
-void AGACharacter::OnRep_HasActivatedAura(){
-	if (HasActivatedAura){
-		CharacterActivatedAura();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ACTIVATED AURA ***"));
-	}
-	else{
-		CharacterDeactivatedAura();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DECTIVATED AURA ***"));
-	}
-}
-
-bool AGACharacter::ServerCheckPlayerInAuraRange_Validate(){ return true; }
-void AGACharacter::ServerCheckPlayerInAuraRange_Implementation(){ CheckPlayerInAuraRange(); }
-
-bool AGACharacter::ServerCalculateAura_Validate(){ return true; }
-void AGACharacter::ServerCalculateAura_Implementation(){ CalculateAura(); }
-
-bool AGACharacter::ServerActivateAura_Validate(){ return true; }
-void AGACharacter::ServerActivateAura_Implementation(){ ActivateAura(); }
-
-bool AGACharacter::ServerDeactivateAura_Validate(){ return true; }
-void AGACharacter::ServerDeactivateAura_Implementation(){ DeactivateAura(); }
-
-#pragma endregion
-
 
 #pragma region Power Up
 
@@ -1338,4 +869,457 @@ void AGACharacter::SetWeaponActor(AGAWeapon* Weapon){
 bool AGACharacter::ServerSetWeaponActor_Validate(AGAWeapon* Weapon){ return true; }
 void AGACharacter::ServerSetWeaponActor_Implementation(AGAWeapon* Weapon){ SetWeaponActor(Weapon); }
 
+/************************************************************************/
+/*  BELOW DEPRECATED                                                    */
+/************************************************************************/
 
+#pragma region Regeneration
+
+// Function Will Regenerate Health - Called By Tick
+void AGACharacter::RegenerateHealth(float Delta){
+	if (Role < ROLE_Authority){
+		ServerRegenerateHealth(Delta);
+	}
+	else{
+		// Check If Out Of Combat
+		if (!AllowedToRegenerate && HealthPoints != MaxHealth){
+			RegenerationTimer += Delta;
+			// Start Regeneration
+			if (RegenerationTimer >= OutOfCombatTime) {
+				AllowedToRegenerate = true;
+				CharacterStartedRegeneration();
+				RegenerationAnimationIsRunning = true;
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: STARTED REGENERATION ***"));
+			}
+			else return;
+		}
+		else {
+			// Stop Regen If Max Health
+			if (HealthPoints == MaxHealth && RegenerationAnimationIsRunning){
+				AllowedToRegenerate = false;
+				RegenerationTime = 0;
+				RegenerationTimer = 0;
+				CharacterFinishedRegeneration();
+				RegenerationAnimationIsRunning = false;
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: STOPED REGENERATION ***"));
+				return;
+			}
+			RegenerationTime += Delta;
+			// Regenerate Health
+			if (RegenerationTime >= RegenerationRate && HealthPoints < MaxHealth){
+				HealthPoints = (HealthPoints + RegenerationAmount > MaxHealth ? MaxHealth : HealthPoints + RegenerationAmount);
+				RegenerationTime = 0;
+			}
+		}
+	}
+}
+
+#pragma endregion
+
+#pragma region Items
+
+// Function Will Buy A Randomed Item From The Shop
+void AGACharacter::BuyItem(){
+	if (Role < ROLE_Authority){
+		ServerBuyItem();
+	}
+	else{
+		if (Ressource >= Shop->ItemCost){
+			AGAItem* ShopItem = Shop->BuyItem();
+			Ressource -= Shop->ItemCost;
+			PickUpItem(ShopItem);
+		}
+	}
+}
+
+// *** TEMPORARY DUE TO NO UI ***
+void AGACharacter::SellLastItem(){
+	if (InventoryItems.Num() > 0){
+		SellItem(InventoryItems.Last());
+	}
+}
+
+// Function Will Sell The Given Item
+void AGACharacter::SellItem(AGAItem* item){
+	if (Role < ROLE_Authority){
+		ServerSellItem(item);
+	}
+	else{
+		Ressource += item->Value;
+
+		// Safe Remove
+		if (item == EquipItems.Chest) EquipItems.Chest = nullptr;
+		else if (item == EquipItems.Trinket00) EquipItems.Trinket00 = nullptr;
+		else if (item == EquipItems.Trinket01) EquipItems.Trinket01 = nullptr;
+		else if (item == EquipItems.Weapon) EquipItems.Weapon = nullptr;
+		if (InventoryItems.Contains(item)) InventoryItems.Remove(item);
+
+		item->Destroy();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: SOLD ITEM ***"));
+	}
+}
+
+// Function Will Calculate All Equiped Items And Given Stats
+void AGACharacter::CalculateItems(){
+	if (Role < ROLE_Authority){
+		ServerCalculateItems();
+	}
+	else {
+		FPlayerAura PercentBonus;
+		FStats		ItemStatsBonus;
+		TArray <AGAItem*> EquipedItems;
+		if (EquipItems.Head) EquipedItems.Add(EquipItems.Head);
+		if (EquipItems.Chest) EquipedItems.Add(EquipItems.Chest);
+		if (EquipItems.Weapon) EquipedItems.Add(EquipItems.Weapon);
+		if (EquipItems.Trinket00) EquipedItems.Add(EquipItems.Trinket00);
+		if (EquipItems.Trinket01) EquipedItems.Add(EquipItems.Trinket01);
+
+		// Gather All Bonus
+		for (int i = 0; i < EquipedItems.Num(); i++){
+			// Gather Player Percentages
+			PercentBonus.PercentDamage += EquipedItems[i]->AuraPlayer.PercentDamage;
+			PercentBonus.PercentArmor += EquipedItems[i]->AuraPlayer.PercentArmor;
+			PercentBonus.PercentAttackSpeed += EquipedItems[i]->AuraPlayer.PercentAttackSpeed;
+			PercentBonus.PercentMovementSpeed += EquipedItems[i]->AuraPlayer.PercentMovementSpeed;
+			PercentBonus.PercentHealth += EquipedItems[i]->AuraPlayer.PercentHealth;
+
+			// Gather Stats
+			ItemStatsBonus.Attack += EquipedItems[i]->ItemStats.Attack;
+			ItemStatsBonus.Armor += EquipedItems[i]->ItemStats.Armor;
+			ItemStatsBonus.Health += EquipedItems[i]->ItemStats.Health;
+			ItemStatsBonus.CriticalInPercent += EquipedItems[i]->ItemStats.CriticalInPercent;
+			ItemStatsBonus.AttackSpeedInPercent += EquipedItems[i]->ItemStats.AttackSpeedInPercent;
+			ItemStatsBonus.MovementInPercent += EquipedItems[i]->ItemStats.MovementInPercent;
+		}
+
+		// Damage Bonus
+		ItemDamage = ItemStatsBonus.Attack + ItemStatsBonus.Attack * (PercentBonus.PercentDamage + AuraBonus.PercentDamage + OtherPlayerAura.PercentDamage) / 100;
+
+		// Attack Speed
+		AttackSpeed = 1 + 1 * (PercentBonus.PercentAttackSpeed + ItemStatsBonus.AttackSpeedInPercent + AuraBonus.PercentAttackSpeed + OtherPlayerAura.PercentAttackSpeed) / 100;
+		SimpleAttackCoolDown = SimpleAttackCoolDownResetValue / AttackSpeed;
+
+		// Critical Chance
+		Critical = ItemStatsBonus.CriticalInPercent;
+
+		// Armor
+		Armor = (ArmorResetValue + ItemStatsBonus.Armor) + (ArmorResetValue + ItemStatsBonus.Armor) *
+			(PercentBonus.PercentArmor + AuraBonus.PercentArmor + OtherPlayerAura.PercentArmor) / 100;
+		ArmorReduction = Armor * ArmorReductionPercent;
+
+		// Movement Speed
+		CharacterMovement->MaxWalkSpeed = BaseMovementSpeed + BaseMovementSpeed *
+			(PercentBonus.PercentMovementSpeed + ItemStatsBonus.MovementInPercent + AuraBonus.PercentMovementSpeed + OtherPlayerAura.PercentMovementSpeed) / 100;
+
+		// Health
+		ItemHealth = ItemStatsBonus.Health + (HealthPoints + ItemStatsBonus.Health) *
+			(PercentBonus.PercentHealth + AuraBonus.PercentHealth + OtherPlayerAura.PercentHealth) / 100;
+		MaxHealth = HealthResetValue + ItemHealth;
+		if (MaxHealth < HealthPoints) HealthPoints = MaxHealth;
+
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: CALCULATED EQUIPED ITEMS ***"));
+	}
+}
+
+void AGACharacter::SetItemSlot(int32 row, int32 col, AGAItem* item) {
+	inventory.setItem(row, col, item);
+}
+
+bool AGACharacter::ClearItemSlot(int32 row, int32 col) {
+	return inventory.clearElement(row, col);
+}
+
+void AGACharacter::UnequipItem(EGASlot::Type itemType){
+	switch (itemType) {
+	case EGASlot::GAHead:
+		EquipItems.Head = nullptr;
+		break;
+	case EGASlot::GAChest:
+		EquipItems.Chest = nullptr;
+		break;
+	case EGASlot::GATrinket:
+		EquipItems.Trinket00 = nullptr;
+		break;
+	case EGASlot::GAWeapon:
+		EquipItems.Weapon = nullptr;
+		break;
+	}
+	CalculateAura();
+	CalculateItems();
+}
+
+
+// Function Will Equip The Given Item And Unequip If Slot Is Not Empty
+void AGACharacter::EquipItem(AGAItem* item){
+	if (Role < ROLE_Authority){
+		ServerEquipItem(item);
+	}
+	else {
+		switch (item->Slot){
+		case(EGASlot::GAHead) :
+			if (EquipItems.Head != NULL) InventoryItems.Add(EquipItems.Head);
+			InventoryItems.Remove(item);
+			EquipItems.Head = item;
+			break;
+		case(EGASlot::GAChest) :
+			if (EquipItems.Chest != NULL) InventoryItems.Add(EquipItems.Chest);
+			InventoryItems.Remove(item);
+			EquipItems.Chest = item;
+			break;
+		case(EGASlot::GAWeapon) :
+			if (EquipItems.Weapon != NULL) InventoryItems.Add(EquipItems.Weapon);
+			InventoryItems.Remove(item);
+			EquipItems.Weapon = item;
+			break;
+		case(EGASlot::GATrinket) :
+			if (EquipItems.Trinket00 != NULL && EquipItems.Trinket01 != NULL) {
+				InventoryItems.Add(EquipItems.Trinket00);
+				InventoryItems.Remove(item);
+				EquipItems.Trinket00 = item;
+			}
+			else if (EquipItems.Trinket00 == NULL) {
+				InventoryItems.Remove(item);
+				EquipItems.Trinket00 = item;
+			}
+			if (EquipItems.Trinket00 != NULL && EquipItems.Trinket01 == NULL) {
+				InventoryItems.Remove(item);
+				EquipItems.Trinket01 = item;
+			}
+			break;
+		}
+		CalculateAura();
+		CalculateItems();
+		HasEquipedItem = true;
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: EQUIPED ITEM ***"));
+	}
+}
+
+
+// Function Will Place The Given Item In Inventory If Possible
+void AGACharacter::PickUpItem(AGAItem* item){
+	if (Role < ROLE_Authority){
+		ServerPickUpItem(item);
+	}
+	if (InventoryItems.Num() < InventorySlots && item->finishedDropAnimation){
+		TouchedItem = item;
+		HasPickedUpItem = true;
+		// If Item Is Money
+		if (item->Slot == EGASlot::GAMoney){
+			Ressource += item->Value;
+			item->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP %f Money (%f) ***"), item->Value, Ressource);
+		}
+		// If Item is Equipable Item
+		else{
+			inventory.registerElement(item);
+			InventoryItems.Add(item);
+			item->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** SERVER :: PICKED UP ITEM ***"));
+		}
+	}
+	else UE_LOG(LogClass, Log, TEXT("*** SERVER :: INVENTORY IS FULL ***"));
+}
+
+// If Player Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "Item" ***
+void AGACharacter::ReceiveActorBeginOverlap(class AActor* OtherActor){
+	Super::ReceiveActorBeginOverlap(OtherActor);
+	if (OtherActor->ActorHasTag("Item")){
+		TouchedItem = (AGAItem*)OtherActor;
+		HasPickedUpItem = false;
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: TOUCHED ITEM ***"));
+		PickUpItem((AGAItem*)OtherActor);
+	}
+}
+
+#pragma endregion
+
+#pragma region Aura
+
+// Function Activates Aura Effect
+void AGACharacter::ActivateAura(){
+	if (Role < ROLE_Authority){
+		ServerActivateAura();
+	}
+	else{
+		HasActivatedAura = true;
+		CharacterActivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ACTIVATED AURA ***"));
+	}
+}
+
+// Function Deactivates Aura Effect
+void AGACharacter::DeactivateAura(){
+	if (Role < ROLE_Authority){
+		ServerDeactivateAura();
+	}
+	else{
+		HasActivatedAura = false;
+		CharacterDeactivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** SERVER :: DECTIVATED AURA ***"));
+	}
+}
+
+// Function Calculates Equiped Item Aura
+void AGACharacter::CalculateAura(){
+	if (Role < ROLE_Authority){
+		ServerCalculateAura();
+	}
+	else {
+		if (EquipItems.Head){
+			AuraBonus.PercentDamage = EquipItems.Head->AuraGroup.PercentDamage;
+			AuraBonus.PercentArmor = EquipItems.Head->AuraGroup.PercentArmor;
+			AuraBonus.PercentAttackSpeed = EquipItems.Head->AuraGroup.PercentAttackSpeed;
+			AuraBonus.PercentMovementSpeed = EquipItems.Head->AuraGroup.PercentMovementSpeed;
+			AuraBonus.PercentHealth = EquipItems.Head->AuraGroup.PercentHealth;
+			AuraBonus.EffectRadius = EquipItems.Head->AuraGroup.EffectRadius;
+		}
+
+		// Check if Aura Already Active Or Not
+		if (AuraBonus.hasAura() && !HasActivatedAura){
+			ActivateAura();
+		}
+		else{
+			DeactivateAura();
+		}
+	}
+}
+
+// Function Checks If Player Are In Range To Receive Their Aura
+void AGACharacter::CheckPlayerInAuraRange(){
+	if (Role < ROLE_Authority){
+		ServerCheckPlayerInAuraRange();
+	}
+	else {
+		// Find Player Near By
+		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			// If In Range Add All Aura Effects
+			if (IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && *ActorItr != this && !AuraPlayer.Contains(*ActorItr)){
+				OtherPlayerAura.PercentDamage += ActorItr->AuraBonus.PercentDamage;
+				OtherPlayerAura.PercentArmor += ActorItr->AuraBonus.PercentArmor;
+				OtherPlayerAura.PercentHealth += ActorItr->AuraBonus.PercentHealth;
+				OtherPlayerAura.PercentMovementSpeed += ActorItr->AuraBonus.PercentMovementSpeed;
+				OtherPlayerAura.PercentAttackSpeed += ActorItr->AuraBonus.PercentAttackSpeed;
+
+				AuraPlayer.Add(*ActorItr);								// AuraPlayer Contains Every Player In Aura Range
+				if (!HasActivatedAura && OtherPlayerAura.hasAura()) ActivateAura();
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER JOINED AURA RANGE ***"));
+				if (OtherPlayerAura.hasAura()) CalculateItems();		// Calculate The New Attributes With The new Given Aura
+			}
+			// If Not In Range But Was In Range Before Remove Aura
+			else if (!IsInRange(*ActorItr, ActorItr->AuraBonus.EffectRadius) && AuraPlayer.Contains(*ActorItr)){
+				OtherPlayerAura.PercentDamage -= ActorItr->AuraBonus.PercentDamage;
+				OtherPlayerAura.PercentArmor -= ActorItr->AuraBonus.PercentArmor;
+				OtherPlayerAura.PercentHealth -= ActorItr->AuraBonus.PercentHealth;
+				OtherPlayerAura.PercentMovementSpeed -= ActorItr->AuraBonus.PercentMovementSpeed;
+				OtherPlayerAura.PercentAttackSpeed -= ActorItr->AuraBonus.PercentAttackSpeed;
+
+				AuraPlayer.Remove(*ActorItr);							// AuraPlayer Contains Every Player In Aura Range
+				if (HasActivatedAura && !AuraBonus.hasAura() && !OtherPlayerAura.hasAura()) DeactivateAura();
+				UE_LOG(LogClass, Log, TEXT("*** SERVER :: PLAYER LEFT AURA RANGE ***"));
+				if (OtherPlayerAura.hasAura()) CalculateItems();		// Calculate The New Attributes With The new Given Aura
+			}
+		}
+	}
+}
+
+#pragma endregion
+
+#pragma  region Network - Regeneration
+
+// Client Reaction On Replication Notification - Differs 2 Event Calls Due To Stop And Start Regeneration
+void AGACharacter::OnRep_AllowedToRegenerate(){
+	if (AllowedToRegenerate){
+		CharacterStartedRegeneration();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: STARTED REGENERATION ***"));
+	}
+	else{
+		CharacterFinishedRegeneration();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: STOPED REGENERATION ***"));
+	}
+}
+
+bool AGACharacter::ServerRegenerateHealth_Validate(float Delta){ return true; }
+void AGACharacter::ServerRegenerateHealth_Implementation(float Delta){ RegenerateHealth(Delta); }
+
+#pragma endregion
+
+#pragma region Network - Items
+
+// Client Reaction On Replication Notification - Only Reacts If True
+void AGACharacter::OnRep_HasPickedUpItem(){
+	if (HasPickedUpItem){
+		// If Money
+		if (TouchedItem->Slot = EGASlot::GAMoney){
+			Ressource += TouchedItem->Value;
+			TouchedItem->DestroyConstructedComponents();
+			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP %f Money (%f) ***"), TouchedItem->Value, Ressource);
+		}
+		// If Equipable Item
+		else{
+			TouchedItem->DestroyConstructedComponents();
+			CharacterPickedUpItem();
+			ServerResetHasPickedUpItem();
+			UE_LOG(LogClass, Log, TEXT("*** CLIENT :: PICKED UP ITEM ***"));
+		}
+	}
+}
+
+// Client Reaction On Replication Notification - Only Reacts If True
+void AGACharacter::OnRep_HasEquipedItem(){
+	if (HasEquipedItem){
+		CharacterEquipedItem();
+		ServerResetHasEquipedItem();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: EQUIPED ITEM ***"));
+	}
+}
+
+bool AGACharacter::ServerBuyItem_Validate(){ return true; }
+void AGACharacter::ServerBuyItem_Implementation(){ BuyItem(); }
+
+bool AGACharacter::ServerSellItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerSellItem_Implementation(AGAItem* item){ SellItem(item); }
+
+bool AGACharacter::ServerPickUpItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerPickUpItem_Implementation(AGAItem* item){ PickUpItem(item); }
+
+bool AGACharacter::ServerEquipItem_Validate(AGAItem* item){ return true; }
+void AGACharacter::ServerEquipItem_Implementation(AGAItem* item){ EquipItem(item); }
+
+bool AGACharacter::ServerCalculateItems_Validate(){ return true; }
+void AGACharacter::ServerCalculateItems_Implementation(){ CalculateItems(); }
+
+bool AGACharacter::ServerResetHasPickedUpItem_Validate(){ return true; }
+void AGACharacter::ServerResetHasPickedUpItem_Implementation(){ HasPickedUpItem = false; }
+
+bool AGACharacter::ServerResetHasEquipedItem_Validate(){ return true; }
+void AGACharacter::ServerResetHasEquipedItem_Implementation(){ HasEquipedItem = false; }
+
+#pragma endregion
+
+#pragma region Network - Aura
+
+// Client Reaction On Replication Notification - Differs 2 Event Calls Due To Activation And Deactivation Of Aura
+void AGACharacter::OnRep_HasActivatedAura(){
+	if (HasActivatedAura){
+		CharacterActivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ACTIVATED AURA ***"));
+	}
+	else{
+		CharacterDeactivatedAura();
+		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: DECTIVATED AURA ***"));
+	}
+}
+
+bool AGACharacter::ServerCheckPlayerInAuraRange_Validate(){ return true; }
+void AGACharacter::ServerCheckPlayerInAuraRange_Implementation(){ CheckPlayerInAuraRange(); }
+
+bool AGACharacter::ServerCalculateAura_Validate(){ return true; }
+void AGACharacter::ServerCalculateAura_Implementation(){ CalculateAura(); }
+
+bool AGACharacter::ServerActivateAura_Validate(){ return true; }
+void AGACharacter::ServerActivateAura_Implementation(){ ActivateAura(); }
+
+bool AGACharacter::ServerDeactivateAura_Validate(){ return true; }
+void AGACharacter::ServerDeactivateAura_Implementation(){ DeactivateAura(); }
+
+#pragma endregion

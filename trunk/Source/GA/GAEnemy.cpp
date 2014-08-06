@@ -100,7 +100,7 @@ void AGAEnemy::AttackSimple(){
 		}
 
 		CharacterAttackedSimple();
-		UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACKED SIMPLE ***"));
+		UE_LOG(LogClass, Log, TEXT("*** Enemy :: ATTACKED SIMPLE  (ServerCall) ***"));
 	}
 }
 
@@ -114,7 +114,7 @@ void AGAEnemy::ReduceSimpleAttackCoolDown(float Delta){
 		// Check If Cool Down Finished
 		if (SimpleAttackCoolDown <= 0){
 			SimpleAttackOnCoolDown = false;
-			UE_LOG(LogClass, Log, TEXT("*** SERVER :: ATTACK OFF COOL DOWN ***"));
+			UE_LOG(LogClass, Log, TEXT("*** Enemy :: ATTACK OFF COOLDOWN (ServerCall) ***"));
 			SimpleAttackCoolDown = SimpleAttackCoolDownRestValue;
 			AllowedToAttack = false;
 		}
@@ -272,10 +272,10 @@ void AGAEnemy::ServerCheckDeath_Implementation(){CheckDeath();}
 void AGAEnemy::OnRep_SimpleAttackOnCoolDown(){
 	if (SimpleAttackOnCoolDown){
 		CharacterAttackedSimple();
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACKED SIMPLE ***"));
+		UE_LOG(LogClass, Log, TEXT("*** Enemy :: ATTACKED SIMPLE (ServerCall) ***"));
 	}
 	else{
-		UE_LOG(LogClass, Log, TEXT("*** CLIENT :: ATTACK OFF COOL DOWN ***"));
+		UE_LOG(LogClass, Log, TEXT("*** Enemy :: ATTACK OFF COOLDOWN (ServerCall) ***"));
 	}
 }
 
@@ -303,7 +303,6 @@ void AGAEnemy::OnRep_HasTookDamage(){
 		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			(*ActorItr)->EnemyTookDamage(this);
 		}
-
 		ServerResetHasTookDamage();
 	}
 }
