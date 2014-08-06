@@ -142,11 +142,24 @@ public:
 	void Draw_DragNDrop();
 
 	// Cursor			- Draws the correct cursor (position and state)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pointer)
 	FVector2D prevMouseLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pointer)
 	FVector2D mouseLocation;
-	bool prevMouseHeld = false;
-	bool mouseHeld = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pointer)
+	bool prevMouseHeld;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Pointer)
+	bool mouseHeld;
 	void Draw_Cursor();
+
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	float GetMusicVolume();
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetMusicVolume(float volume);
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	float GetSfxVolume();
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetSfxVolume(float volume);
 
 	// CanvasItems		- Everything, that can be specified in the Unreal Editor
 	void Spawn_CanvasItems();

@@ -15,7 +15,47 @@ AGA_HUD::AGA_HUD(const class FPostConstructInitializeProperties& PCIP)
 
 	defaultFadeTime = 0.5f;
 
+	mouseHeld = false;
+	prevMouseHeld = false;
+
 	blinkChar = FString("_");
+}
+
+float AGA_HUD::GetMusicVolume() {
+	FString content;
+	bool IsRead = false;
+	IsRead = FFileHelper::LoadFileToString(content, TEXT("settings_music.txt"));
+	if (IsRead){
+		UE_LOG(LogClass, Log, TEXT("USERNAME WAS LOADED FROM FILE settings_music"));
+	}
+	float volume = FCString::Atof(*content);
+	return volume;
+}
+void AGA_HUD::SetMusicVolume(float volume) {
+	FString content = FString::SanitizeFloat(volume);
+	bool IsWritten = false;
+	IsWritten = FFileHelper::SaveStringToFile(content, TEXT("settings_music.txt"));
+	if (IsWritten){
+		UE_LOG(LogClass, Log, TEXT("USERNAME SAVED TO FILE settings_music"));
+	}
+}
+float AGA_HUD::GetSfxVolume() {
+	FString content;
+	bool IsRead = false;
+	IsRead = FFileHelper::LoadFileToString(content, TEXT("settings_sfx.txt"));
+	if (IsRead){
+		UE_LOG(LogClass, Log, TEXT("USERNAME WAS LOADED FROM FILE settings_sfx"));
+	}
+	float volume = FCString::Atof(*content);
+	return volume;
+}
+void AGA_HUD::SetSfxVolume(float volume) {
+	FString content = FString::SanitizeFloat(volume);
+	bool IsWritten = false;
+	IsWritten = FFileHelper::SaveStringToFile(content, TEXT("settings_sfx.txt"));
+	if (IsWritten){
+		UE_LOG(LogClass, Log, TEXT("USERNAME SAVED TO FILE settings_sfx"));
+	}
 }
 
 void AGA_HUD::UpdateValues() {
