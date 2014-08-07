@@ -182,5 +182,7 @@ public:
 	FString currentContent;
 
 	bool IsInit;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+		virtual void OnChatLogUpdate();
 	UFUNCTION(BlueprintCallable, Category = "Chat") void UpdateChatLog();
 };

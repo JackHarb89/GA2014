@@ -608,6 +608,7 @@ void AGA_HUD::ParseKeyInput(const FString& newChar) {
 }
 
 void AGA_HUD::UpdateChatLog(){
+	OnChatLogUpdate();
 	for (AGA_UI_Area* area : currentSpawnedAreas){
 		if (area->ActorHasTag("ChatLog")){
 			area->ChatInputReceived();
