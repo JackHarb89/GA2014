@@ -14,7 +14,11 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
-		GAUserName = "Anonymous";
+	IsAllowedToChannelShard = false;
+	ShardTimer = 0;
+	ShardActivationTime = 2;
+
+	GAUserName = "Anonymous";
 
 	//static ConstructorHelpers::FObjectFinder<UBlueprint> Spectator_HUD(TEXT("/Game/UI/Classes/GA_SpectatorHUD"));
 	SpectatorHUD = AGA_HUD::StaticClass();// UClass*)Spectator_HUD.Object->GeneratedClass;
@@ -153,6 +157,7 @@ void AGACharacter::Tick(float Delta){
 	ReduceSpecialAttackCoolDown(Delta);
 	IncreaseChargeTime(Delta);
 	ReducePowerUpDuration(Delta);
+	ChannelShard(Delta);
 	if (!HasDied) CheckDeath();
 	if (Role == ROLE_Authority){GetWorld()->GetGameState<AGAGameState>()->CheckDeatchCondition();}
 }
@@ -163,7 +168,7 @@ void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 		// Set up gameplay key bindings
 		check(InputComponent);
 		// Shard
-		InputComponent->BindAction("ActivateShard", IE_Pressed, this, &AGACharacter::ActivateShard);
+		InputComponent->BindAction("ActivateShard", IE_Pressed, this, &AGACharacter::StartShardChanneling);
 
 		// Combat
 		InputComponent->BindAction("AttackSimple", IE_Pressed, this, &AGACharacter::AttackSimple);
@@ -326,6 +331,9 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 
 // Simple Attack - Call This Function If The Player Should Attack Normal
 void AGACharacter::AttackSimple(){
+	if (!isAllowedToMove()){
+		return;
+	}
 	if (Role < ROLE_Authority){
 		ServerAttackSimple();
 	}
@@ -405,6 +413,9 @@ void AGACharacter::ServerReduceSimpleAttackCoolDown_Implementation(float DeltaTi
 
 // Special Attack - Call This Function If The Player Should Attack Special
 void AGACharacter::AttackSpecial(){
+	if (IsAllowedToChannelShard){
+		return;
+	}
 	if (Role < ROLE_Authority){
 		ServerAttackSpecial();
 	}
@@ -430,6 +441,9 @@ void AGACharacter::AttackSpecial(){
 
 // Function Charges Special Attack
 void AGACharacter::ChargeSpecial(){
+	if (IsAllowedToChannelShard){
+		return; 
+	}
 	if (Role < ROLE_Authority){
 		ServerChargeSpecial();
 	}
@@ -489,7 +503,7 @@ void AGACharacter::ReduceSpecialAttackCoolDown(float Delta){
 
 // If Player Is Charging Special Attack He Is Not Allowed To Move
 bool AGACharacter::isAllowedToMove(){
-	return !SpecialAttackIsCharging;
+	return !SpecialAttackIsCharging && !IsAllowedToChannelShard;
 }
 
 bool AGACharacter::IsCharging(){
@@ -723,27 +737,67 @@ void AGACharacter::ServerDeactivatePowerUp_Implementation(){DeactivatePowerUp();
 
 #pragma region Shard Usage
 
-void AGACharacter::ActivateShard(){
+void AGACharacter::StartShardChanneling(){
+	if (SpecialAttackIsCharging){
+		return;
+	}
 	if (Role < ROLE_Authority){
-		ServerActivateShard();
+		ServerStartShardChanneling();
 	}
 	else{
 		if (ShardAvailable){
-			ShardAvailable = false;
-			ShardCurrentCoolDown = ShardCoolDown;
-			CharacterActivatedShard();
+			CharacterStartedChannelingShard();
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				ActorItr->CharacterStartedShardChanneling(this);
+				ActorItr->FadeOutBattle();
+			}
+			IsAllowedToChannelShard = true;
+			UE_LOG(LogClass, Log, TEXT("*** STARTING CHANNELING SHARD"));
+		}
+	}
+}
 
-			for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-				if (ActorItr->IsAlive){
-					ActorItr->TakeDamageByEnemy(-1);
-				}
+
+bool AGACharacter::ServerStartShardChanneling_Validate(){ return true; }
+void AGACharacter::ServerStartShardChanneling_Implementation(){ StartShardChanneling(); }
+
+void AGACharacter::ChannelShard(float DeltaTime){
+	if (Role == ROLE_Authority){
+		if (IsAllowedToChannelShard){
+			ShardTimer += DeltaTime;
+			if (ShardTimer >= ShardActivationTime){
+				IsAllowedToChannelShard = false;
+				ActivateShard();
 			}
 		}
 	}
 }
 
-bool AGACharacter::ServerActivateShard_Validate(){return true;}
-void AGACharacter::ServerActivateShard_Implementation(){ActivateShard();}
+void AGACharacter::OnRep_IsAllowedToChannelShard(){
+	if (IsAllowedToChannelShard){
+		CharacterStartedChannelingShard();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			ActorItr->CharacterStartedShardChanneling(this);
+			ActorItr->FadeOutBattle();
+		}
+	}
+	else{
+		CharacterActivatedShard();
+	}
+}
+
+void AGACharacter::ActivateShard(){
+	if (Role == ROLE_Authority){
+		ShardAvailable = false;
+		CharacterActivatedShard();
+		for (TActorIterator<AGAEnemy> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			if (ActorItr->IsAlive){
+				ActorItr->TakeDamageByEnemy(-1);
+			}
+		}
+	}
+}
+
 
 
 #pragma endregion
@@ -803,9 +857,10 @@ void AGACharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AGACharacter, CurrentPlayers);
 
 	// Shard
+	DOREPLIFETIME(AGACharacter, IsAllowedToChannelShard);
 	DOREPLIFETIME(AGACharacter, ShardAvailable);
-	DOREPLIFETIME(AGACharacter, ShardCoolDown);
-	DOREPLIFETIME(AGACharacter, ShardCurrentCoolDown);
+	DOREPLIFETIME(AGACharacter, ShardTimer);
+	DOREPLIFETIME(AGACharacter, ShardActivationTime);
 
 	// PowerUp
 	DOREPLIFETIME(AGACharacter, IsInvulnerable);
