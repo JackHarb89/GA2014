@@ -199,17 +199,16 @@ void AGA_UI_Area::runBlueprintEvents() {
 		OnMouseOver();
 
 	if (!*mouseHeld && *prevMouseHeld) {
+		if (!preventAudio && !preventActive && mouseInButton)
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->UI_AreaClicked(this);
+		}
 		OnClick(mouseInButton);
 	}
 
 	// Update buttonState
 	if (*mouseHeld) {
 		if (mouseInButton) {
-			if (!preventAudio && !preventActive && buttonState == BUTTON_REGULAR)
-				for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-					(*ActorItr)->UI_AreaClicked(this);
-				}
-       
 			setButtonState(preventActive ? BUTTON_REGULAR : BUTTON_ACTIVE);
 		}
 		else {
