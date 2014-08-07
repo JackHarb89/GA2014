@@ -286,7 +286,7 @@ void AGACharacter::SetIsSimpleAttackingTo(bool NewState){
 void AGACharacter::SetIsSpecialAttackingTo(bool NewState){
 	IsSpecialAttacking = NewState;
 	if (!IsSpecialAttacking){
-		WeaponActor->RemoveHitedActors();
+		TArray <AActor*> Actors;
 	}
 }
 
@@ -302,11 +302,13 @@ void AGACharacter::DealDamage(class AActor* OtherActor){
 			Damage = SimpleAttackDamage + ItemDamage;
 			Range = SimpleAttackRange;
 			CharacterAppliedSimpleForce();
+			WeaponActor->HitedActors.Add(OtherActor);
 		}
 		else if (IsSpecialAttacking){
 			Damage = CalculateSpecialAttackDamage();
 			Range = SpecialAttackRange;
 			CharacterAppliedSpecialForce();
+			WeaponActor->HitedActors.Add(OtherActor);
 
 			StoredCharges = 1;
 
@@ -797,8 +799,6 @@ void AGACharacter::ActivateShard(){
 		}
 	}
 }
-
-
 
 #pragma endregion
 
