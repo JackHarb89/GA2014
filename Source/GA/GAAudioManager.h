@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "GAPowerUp.h"
 #include "GAAudioManager.generated.h"
 
 /**
@@ -40,5 +41,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterDropedItem(AGACharacter* Character);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterEquipedItem(AGACharacter* Character);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterStartedShardChanneling(AGACharacter* Character);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void PowerUpTaken(AGAPowerUp* PowerUp);
 
 };

@@ -3,6 +3,7 @@
 #include "GA.h"
 #include "GAPowerUp.h"
 #include "GACharacter.h"
+#include "GAAudioManager.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -55,6 +56,9 @@ void AGAPowerUp::OnRep_IsPowerUpActive(){
 	}
 	else{
 		PowerUpTaken();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->PowerUpTaken(this);
+		}
 	}
 }
 
@@ -104,6 +108,9 @@ void AGAPowerUp::ActivatePowerUpEffect(class AActor* OtherActor){
 		CurrentCoolDown = CoolDown;
 		IsPowerUpActive = false;
 		PowerUpTaken();
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->PowerUpTaken(this);
+		}
 
 		if (IsRandomPowerUp){
 			PowerUpType = (TEnumAsByte<EGAPowerUp::Type>) FMath::RandRange(1, 2);
