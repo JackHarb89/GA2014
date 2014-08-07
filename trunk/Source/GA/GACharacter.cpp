@@ -14,6 +14,10 @@
 AGACharacter::AGACharacter(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
 {
+
+	FootStepTime = 0.38;
+	FootStepTimer = 0;
+
 	IsAllowedToChannelShard = false;
 	ShardTimer = 0;
 	ShardActivationTime = 2;
@@ -160,6 +164,7 @@ void AGACharacter::Tick(float Delta){
 	ChannelShard(Delta);
 	if (!HasDied) CheckDeath();
 	if (Role == ROLE_Authority){GetWorld()->GetGameState<AGAGameState>()->CheckDeatchCondition();}
+	FootStepTimer += Delta;
 }
 
 void AGACharacter::SetupPlayerInputComponent(class UInputComponent* InputComponent)
@@ -210,6 +215,13 @@ void AGACharacter::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
+
+		if (FootStepTimer >= FootStepTime){
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				(*ActorItr)->CharacterWalked(this);
+			}
+			FootStepTimer = 0;
+		}
 	}
 }
 
@@ -225,6 +237,13 @@ void AGACharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+
+		if (FootStepTimer >= FootStepTime){
+			for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+				(*ActorItr)->CharacterWalked(this);
+			}
+			FootStepTimer = 0;
+		}
 	}
 }
 

@@ -100,6 +100,11 @@ void AGAEnemy::AttackSimple(){
 		}
 
 		CharacterAttackedSimple();
+
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->EnemyAttacked(this);
+		}
+
 		UE_LOG(LogClass, Log, TEXT("*** Enemy :: ATTACKED SIMPLE  (ServerCall) ***"));
 	}
 }
