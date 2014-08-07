@@ -2,6 +2,7 @@
 
 #include "GA.h"
 #include "GA_UI_Area.h"
+#include "GAAudioManager.h"
 
 AGA_UI_Area::AGA_UI_Area(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
@@ -197,12 +198,18 @@ void AGA_UI_Area::runBlueprintEvents() {
 	if (mouseInButton)
 		OnMouseOver();
 
-	if (!*mouseHeld && *prevMouseHeld)
+	if (!*mouseHeld && *prevMouseHeld) {
 		OnClick(mouseInButton);
+	}
 
 	// Update buttonState
 	if (*mouseHeld) {
 		if (mouseInButton) {
+			if (!preventAudio && !preventActive && buttonState == BUTTON_REGULAR)
+				for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+					(*ActorItr)->UI_AreaClicked(this);
+				}
+       
 			setButtonState(preventActive ? BUTTON_REGULAR : BUTTON_ACTIVE);
 		}
 		else {
@@ -211,6 +218,11 @@ void AGA_UI_Area::runBlueprintEvents() {
 	}
 	else {
 		if (mouseInButton) {
+			if (!preventAudio && !preventHover && buttonState == BUTTON_REGULAR)
+				for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+					(*ActorItr)->UI_AreaHover(this);
+				}
+       
 			setButtonState(preventHover ? BUTTON_REGULAR : BUTTON_HOVER);
 		}
 		else {

@@ -62,6 +62,8 @@ public:
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "General")
 	bool					dontUseParentPadding;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
+	bool					preventAudio;
+	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventHover;
 	UPROPERTY(EditAnywhere, Transient, BlueprintReadWrite, Category = "Avalible events")
 	bool					preventActive;
