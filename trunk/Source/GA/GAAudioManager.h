@@ -13,7 +13,7 @@ class AGAAudioManager : public AActor
 
 public:
 	// Music
-	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event") 				void FadeInSilence();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event") 				void FadeOutBattle();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void FadeInBattle();
 
 	// Sounds
@@ -31,10 +31,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterPickedUpItem(AGACharacter* Character);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterDropedItem(AGACharacter* Character);
 	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterEquipedItem(AGACharacter* Character);
+	UFUNCTION(BlueprintImplementableEvent, Category = "Audio Event")				void CharacterStartedShardChanneling(AGACharacter* Character);
 
-private:
-
-	bool BattleMusicIsActive;
-	void CheckBattleMusicFade();
-	virtual void Tick(float Delta) OVERRIDE;
 };

@@ -119,8 +119,8 @@ class AGACharacter : public ACharacter
 
 	// Shard
 	UPROPERTY(Replicated)																	bool ShardAvailable;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shard")				float ShardCoolDown;
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Shard")							float ShardCurrentCoolDown;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shard")				float ShardTimer;
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Shard")							float ShardActivationTime;
 	
 	// InventoryWeaponActor
 	UPROPERTY(BlueprintReadWrite, Category = "Inventory management")
@@ -288,10 +288,7 @@ class AGACharacter : public ACharacter
 	UFUNCTION(reliable, server, WithValidation)												void ServerActivatePowerUp(EGAPowerUp::Type PowerUpType, float EffectDuration);
 	UFUNCTION(reliable, server, WithValidation)												void ServerDeactivatePowerUp();
 	UFUNCTION(reliable, server, WithValidation)												void ServerHealPlayer(float HealAmount);
-
-	// Shard Usage
-	UFUNCTION(reliable, server, WithValidation)												void ServerActivateShard();
-	
+		
 	// Replication Notify Functions
 	UFUNCTION()																				void OnRep_SimpleAttackOnCoolDown();
 	UFUNCTION()																				void OnRep_SpecialAttackOnCoolDown();
@@ -340,8 +337,6 @@ protected:
 	void ReducePowerUpDuration(float DeltaTime);
 	void DeactivatePowerUp();
 
-	// Shard
-	void ActivateShard();
 	
 	// Aura
 	void ActivateAura();
@@ -418,5 +413,22 @@ public:
 
 	UFUNCTION(server, reliable, WithValidation)
 		void ServerSetGAUsername(const FString& Username);
+
+	
+	UFUNCTION(server, reliable, WithValidation)
+		void ServerStartShardChanneling();
+
+	void StartShardChanneling();
+	void ActivateShard();
+	void ChannelShard(float DeltaTime);
+	UFUNCTION()
+		void OnRep_IsAllowedToChannelShard();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Character Event")					
+		void CharacterStartedChannelingShard();
+
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsAllowedToChannelShard)
+		bool IsAllowedToChannelShard;
+	
 };
 
