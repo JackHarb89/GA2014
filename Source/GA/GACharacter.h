@@ -430,5 +430,8 @@ public:
 	UPROPERTY(Replicated, ReplicatedUsing = OnRep_IsAllowedToChannelShard)
 		bool IsAllowedToChannelShard;
 	
+	float FootStepTime;
+	float FootStepTimer;
+
 };
 
