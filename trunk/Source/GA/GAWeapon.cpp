@@ -15,10 +15,10 @@ AGAWeapon::AGAWeapon(const class FPostConstructInitializeProperties& PCIP)
 
 // If Trigger Overlaps With Another Actor *** OVERRIDE - Checks Actor With Tag "Orc" ***
 void AGAWeapon::ReceiveActorBeginOverlap(class AActor* OtherActor){
+	Super::ReceiveActorBeginOverlap(OtherActor);
 	if (OtherActor->ActorHasTag("Orc")){
 		if (!HitedActors.Contains(OtherActor)){
 			((AGACharacter*)GetOwner())->DealDamage(OtherActor);
-			HitedActors.Add(OtherActor);
 		}
 	}
 }
