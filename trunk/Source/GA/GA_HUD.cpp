@@ -5,6 +5,7 @@
 #include "GA_UI_Area.h"
 #include "GameFramework/HUD.h"
 #include "GA_HUD.h"
+#include "GAAudioManager.h"
 
 AGA_HUD::AGA_HUD(const class FPostConstructInitializeProperties& PCIP)
 : Super(PCIP)
@@ -94,6 +95,11 @@ int32 AGA_HUD::toggleSection(FString name,  bool newValue) {
 
 	enabledSectionStates[entryID] = newValue;
 	enabledSectionStartTime[entryID] = GetWorld()->TimeSeconds;
+
+	if (name == "escapemenu" && newValue)
+		for (TActorIterator<AGAAudioManager> ActorItr(GetWorld()); ActorItr; ++ActorItr){
+			(*ActorItr)->UI_EscapeMenu(this);
+		}
 
 	return enabledSectionStates[entryID] ? 1 : 0;
 }
@@ -586,6 +592,8 @@ void AGA_HUD::ParseKeyInput(const FString& newChar) {
 			}
 		return;
 	}
+
+	
 
 	// Handle Escape and Enter
 	if (newChar[0] == 13) {			// Enter
