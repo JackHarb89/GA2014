@@ -20,10 +20,13 @@ class AGAGameState : public AGameState
 	void CheckDeatchCondition();
 
 	UFUNCTION(BlueprintCallable, Category = "Waves")
-		void IncreaseSpawnedWaves();
+	void IncreaseSpawnedWaves();
 	
 	UFUNCTION(BlueprintCallable, Category = "Waves")
-		int32 GetSpawnedWaves();
+	int32 GetSpawnedWaves();
+
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Game")
+	bool AllPlayerDead;
 	
 private:
 
