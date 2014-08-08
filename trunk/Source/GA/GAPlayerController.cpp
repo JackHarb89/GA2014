@@ -48,6 +48,12 @@ void AGAPlayerController::ChangeMap(const FString& mapName){
 
 }
 
+void AGAPlayerController::Disconnect(){
+	if (GetNetDriver()){
+		GetNetDriver()->Shutdown();
+	}
+}
+
 bool AGAPlayerController::HostGameWithPort(int32 Port){
 	bool IsHosting = false;
 	UE_LOG(LogClass, Log, TEXT("*** START LISTENING ***"));

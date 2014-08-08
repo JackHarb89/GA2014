@@ -40,6 +40,7 @@ class AGAPlayerController : public APlayerController
 	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ConnectToServer(const FString& ip);
 	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void ChangeMap(const FString& mapName);
 	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) bool HostGameWithPort(int32 Port);
+	UFUNCTION(BlueprintCallable, Category = Matchmaking, exec) void Disconnect();
 
 	virtual void OnActorChannelOpen(class FInBunch & InBunch, class UNetConnection * Connection) OVERRIDE;
 
@@ -49,4 +50,5 @@ class AGAPlayerController : public APlayerController
 	virtual void GetSeamlessTravelActorList(bool bToEntry, TArray<AActor*>& ActorList) OVERRIDE;
 
 	virtual void ClientRestart_Implementation(class APawn * NewPawn);
+
 };
