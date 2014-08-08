@@ -13,17 +13,19 @@ AGAGameState::AGAGameState(const class FPostConstructInitializeProperties& PCIP)
 }
 
 void AGAGameState::CheckDeatchCondition(){
-	bool AllPlayerDead = true;
+	bool AllPlayerAreDead = true;
 
 	for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
-		if (!ActorItr->HasDied) AllPlayerDead = false;
+		if (!ActorItr->HasDied) AllPlayerAreDead = false;
 	}
 
-	if (AllPlayerDead){
+	if (AllPlayerAreDead){
 		for (TActorIterator<AGACharacter> ActorItr(GetWorld()); ActorItr; ++ActorItr){
 			ActorItr->CharacterLostGame();
 		}
 	}
+
+	AllPlayerDead = AllPlayerAreDead;
 }
 
 void AGAGameState::IncreaseSpawnedWaves(){
